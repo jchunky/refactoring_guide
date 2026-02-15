@@ -30,16 +30,15 @@ refactoring_guide/
 │   │   ├── namer.rb
 │   │   ├── parrot.rb
 │   │   ├── tennis.rb
-│   │   ├── theatrical_plays/
-│   │   │   └── statement.rb
+│   │   ├── theatrical_players.rb
 │   │   ├── trivia.rb
 │   │   └── yatzy.rb
 │   ├── test/                  # Minitest tests
 │   │   ├── bottles_test.rb
 │   │   ├── english_number_test.rb
 │   │   ├── gilded_rose_test.rb
-│   │   ├── statement_test.rb
 │   │   ├── tennis_test.rb
+│   │   ├── theatrical_players_test.rb
 │   │   ├── trivia_test.rb
 │   │   ├── yatzy_test.rb
 │   │   └── data/              # Test data files

@@ -1,7 +1,7 @@
 require "minitest/autorun"
 require "minitest/reporters"
 require 'json'
-require_relative '../lib/theatrical_plays/statement.rb';
+require_relative '../lib/theatrical_players'
 
 Minitest::Reporters.use!
 
