@@ -1,1 +1,0 @@
-Program to create player characters for an RPG

@@ -38,6 +38,6 @@ namespace :test do
 end
 
 desc 'Run all tests (before and after)'
-task :test => ['test:before']
+task :test => ['test:before', 'test:after']
 
 task :default => :test
