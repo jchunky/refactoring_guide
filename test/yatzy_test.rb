@@ -1,4 +1,5 @@
-require_relative '../lib/yatzy'
+require_relative '../lib/version_loader'
+VersionLoader.require_kata('yatzy')
 require 'test/unit'
 
 class YatzyTest < Test::Unit::TestCase

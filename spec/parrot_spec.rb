@@ -1,4 +1,5 @@
-require_relative '../lib/parrot'
+require_relative '../lib/version_loader'
+VersionLoader.require_kata('parrot')
 
 describe "Parrots" do
   it "gets speed of a european parrot" do

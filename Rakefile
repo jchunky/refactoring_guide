@@ -1,43 +1,34 @@
 require 'rake/testtask'
 require 'rspec/core/rake_task'
 
-# Before tests - Minitest
+# Default version is 'original'
+VERSION = ENV.fetch('VERSION', 'original')
+
 namespace :test do
-  namespace :before do
-    Rake::TestTask.new(:minitest) do |t|
-      t.libs << 'before/test'
-      t.libs << 'before/lib'
-      t.test_files = FileList['before/test/**/*_test.rb']
-      t.verbose = true
-    end
-
-    RSpec::Core::RakeTask.new(:rspec) do |t|
-      t.pattern = 'before/spec/**/*_spec.rb'
-    end
+  Rake::TestTask.new(:minitest) do |t|
+    t.libs << 'test'
+    t.libs << 'lib'
+    t.test_files = FileList['test/**/*_test.rb']
+    t.verbose = true
   end
 
-  desc 'Run all before tests (minitest and rspec)'
-  task :before => ['before:minitest', 'before:rspec']
-
-  # After tests - Minitest (will be available when after/ is created)
-  namespace :after do
-    Rake::TestTask.new(:minitest) do |t|
-      t.libs << 'after/test'
-      t.libs << 'after/lib'
-      t.test_files = FileList['after/test/**/*_test.rb']
-      t.verbose = true
-    end
-
-    RSpec::Core::RakeTask.new(:rspec) do |t|
-      t.pattern = 'after/spec/**/*_spec.rb'
-    end
+  RSpec::Core::RakeTask.new(:rspec) do |t|
+    t.pattern = 'spec/**/*_spec.rb'
   end
-
-  desc 'Run all after tests (minitest and rspec)'
-  task :after => ['after:minitest', 'after:rspec']
 end
 
-desc 'Run all tests (before and after)'
-task :test => ['test:before', 'test:after']
+desc "Run all tests for VERSION=#{VERSION}"
+task :test => ['test:minitest', 'test:rspec']
 
 task :default => :test
+
+desc 'List available versions'
+task :versions do
+  versions = Dir.glob('lib/*_*.rb')
+    .map { |f| File.basename(f, '.rb').split('_').last }
+    .uniq
+    .sort
+  puts "Available versions:"
+  versions.each { |v| puts "  - #{v}" }
+  puts "\nUsage: VERSION=<version> rake test"
+end

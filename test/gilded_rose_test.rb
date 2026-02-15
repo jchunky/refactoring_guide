@@ -1,4 +1,5 @@
-require_relative '../lib/gilded_rose'
+require_relative '../lib/version_loader'
+VersionLoader.require_kata('gilded_rose')
 require 'test/unit'
 
 class TestGildedRose < Test::Unit::TestCase

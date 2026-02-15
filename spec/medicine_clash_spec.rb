@@ -1,7 +1,8 @@
 require 'bigdecimal'
 require 'rspec'
 
-require_relative "../lib/medicine_clash"
+require_relative "../lib/version_loader"
+VersionLoader.require_kata('medicine_clash')
 
 describe Prescription do
   describe "#completion_date" do

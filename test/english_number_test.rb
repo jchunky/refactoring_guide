@@ -1,6 +1,7 @@
 require 'minitest/autorun'
 require "minitest/reporters"
-require_relative '../lib/english_number'
+require_relative '../lib/version_loader'
+VersionLoader.require_kata('english_number')
 
 Minitest::Reporters.use!
 

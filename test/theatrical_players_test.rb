@@ -1,7 +1,8 @@
 require "minitest/autorun"
 require "minitest/reporters"
 require 'json'
-require_relative '../lib/theatrical_players'
+require_relative '../lib/version_loader'
+VersionLoader.require_kata('theatrical_players')
 
 Minitest::Reporters.use!
 

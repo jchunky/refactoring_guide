@@ -1,4 +1,5 @@
-require_relative '../lib/namer'
+require_relative '../lib/version_loader'
+VersionLoader.require_kata('namer')
 require 'date'
 require 'ostruct'
 

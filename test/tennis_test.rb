@@ -1,4 +1,5 @@
-require_relative '../lib/tennis'
+require_relative '../lib/version_loader'
+VersionLoader.require_kata('tennis')
 require 'test/unit'
 
 TEST_CASES = [

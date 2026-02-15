@@ -1,31 +1,36 @@
 #!/bin/zsh
 # Test runner script for refactoring_guide project
-# This script runs all tests for both before and after code
+# This script runs all tests for the specified version.
+#
+# Usage:
+#   bin/test                 # Test 'original' version (default)
+#   bin/test original        # Test original version
+#   bin/test v1              # Test v1 version
+#   VERSION=v1 bin/test      # Alternative syntax
 
 source ~/.zshrc
 
+# Use command line argument or environment variable, default to 'original'
+VERSION=${1:-${VERSION:-original}}
+export VERSION
+
 echo "=== Refactoring Guide Test Runner ==="
+echo "Testing version: $VERSION"
 echo ""
 
-# Run before tests
-echo "=== Running BEFORE tests ==="
-bundle exec rake test:before
+# Check if version files exist
+if ! ls lib/*_${VERSION}.rb &> /dev/null; then
+  echo "Error: No implementation files found for version '$VERSION'"
+  echo ""
+  echo "Available versions:"
+  ls lib/*.rb | sed 's/.*_/  /' | sed 's/\.rb$//' | sort -u
+  exit 1
+fi
+
+bundle exec rake test
 
 exit_code=$?
 
-# Run after tests if they exist
-if [ -d "after/test" ] || [ -d "after/spec" ]; then
-  echo ""
-  echo "=== Running AFTER tests ==="
-  bundle exec rake test:after
-  after_exit_code=$?
-
-  # Use the worst exit code
-  if [ $after_exit_code -ne 0 ]; then
-    exit_code=$after_exit_code
-  fi
-fi
-
 echo ""
-echo "=== Test run complete ==="
+echo "=== Test run complete (version: $VERSION) ==="
 exit $exit_code
