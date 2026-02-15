@@ -1,23 +1,20 @@
 require "digest"
+require "securerandom"
 
 module XYZ
-  module Namer
-    def self.xyz_filename(target)
-      # File format:
-      # [day of month zero-padded][three-letter prefix] \
-      # _[kind]_[age_if_kind_personal]_[target.id] \
-      # _[8 random chars]_[10 first chars of title].jpg
-      filename = target.publish_on.strftime("%d").to_s
-      filename << target.xyz_category_prefix.to_s
-      filename << target.kind.delete("_").to_s
-      filename << format("_%03d", target.age || 0) if target.personal?
-      filename << "_#{target.id}"
-      filename << "_#{Digest::SHA1.hexdigest(rand(10000).to_s)[0, 8]}"
-      truncated_title = target.title.gsub(/[^\[a-z\]]/i, "").downcase
-      truncate_to = [truncated_title.length, 9].min
-      filename << "_#{truncated_title[0..(truncate_to)]}"
-      filename << ".jpg"
-      filename
-    end
+  class Namer < Struct.new(:file)
+    def self.xyz_filename(file) = new(file).filename
+    def filename = [prefix, age, file.id, noise, title].compact.join("_").concat(".jpg")
+
+    private
+
+    def prefix = [publication_day, category, kind].join
+    def publication_day = file.publish_on.strftime("%d")
+    def category = file.xyz_category_prefix
+    def kind = file.kind.delete("_")
+    def age = (format("%03d", file.age.to_i) if file.personal?)
+    def noise = SecureRandom.hex(4)
+    def title = sanitized_title[0, 10]
+    def sanitized_title = file.title.downcase.gsub(/[^\[a-z\]]/, "")
   end
 end
