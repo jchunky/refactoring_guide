@@ -1,0 +1,18 @@
+#!/bin/bash
+# Seed a new version of kata code by copying original files
+# Usage: bin/seed_version v3
+
+VERSION=$1
+
+if [ -z "$VERSION" ]; then
+  echo "Usage: bin/seed_version <version>"
+  echo "Example: bin/seed_version v3"
+  exit 1
+fi
+
+for original in lib/*_original.rb; do
+  base=$(basename "$original" _original.rb)
+  target="lib/${base}_${VERSION}.rb"
+  cp "$original" "$target"
+  echo "Created $target"
+done
