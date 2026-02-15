@@ -20,6 +20,8 @@ refactoring_guide/
 ├── Rakefile                       # Test tasks with VERSION support
 ├── bin/
 │   └── test                       # Test runner script
+├── prompts/                       # Refactoring prompts for generating versions
+│   └── prompt_v1.md               # First prompt iteration
 ├── lib/                           # All implementation files (flat, suffix-based)
 │   ├── version_loader.rb          # Helper to load versioned implementations
 │   ├── bottles_original.rb
