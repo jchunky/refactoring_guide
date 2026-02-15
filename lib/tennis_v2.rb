@@ -1,6 +1,7 @@
 class Player < Struct.new(:name, :points)
   alias to_s name
   def initialize(name) = super(name, 0)
+
   def score = %w[Love Fifteen Thirty Forty][points]
   def win_point = self.points += 1
 end

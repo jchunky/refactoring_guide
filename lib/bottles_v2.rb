@@ -1,5 +1,6 @@
 class BottleNumber < Struct.new(:n)
   def self.for(n) = (Object.const_get("BottleNumber#{n}") rescue BottleNumber).new(n)
+
   def to_s = [quantity, containers].join(" ")
   def action = "Take #{pronoun} down and pass it around"
   def successor = self.class.for(n - 1)

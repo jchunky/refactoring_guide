@@ -4,6 +4,7 @@ require "securerandom"
 module XYZ
   class Namer < Struct.new(:file)
     def self.xyz_filename(file) = new(file).filename
+
     def filename = [prefix, age, file.id, noise, title].compact.join("_").concat(".jpg")
 
     private
