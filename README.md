@@ -52,7 +52,7 @@ This project uses a versioning system to experiment with different AI
 refactoring prompts. Each version (`v1`, `v2`, `v3`, etc.) represents an
 independent refactoring experiment using a specific prompt.
 
-### Step 1: Create the Prompt
+### Human Step: Create the Prompt
 
 Create a new prompt file `prompts/prompt_vN.md` with your refactoring
 instructions. Each prompt can focus on different:
@@ -62,60 +62,30 @@ instructions. Each prompt can focus on different:
 - Code style preferences
 - Specific techniques to apply or avoid
 
-### Step 2: Seed the Version Files
+### AI Steps: Apply the Prompt
 
-Run the seed script to create fresh copies of all original files:
+Once the prompt file exists, send this command to the AI:
 
-```bash
-bin/seed_version vN
+```
+use the seed_version script to create vN files, and apply prompt_vN to
+improve the code. you cannot look at other versions of prompts or code.
 ```
 
-This copies each `lib/*_original.rb` file to `lib/*_vN.rb`, providing
-a clean starting point for refactoring.
+The AI will then:
 
-### Step 3: Apply the Prompt with AI
+1. **Seed the version files** - Run `bin/seed_version vN` to create fresh
+   copies of all original files as `lib/*_vN.rb`
 
-**Critical constraint: The AI must NOT look at other versions.**
+2. **Read ONLY the specified prompt** - The AI must NOT read other prompt
+   versions (`prompt_v1.md`, `prompt_v2.md`, etc.) or other code versions
+   (`*_v1.rb`, `*_v2.rb`, etc.) to ensure an independent experiment
 
-When asking the AI to refactor the code:
+3. **Refactor all version files** - Apply the prompt's guidelines to
+   transform each `*_vN.rb` file
 
-1. The AI should ONLY read:
-   - The specific prompt file (`prompts/prompt_vN.md`)
-   - The version files to refactor (`lib/*_vN.rb`)
-   - Test files (to understand expected behavior)
+4. **Run tests** - Verify all tests pass with `VERSION=vN bin/test`
 
-2. The AI must NOT read:
-   - Other prompt versions (`prompt_v1.md`, `prompt_v2.md`, etc.)
-   - Other code versions (`*_v1.rb`, `*_v2.rb`, etc.)
-   - This ensures each version is an independent experiment
-
-3. Example instruction to the AI:
-   ```
-   Use the seed_version script to create vN files, and apply prompt_vN
-   to improve the code. You cannot look at other versions of prompts
-   or code.
-   ```
-
-### Step 4: Run Tests
-
-Verify the refactored code maintains identical behavior:
-
-```bash
-VERSION=vN bin/test
-```
-
-All tests must pass. The refactoring should change structure and style,
-not behavior.
-
-### Step 5: Commit
-
-Commit both the prompt and refactored code together:
-
-```bash
-git add -A
-git commit -m "Add vN refactored kata files using prompt_vN"
-git push
-```
+5. **Commit and push** - Commit both the prompt and refactored code together
 
 ---
 
