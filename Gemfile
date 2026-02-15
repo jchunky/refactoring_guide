@@ -1,0 +1,13 @@
+source "https://rubygems.org"
+
+gem "rake"
+gem "activesupport"
+gem "minitest-reporters"
+gem "nokogiri"
+gem "openssl"
+gem "ostruct"
+gem "rspec"
+gem "rubocop"
+gem "rubocop-performance", require: false
+gem "test-unit"
+gem "zeitwerk"

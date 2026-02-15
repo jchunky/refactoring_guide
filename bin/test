@@ -1,0 +1,31 @@
+#!/bin/zsh
+# Test runner script for refactoring_guide project
+# This script runs all tests for both before and after code
+
+source ~/.zshrc
+
+echo "=== Refactoring Guide Test Runner ==="
+echo ""
+
+# Run before tests
+echo "=== Running BEFORE tests ==="
+bundle exec rake test:before
+
+exit_code=$?
+
+# Run after tests if they exist
+if [ -d "after/test" ] || [ -d "after/spec" ]; then
+  echo ""
+  echo "=== Running AFTER tests ==="
+  bundle exec rake test:after
+  after_exit_code=$?
+
+  # Use the worst exit code
+  if [ $after_exit_code -ne 0 ]; then
+    exit_code=$after_exit_code
+  fi
+fi
+
+echo ""
+echo "=== Test run complete ==="
+exit $exit_code
