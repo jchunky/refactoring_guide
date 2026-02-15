@@ -1,45 +1,44 @@
-def statement(invoice, plays)
-  total_amount = 0
-  volume_credits = 0
-  result = "Statement for #{invoice["customer"]}\n"
+class Performance < Struct.new(:play_name, :play_type, :seat_count)
+  def self.build(plays, performance_data)
+    play = plays[performance_data["playID"]]
+    play_type = play["type"]
+    play_name = play["name"]
+    seat_count = performance_data["audience"]
+    performance_class = Object.const_get("#{play_type.capitalize}Performance") rescue (raise "unknown type: #{play_type}")
+    performance_class.new(play_name:, play_type:, seat_count:)
+  end
+end
 
-  format = lambda { |amount|
-    "$#{format("%.2f", amount / 100.0)}"
-  }
+class ComedyPerformance < Performance
+  def price = 30000 + (300 * seat_count) + (seat_count > 20 ? (10000 + (500 * (seat_count - 20))) : 0)
+  def credits = [seat_count - 30, 0].max + (seat_count / 5).floor
+end
 
-  invoice["performances"].each do |perf|
-    play = plays[perf["playID"]]
-    this_amount = 0
+class TragedyPerformance < Performance
+  def price = 40000 + (seat_count > 30 ? (1000 * (seat_count - 30)) : 0)
+  def credits = [seat_count - 30, 0].max
+end
 
-    case play["type"]
-    when "tragedy"
-      this_amount = 40000
-      if perf["audience"] > 30
-        this_amount += 1000 * (perf["audience"] - 30)
-      end
-    when "comedy"
-      this_amount = 30000
-      if perf["audience"] > 20
-        this_amount += 10000 + (500 * (perf["audience"] - 20))
-      end
-      this_amount += 300 * perf["audience"]
-    else
-      raise "unknown type: #{play["type"]}"
-    end
-
-    # add volume credits
-    volume_credits += [perf["audience"] - 30, 0].max
-    # add extra credit for every ten comedy attendees
-    if play["type"] == "comedy"
-      volume_credits += (perf["audience"] / 5).floor
-    end
-
-    # print line for this order
-    result += " #{play["name"]}: #{format.call(this_amount)} (#{perf["audience"]} seats)\n"
-    total_amount += this_amount
+class Statement < Struct.new(:invoice, :plays)
+  def to_s
+    [
+      "Statement for #{invoice["customer"]}",
+      performances.map { format_performance(it) },
+      "Amount owed is #{usd(total_price)}",
+      "You earned #{total_credits} credits",
+    ].join("\n").concat("\n")
   end
 
-  result += "Amount owed is #{format.call(total_amount)}\n"
-  result += "You earned #{volume_credits} credits\n"
-  result
+  private
+
+  def format_performance(perf) = format(" %s: %s (%s seats)", perf.play_name, usd(perf.price), perf.seat_count)
+  def usd(amount) = format("$%.2f", amount / 100.0)
+  def total_price = performances.sum(&:price)
+  def total_credits = performances.sum(&:credits)
+  def performances = invoice["performances"].map { |performance_data| Performance.build(plays, performance_data) }
+  def customer = invoice["customer"]
+end
+
+def statement(invoice, plays)
+  Statement.new(invoice, plays).to_s
 end
