@@ -5,25 +5,35 @@ module TheatricalPlayersKata
       play_type = play["type"]
       play_name = play["name"]
       seat_count = performance_data["audience"]
-      performance_class = Object.const_get("#{play_type.capitalize}Performance") rescue (raise "unknown type: #{play_type}")
+      performance_class = Object.const_get(play_type.capitalize) rescue (raise "unknown type: #{play_type}")
       performance_class.new(play_name:, play_type:, seat_count:)
     end
   end
 
-  class ComedyPerformance < Performance
-    def price = 30000 + (300 * seat_count) + (seat_count > 20 ? (10000 + (500 * (seat_count - 20))) : 0)
+  class Comedy < Performance
     def credits = [seat_count - 30, 0].max + (seat_count / 5).floor
+
+    def price
+      result = 30000 + (300 * seat_count)
+      result += 10000 + (500 * (seat_count - 20)) if seat_count > 20
+      result
+    end
   end
 
-  class TragedyPerformance < Performance
-    def price = 40000 + (seat_count > 30 ? (1000 * (seat_count - 30)) : 0)
+  class Tragedy < Performance
     def credits = [seat_count - 30, 0].max
+
+    def price
+      result = 40000
+      result += 1000 * (seat_count - 30) if seat_count > 30
+      result
+    end
   end
 
   class Statement < Data.define(:invoice, :plays)
     def to_s
       [
-        "Statement for #{invoice["customer"]}",
+        "Statement for #{customer}",
         performances.map { format_performance(it) },
         "Amount owed is #{usd(total_price)}",
         "You earned #{total_credits} credits",
@@ -32,12 +42,13 @@ module TheatricalPlayersKata
 
     private
 
-    def format_performance(it) = format(" %s: %s (%s seats)", it.play_name, usd(it.price), it.seat_count)
-    def usd(amount) = format("$%.2f", amount / 100.0)
+    def customer = invoice["customer"]
     def total_price = performances.sum(&:price)
     def total_credits = performances.sum(&:credits)
     def performances = invoice["performances"].map { Performance.build(plays, it) }
-    def customer = invoice["customer"]
+
+    def format_performance(it) = format(" %s: %s (%s seats)", it.play_name, usd(it.price), it.seat_count)
+    def usd(amount) = format("$%.2f", amount / 100.0)
   end
 
   def statement(invoice, plays) = Statement.new(invoice, plays).to_s

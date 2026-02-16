@@ -9,7 +9,7 @@ module TennisKata
   end
 
   class TennisGame < Struct.new(:player1, :player2)
-    def initialize(player1_name, player2_name) = super(Player.new(player1_name), Player.new(player2_name))
+    def initialize(name1, name2) = super(Player.new(name1), Player.new(name2))
 
     def won_point(player_name) = find_player(player_name).win_point
 
