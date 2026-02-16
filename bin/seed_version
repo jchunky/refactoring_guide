@@ -51,17 +51,9 @@ for source_file in "$SOURCE_DIR"/*.rb; do
   echo "Created $target"
 done
 
-# Copy prompt.md (always create one, even if empty)
-if [ -f "${SOURCE_DIR}/prompt.md" ]; then
-  cp "${SOURCE_DIR}/prompt.md" "${TARGET_DIR}/prompt.md"
-  echo "Created ${TARGET_DIR}/prompt.md"
-else
-  touch "${TARGET_DIR}/prompt.md"
-  echo "Created ${TARGET_DIR}/prompt.md (empty)"
-fi
+# Always create empty prompt.md and plan.md for the new version
+touch "${TARGET_DIR}/prompt.md"
+echo "Created ${TARGET_DIR}/prompt.md (empty)"
 
-# Copy plan.md if it exists in source
-if [ -f "${SOURCE_DIR}/plan.md" ]; then
-  cp "${SOURCE_DIR}/plan.md" "${TARGET_DIR}/plan.md"
-  echo "Created ${TARGET_DIR}/plan.md"
-fi
+touch "${TARGET_DIR}/plan.md"
+echo "Created ${TARGET_DIR}/plan.md (empty)"
