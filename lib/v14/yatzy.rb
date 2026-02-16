@@ -22,8 +22,9 @@ module YatzyKata
 
     private
 
-    def pairs = dice.uniq.select { dice.count(it) >= 2 }
+    def pairs = find_n_of_a_kind(2)
+    def score_n_of_a_kind(n) = find_n_of_a_kind(n).max.to_i * n
     def score_straight(range) = dice.sort == range.to_a ? dice.sum : 0
-    def score_n_of_a_kind(n) = dice.uniq.select { dice.count(it) >= n }.max.to_i * n
+    def find_n_of_a_kind(n) = dice.uniq.select { dice.count(it) >= n }
   end
 end
