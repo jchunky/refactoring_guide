@@ -101,6 +101,24 @@ The AI will then:
 
 ---
 
+## Code Naming Constraints
+
+Within each version directory, all kata files share the same Ruby namespace
+during test runs. To avoid collisions:
+
+- **Class names must be unique** across all kata files in the same version
+- **Global methods must be unique** (prefer wrapping in modules or classes)
+- **Core class extensions** (e.g., `Integer#days` in medicine_clash.rb) apply
+  globally within the test run
+
+Current shared names to avoid reusing:
+- `Player` (tennis.rb)
+- `DateRange` (medicine_clash.rb)
+- `Prescription`, `Medicine`, `Patient` (medicine_clash.rb)
+- Various global functions in character_creator.rb
+
+---
+
 ## Why Isolate Versions?
 
 Keeping each version isolated ensures:
