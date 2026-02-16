@@ -19,3 +19,7 @@ for original in lib/original/*.rb; do
   cp "$original" "$target"
   echo "Created $target"
 done
+
+# Copy prompt.md
+cp "lib/original/prompt.md" "${TARGET_DIR}/prompt.md"
+echo "Created ${TARGET_DIR}/prompt.md"
