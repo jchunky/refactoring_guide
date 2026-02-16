@@ -27,20 +27,25 @@ VERSION=original bin/test
 ## Project Structure
 
 ```
-prompts/
-  prompt_v1.md           # Refactoring instructions for version 1
-  prompt_v2.md           # Refactoring instructions for version 2
-  prompt_v3.md           # Refactoring instructions for version 3
 lib/
-  bottles_original.rb    # Original code (never modified)
-  bottles_v1.rb          # Refactored using prompt_v1
-  bottles_v2.rb          # Refactored using prompt_v2
-  bottles_v3.rb          # Refactored using prompt_v3
-  ...
+  original/              # Original code (never modified)
+    prompt.md            # Empty placeholder (copied when seeding)
+    bottles.rb
+    gilded_rose.rb
+    ...
+  v1/                    # Version 1 refactored code
+    prompt.md            # Refactoring instructions for this version
+    bottles.rb
+    gilded_rose.rb
+    ...
+  v2/                    # Version 2 refactored code
+    prompt.md
+    bottles.rb
+    ...
 test/                    # Test files (shared across all versions)
 spec/                    # RSpec files (shared across all versions)
 bin/
-  seed_version           # Script to create new version files
+  seed_version           # Script to create new version directory
   test                   # Test runner supporting VERSION env var
 ```
 
@@ -52,40 +57,47 @@ This project uses a versioning system to experiment with different AI
 refactoring prompts. Each version (`v1`, `v2`, `v3`, etc.) represents an
 independent refactoring experiment using a specific prompt.
 
-### Human Step: Create the Prompt
+### Step 1: Seed the Version (AI)
 
-Create a new prompt file `prompts/prompt_vN.md` with your refactoring
-instructions. Each prompt can focus on different:
+Direct the AI to create the new version directory:
+
+```
+run bin/seed_version v9
+```
+
+This creates `lib/v9/` with copies of all original files plus an empty
+`prompt.md`.
+
+### Step 2: Write the Prompt (Human)
+
+Edit `lib/v9/prompt.md` with your refactoring instructions. Each prompt can
+focus on different:
 
 - Ruby version features (e.g., Ruby 3.4+ idioms)
 - Design patterns (e.g., polymorphism vs. data-driven)
 - Code style preferences
 - Specific techniques to apply or avoid
 
-### AI Steps: Apply the Prompt
+### Step 3: Apply the Prompt (AI)
 
-Once the prompt file exists, send this command to the AI:
+Once the prompt file is ready, send this command to the AI:
 
 ```
-use the seed_version script to create vN files, and apply prompt_vN to
-improve the code. you cannot look at other versions of prompts or code.
+apply the prompt in lib/v9/prompt.md to improve the code in lib/v9/.
+you cannot look at other versions of prompts or code.
 ```
 
 The AI will then:
 
-1. **Seed the version files** - Run `bin/seed_version vN` to create fresh
-   copies of all original files as `lib/*_vN.rb`
+1. **Read ONLY the specified prompt** - The AI must NOT read other prompt
+   versions or other code versions to ensure an independent experiment
 
-2. **Read ONLY the specified prompt** - The AI must NOT read other prompt
-   versions (`prompt_v1.md`, `prompt_v2.md`, etc.) or other code versions
-   (`*_v1.rb`, `*_v2.rb`, etc.) to ensure an independent experiment
+2. **Refactor all version files** - Apply the prompt's guidelines to
+   transform each file in `lib/v9/`
 
-3. **Refactor all version files** - Apply the prompt's guidelines to
-   transform each `*_vN.rb` file
+3. **Run tests** - Verify all tests pass with `VERSION=v9 bin/test`
 
-4. **Run tests** - Verify all tests pass with `VERSION=vN bin/test`
-
-5. **Commit and push** - Commit both the prompt and refactored code together
+4. **Commit and push** - Commit both the prompt and refactored code together
 
 ---
 
