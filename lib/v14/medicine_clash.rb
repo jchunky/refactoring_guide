@@ -1,3 +1,5 @@
+require "date"
+
 class Integer
   def day = self
   def days = self
@@ -6,8 +8,6 @@ class Integer
 end
 
 module MedicineClashKata
-  require "date"
-
   class Prescription < Data.define(:dispense_date, :days_supply)
     def days_taken = (dispense_date...completion_date).to_a
     def completion_date = dispense_date + days_supply

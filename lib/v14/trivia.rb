@@ -4,7 +4,7 @@ module TriviaKata
       def initialize = super([])
 
       def add(player_name) = players << Player.new(player_name)
-      def next = players.rotate!
+      def advance = players.rotate!
 
       def count = players.count
       def current = players.first
@@ -101,9 +101,9 @@ module TriviaKata
       end
 
       def next_question = questions.next_question(current_location)
-      def advance_to_next_player = players.next
+      def advance_to_next_player = players.advance
 
-      def current_category = %w[Pop Science Sports Rock][current_location % 4]
+      def current_category = questions.category_for(current_location)
       def current_location = current_player.location
       def current_player = players.current
       def winner? = players.winner?
