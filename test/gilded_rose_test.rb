@@ -1,7 +1,10 @@
+require 'minitest/autorun'
+require 'minitest/reporters'
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('gilded_rose')
 include GildedRoseKata
-require 'test/unit'
+
+Minitest::Reporters.use!
 
 # Reference implementation used to verify behavior
 class GildedRoseOld
@@ -58,7 +61,7 @@ class GildedRoseOld
   end
 end
 
-class TestGildedRose < Test::Unit::TestCase
+class GildedRoseTest < Minitest::Test
   def test_behaves_exactly_like_old_implementation
     items = build_items
     items_old = build_items

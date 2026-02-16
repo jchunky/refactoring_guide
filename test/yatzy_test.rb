@@ -1,9 +1,12 @@
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('yatzy')
 include YatzyKata
-require 'test/unit'
+require 'minitest/autorun'
+require 'minitest/reporters'
 
-class YatzyTest < Test::Unit::TestCase
+Minitest::Reporters.use!
+
+class YatzyTest < Minitest::Test
   def test_chance_scores_sum_of_all_dice
     expected = 15
     actual = Yatzy.chance(2,3,4,5,1)

@@ -1,10 +1,13 @@
-require 'test/unit'
+require 'minitest/autorun'
+require 'minitest/reporters'
+
+Minitest::Reporters.use!
 require 'stringio'
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('trivia')
 include TriviaKata
 
-class GameTest < Test::Unit::TestCase
+class GameTest < Minitest::Test
   def test_it_works
     game = UglyTrivia::Game.new
     expected = <<~STRING

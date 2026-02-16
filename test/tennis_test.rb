@@ -1,7 +1,10 @@
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('tennis')
 include TennisKata
-require 'test/unit'
+require 'minitest/autorun'
+require 'minitest/reporters'
+
+Minitest::Reporters.use!
 
 TEST_CASES = [
    [0, 0, "Love-All", 'player1', 'player2'],
@@ -49,7 +52,7 @@ TEST_CASES = [
    [5, 6, 'Advantage Two', 'player1', 'Two'] 
 ]
 
-class TestTennis < Test::Unit::TestCase
+class TestTennis < Minitest::Test
   def play_game(tennisGameClass, p1Points, p2Points, p1Name, p2Name)
     game = tennisGameClass.new(p1Name, p2Name)
     p1Points.times { game.won_point(p1Name) }
