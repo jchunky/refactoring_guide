@@ -101,21 +101,29 @@ The AI will then:
 
 ---
 
-## Code Naming Constraints
+## Module Namespacing
 
-Within each version directory, all kata files share the same Ruby namespace
-during test runs. To avoid collisions:
+Each kata is wrapped in its own module to prevent collisions:
 
-- **Class names must be unique** across all kata files in the same version
-- **Global methods must be unique** (prefer wrapping in modules or classes)
-- **Core class extensions** (e.g., `Integer#days` in medicine_clash.rb) apply
-  globally within the test run
+| Kata | Module |
+|------|--------|
+| bottles.rb | `BottlesKata` |
+| character_creator.rb | `CharacterCreatorKata` |
+| english_number.rb | `EnglishNumberKata` |
+| gilded_rose.rb | `GildedRoseKata` |
+| medicine_clash.rb | `MedicineClashKata` |
+| namer.rb | `NamerKata` |
+| parrot.rb | `ParrotKata` |
+| tennis.rb | `TennisKata` |
+| theatrical_players.rb | `TheatricalPlayersKata` |
+| trivia.rb | `TriviaKata` |
+| yatzy.rb | `YatzyKata` |
 
-Current shared names to avoid reusing:
-- `Player` (tennis.rb)
-- `DateRange` (medicine_clash.rb)
-- `Prescription`, `Medicine`, `Patient` (medicine_clash.rb)
-- Various global functions in character_creator.rb
+Tests use `include XxxKata` to bring classes into scope. This allows each kata
+to define classes with the same names (e.g., `Player`) without conflicts.
+
+**Note:** Core class extensions (e.g., `Integer#days` in medicine_clash.rb)
+remain global as they're required by spec files
 
 ---
 
