@@ -18,8 +18,8 @@ module MedicineClashKata
     def days_taken = prescriptions.flat_map(&:days_taken).uniq
   end
 
-  class Patient < Struct.new(:medicines)
-    def initialize = super([])
+  class Patient < Data.define(:medicines)
+    def initialize = super(medicines: [])
 
     def clash(medicine_names, days_back)
       today = Date.today
