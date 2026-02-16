@@ -24,7 +24,7 @@ module GildedRoseKata
     end
   end
 
-  class GildedRose < Data.define(:items)
+  class GildedRose < Struct.new(:items)
     def update_quality
       items.each(&:update)
     end

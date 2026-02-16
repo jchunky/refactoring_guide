@@ -13,13 +13,13 @@ module MedicineClashKata
     def completion_date = dispense_date + days_supply
   end
 
-  class Medicine < Data.define(:name, :prescriptions)
-    def initialize(name:, prescriptions: []) = super
+  class Medicine < Struct.new(:name, :prescriptions)
+    def initialize(name) = super(name, [])
     def days_taken = prescriptions.flat_map(&:days_taken).uniq
   end
 
-  class Patient < Data.define(:medicines)
-    def initialize = super(medicines: [])
+  class Patient < Struct.new(:medicines)
+    def initialize = super([])
 
     def clash(medicine_names, days_back)
       today = Date.today
