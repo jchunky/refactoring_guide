@@ -8,6 +8,11 @@ the same original code, allowing comparison of different refactoring approaches.
 
 ## Quick Start
 
+> **Important:** Always use `bin/test` to run tests — it sources `~/.zshrc`
+> to ensure the correct Ruby version and tools are available. Running
+> `bundle exec rake test` directly may fail if your shell hasn't been
+> configured (e.g., asdf/rbenv not loaded).
+
 Run tests for a specific version:
 
 ```bash
@@ -21,6 +26,10 @@ bin/test
 # or
 VERSION=original bin/test
 ```
+
+> **AI agents:** Before executing _any_ shell command (not just tests),
+> first run `source ~/.zshrc` to load the proper Ruby environment.
+> Alternatively, prefix commands: `source ~/.zshrc && bundle exec rake test`
 
 ---
 
