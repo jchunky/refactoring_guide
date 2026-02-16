@@ -29,11 +29,9 @@ module CharacterCreatorKata
 
 
   def backgroundpick
-    backgrounds = ["Acolyte", "Charlatan", "Criminal", "Entertainer", "Folk Hero", "Gladiator",
-             "Guild Artisan", "Guild Merchant", "Hermit", "Knight", "Noble", "Outlander",
-             "Pirate", "Sage", "Sailor", "Soldier", "Spy", "Urchin"]
+    backgrounds = ["Acolyte", "Criminal", "Sage", "Soldier"]
     puts backgrounds
-    puts "What race is your character? "
+    puts "What species is your character? "
     background_choice = ""
     while backgrounds.include?(background_choice) == false
       background_choice = get_input(backgrounds.first).split(/ |\_|\-/).map(&:capitalize).join(" ").chomp
@@ -42,11 +40,33 @@ module CharacterCreatorKata
     return background_choice
   end
 
+  def background_bonuses(background)
+    ability_bonuses = []
+    skill_proficiencies = []
+    case background
+    when "Acolyte"
+      ability_bonuses = ["Intelligence", "Wisdom", "Charisma"]
+      skill_proficiencies = [Proficiencies::INSIGHT, Proficiencies::RELIGION]
+    when "Criminal"
+      ability_bonuses = ["Dexterity", "Constitution", "Intelligence"]
+      skill_proficiencies = [Proficiencies::SLEIGHT_OF_HAND, Proficiencies::STEALTH]
+    when "Sage"
+      ability_bonuses = ["Constitution", "Intelligence", "Wisdom"]
+      skill_proficiencies = [Proficiencies::ARCANA, Proficiencies::HISTORY]
+    when "Soldier"
+      ability_bonuses = ["Strength", "Dexterity", "Constitution"]
+      skill_proficiencies = [Proficiencies::ATHLETICS, Proficiencies::INTIMIDATION]
+    else
+      ability_bonuses = []
+      skill_proficiencies = []
+    end
+  end
+
   class DnDchars
 
     attr_accessor :charname
     attr_accessor :level
-    attr_accessor :race
+    attr_accessor :species
     attr_accessor :class_of_char
     attr_accessor :background
     attr_accessor :str
@@ -66,12 +86,12 @@ module CharacterCreatorKata
     attr_accessor :hitpoints
     attr_accessor :skills
 
-    def initialize(charname, level, race, class_of_char, background, str, strmod, dex, dexmod, con, conmod, int, intmod,
+    def initialize(charname, level, species, class_of_char, background, str, strmod, dex, dexmod, con, conmod, int, intmod,
                    wis, wismod, cha, chamod, ac, prof, hitpoints, skills
     )
       @charname = charname
       @level = level
-      @race = race
+      @species = species
       @class_of_char = class_of_char
       @background = background
       @str = str
@@ -257,6 +277,7 @@ module CharacterCreatorKata
           Proficiencies::INSIGHT,
           Proficiencies::INTIMIDATION,
           Proficiencies::PERCEPTION,
+          Proficiencies::PERSUASION,
           Proficiencies::SURVIVAL
       ]
     when "Monk"
@@ -297,7 +318,6 @@ module CharacterCreatorKata
           Proficiencies::INTIMIDATION,
           Proficiencies::INVESTIGATION,
           Proficiencies::PERCEPTION,
-          Proficiencies::PERFORMANCE,
           Proficiencies::PERSUASION,
           Proficiencies::SLEIGHT_OF_HAND,
           Proficiencies::STEALTH
@@ -328,6 +348,7 @@ module CharacterCreatorKata
           Proficiencies::INSIGHT,
           Proficiencies::INVESTIGATION,
           Proficiencies::MEDICINE,
+          Proficiencies::NATURE,
           Proficiencies::RELIGION
       ]
     else
@@ -406,18 +427,17 @@ module CharacterCreatorKata
   end
 
 
-  def racepick
-    races = ["Hill Dwarf", "Mountain Dwarf", "High Elf", "Wood Elf", "Lightfoot Halfling", "Stout Halfling",
-             "Human", "Human Variant", "Dragonborn", "Rock Gnome", "Forest Gnome", "Half Elf",
-             "Half Orc", "Tiefling"]
-    puts races
-    puts "What race is your character? "
-    race_choice = ""
-    while races.include?(race_choice) == false
-      race_choice = get_input(races.first).split(/ |\_|\-/).map(&:capitalize).join(" ").chomp
-      puts "please select an option from the list" unless races.include?(race_choice) == true
+  def speciespick
+    species = ["Dragonborn", "Dwarf", "Elf", "Gnome", "Goliath", "Halfling",
+             "Human", "Orc", "Tiefling"]
+    puts species
+    puts "What species is your character? "
+    species_choice = ""
+    while species.include?(species_choice) == false
+      species_choice = get_input(species.first).split(/ |\_|\-/).map(&:capitalize).join(" ").chomp
+      puts "please select an option from the list" unless species.include?(species_choice) == true
     end
-    return race_choice
+    return species_choice
   end
 
   def skillpopulator
@@ -606,7 +626,7 @@ if __FILE__ == $0
   puts "=" * 40
 
   charclass = classpick
-  race = racepick
+  species = speciespick
   background = backgroundpick
 
   stats = statroll
@@ -630,7 +650,7 @@ if __FILE__ == $0
   charname = get_input("Adventurer")
 
   $charstats = DnDchars.new(
-    charname, level, race, charclass, background,
+    charname, level, species, charclass, background,
     str, strmod, dex, dexmod, con, conmod, int, intmod, wis, wismod, cha, chamod,
     10 + dexmod, prof, hitpoints, skills
   )
