@@ -1,5 +1,6 @@
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('gilded_rose')
+include GildedRoseKata
 require 'test/unit'
 
 # Reference implementation used to verify behavior

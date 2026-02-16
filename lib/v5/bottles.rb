@@ -1,92 +1,94 @@
-# Refactored using 99 Bottles of OOP principles:
-# - Extract Class for BottleNumber concept
-# - Replace conditionals with polymorphism
-# - Open/Closed principle via factory method
+module BottlesKata
+  # Refactored using 99 Bottles of OOP principles:
+  # - Extract Class for BottleNumber concept
+  # - Replace conditionals with polymorphism
+  # - Open/Closed principle via factory method
 
-class BottleNumber
-  attr_reader :number
+  class BottleNumber
+    attr_reader :number
 
-  def self.for(number)
-    case number
-    when 0 then BottleNumber0
-    when 1 then BottleNumber1
-    else BottleNumber
-    end.new(number)
+    def self.for(number)
+      case number
+      when 0 then BottleNumber0
+      when 1 then BottleNumber1
+      else BottleNumber
+      end.new(number)
+    end
+
+    def initialize(number)
+      @number = number
+    end
+
+    def to_s
+      "#{quantity} #{container}"
+    end
+
+    def quantity
+      number.to_s
+    end
+
+    def container
+      "bottles"
+    end
+
+    def action
+      "Take one down and pass it around"
+    end
+
+    def pronoun
+      "one"
+    end
+
+    def successor
+      BottleNumber.for(number - 1)
+    end
   end
 
-  def initialize(number)
-    @number = number
+  class BottleNumber0 < BottleNumber
+    def quantity
+      "no more"
+    end
+
+    def action
+      "Go to the store and buy some more"
+    end
+
+    def successor
+      BottleNumber.for(99)
+    end
   end
 
-  def to_s
-    "#{quantity} #{container}"
+  class BottleNumber1 < BottleNumber
+    def container
+      "bottle"
+    end
+
+    def pronoun
+      "it"
+    end
+
+    def action
+      "Take #{pronoun} down and pass it around"
+    end
   end
 
-  def quantity
-    number.to_s
-  end
+  class Bottles
+    def verse(number)
+      bottle_number = BottleNumber.for(number)
+      successor = bottle_number.successor
 
-  def container
-    "bottles"
-  end
+      "#{bottle_number.to_s.capitalize} of beer on the wall, " +
+      "#{bottle_number} of beer.\n" +
+      "#{bottle_number.action}, " +
+      "#{successor} of beer on the wall.\n"
+    end
 
-  def action
-    "Take one down and pass it around"
-  end
+    def verses(start, finish)
+      start.downto(finish).map { |num| verse(num) }.join("\n")
+    end
 
-  def pronoun
-    "one"
-  end
-
-  def successor
-    BottleNumber.for(number - 1)
-  end
-end
-
-class BottleNumber0 < BottleNumber
-  def quantity
-    "no more"
-  end
-
-  def action
-    "Go to the store and buy some more"
-  end
-
-  def successor
-    BottleNumber.for(99)
-  end
-end
-
-class BottleNumber1 < BottleNumber
-  def container
-    "bottle"
-  end
-
-  def pronoun
-    "it"
-  end
-
-  def action
-    "Take #{pronoun} down and pass it around"
-  end
-end
-
-class Bottles
-  def verse(number)
-    bottle_number = BottleNumber.for(number)
-    successor = bottle_number.successor
-
-    "#{bottle_number.to_s.capitalize} of beer on the wall, " +
-    "#{bottle_number} of beer.\n" +
-    "#{bottle_number.action}, " +
-    "#{successor} of beer on the wall.\n"
-  end
-
-  def verses(start, finish)
-    start.downto(finish).map { |num| verse(num) }.join("\n")
-  end
-
-  def song
-    verses(99, 0)
+    def song
+      verses(99, 0)
+    end
   end
 end

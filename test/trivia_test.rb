@@ -2,6 +2,7 @@ require 'test/unit'
 require 'stringio'
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('trivia')
+include TriviaKata
 
 class GameTest < Test::Unit::TestCase
   def test_it_works

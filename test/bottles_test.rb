@@ -2,6 +2,7 @@ require 'minitest/autorun'
 require 'minitest/reporters'
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('bottles')
+include BottlesKata
 
 Minitest::Reporters.use!
 

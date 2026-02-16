@@ -1,5 +1,6 @@
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('parrot')
+include ParrotKata
 
 describe "Parrots" do
   it "gets speed of a european parrot" do

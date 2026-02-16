@@ -3,6 +3,7 @@ require 'rspec'
 
 require_relative "../lib/version_loader"
 VersionLoader.require_kata('medicine_clash')
+include MedicineClashKata
 
 describe Prescription do
   describe "#completion_date" do

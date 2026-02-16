@@ -3,6 +3,7 @@ require "minitest/reporters"
 require 'json'
 require_relative '../lib/version_loader'
 VersionLoader.require_kata('theatrical_players')
+include TheatricalPlayersKata
 
 Minitest::Reporters.use!
 
