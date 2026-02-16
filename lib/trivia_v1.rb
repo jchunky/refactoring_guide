@@ -120,7 +120,7 @@ module UglyTrivia
     end
 
     def award_correct_answer
-      message = in_penalty_box? ? 'Answer was correct!!!!' : 'Answer was corrent!!!!'
+      message = in_penalty_box? ? 'Answer was correct!!!!' : 'Answer was correct!!!!'
       puts message
       @purses[@current_player] += 1
       puts "#{current_player_name} now has #{@purses[@current_player]} Gold Coins."

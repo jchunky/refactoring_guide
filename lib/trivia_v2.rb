@@ -60,7 +60,7 @@ module UglyTrivia
 
     def was_correctly_answered
       unless current_player.in_penalty_box?
-        puts "Answer was corrent!!!!"
+        puts "Answer was correct!!!!"
         current_player.receive_winnings
         puts "#{current_player} now has #{current_player.purse} Gold Coins."
       end

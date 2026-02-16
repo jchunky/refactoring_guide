@@ -43,7 +43,7 @@ module UglyTrivia
     def announce_staying_in = puts "#{current_player.name} is not getting out of the penalty box"
     def announce_location = puts "#{current_player.name}'s new location is #{current_player.place}"
     def announce_category = puts "The category is #{current_category}"
-    def announce_correct = puts 'Answer was corrent!!!!'
+    def announce_correct = puts 'Answer was correct!!!!'
     def announce_coins = puts "#{current_player.name} now has #{current_player.coins} Gold Coins."
     def announce_wrong = puts 'Question was incorrectly answered'
     def announce_penalty = puts "#{current_player.name} was sent to the penalty box"

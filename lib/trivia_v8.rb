@@ -123,7 +123,7 @@ module UglyTrivia
         return true
       end
 
-      puts 'Answer was corrent!!!!'
+      puts 'Answer was correct!!!!'
       player.earn_coin
       puts "#{player.name} now has #{player.purse} Gold Coins."
 

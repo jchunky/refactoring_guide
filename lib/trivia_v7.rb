@@ -62,7 +62,7 @@ module UglyTrivia
         return true
       end
 
-      puts "Answer was corrent!!!!"
+      puts "Answer was correct!!!!"
       @purses[@current_player] += 1
       puts "#{current_player_name} now has #{@purses[@current_player]} Gold Coins."
 

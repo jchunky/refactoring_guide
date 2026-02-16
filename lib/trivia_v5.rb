@@ -104,7 +104,7 @@ module UglyTrivia
         return true
       end
 
-      puts 'Answer was corrent!!!!'
+      puts 'Answer was correct!!!!'
       current_player.add_coin
       puts "#{current_player.name} now has #{current_player.purse} Gold Coins."
 

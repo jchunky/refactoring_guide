@@ -121,7 +121,7 @@ module UglyTrivia
 
       else
 
-        puts "Answer was corrent!!!!"
+        puts "Answer was correct!!!!"
         @purses[@current_player] += 1
         puts "#{@players[@current_player]} now has #{@purses[@current_player]} Gold Coins."
 

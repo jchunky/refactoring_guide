@@ -73,7 +73,7 @@ module UglyTrivia
         return true
       end
 
-      puts current_player.in_penalty_box? ? 'Answer was correct!!!!' : 'Answer was corrent!!!!'
+      puts current_player.in_penalty_box? ? 'Answer was correct!!!!' : 'Answer was correct!!!!'
       current_player.award_coin
       puts "#{current_player} now has #{current_player.purse} Gold Coins."
 
