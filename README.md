@@ -8,12 +8,6 @@ the same original code, allowing comparison of different refactoring approaches.
 
 ## Quick Start
 
-**Important:** Before running any commands, source your shell configuration:
-
-```bash
-source ~/.zshrc
-```
-
 Run tests for a specific version:
 
 ```bash
@@ -94,19 +88,22 @@ you cannot look at other versions of prompts or code.
 
 The AI will then:
 
-1. **Read ONLY the specified prompt** - The AI must NOT read other prompt
+1. **Source shell configuration** - Run `source ~/.zshrc` before executing
+   any commands to ensure the correct Ruby version and tools are available
+
+2. **Read ONLY the specified prompt** - The AI must NOT read other prompt
    versions or other code versions to ensure an independent experiment
 
-2. **Document the refactoring plan** - Before making any code changes,
+3. **Document the refactoring plan** - Before making any code changes,
    write a detailed plan to a markdown file (e.g., `lib/v9/plan.md`)
    describing the intended refactoring approach for each file
 
-3. **Refactor all version files** - Apply the prompt's guidelines to
+4. **Refactor all version files** - Apply the prompt's guidelines to
    transform each file in `lib/v9/`
 
-4. **Run tests** - Verify all tests pass with `VERSION=v9 bin/test`
+5. **Run tests** - Verify all tests pass with `VERSION=v9 bin/test`
 
-5. **Commit and push** - Commit the prompt, plan, and refactored code together
+6. **Commit and push** - Commit the prompt, plan, and refactored code together
 
 ---
 
