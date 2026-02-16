@@ -11,21 +11,6 @@ module TriviaKata
       def winner? = players.any?(&:winner?)
     end
 
-    class QuestionDeck < Struct.new(:questions)
-      CATEGORIES = %w[Pop Science Sports Rock]
-
-      def initialize = super(CATEGORIES.to_h { [it, 0] })
-
-      def next_question(location)
-        category = category_for(location)
-        index = questions[category]
-        questions[category] += 1
-        "#{category} Question #{index}"
-      end
-
-      def category_for(location) = CATEGORIES[location % CATEGORIES.count]
-    end
-
     class Player < Struct.new(:name, :location, :purse, :in_penalty_box)
       alias in_penalty_box? in_penalty_box
 
@@ -40,8 +25,31 @@ module TriviaKata
       def winner? = purse >= 6
     end
 
+    class QuestionBank < Struct.new(:decks)
+      CATEGORIES = %w[Pop Science Sports Rock]
+
+      def initialize = super(CATEGORIES.map { QuestionDeck.new(it) })
+
+      def next_question(location) = deck_for(location).next
+      def category_for(location) = deck_for(location).category
+
+      private
+
+      def deck_for(location) = decks[location % CATEGORIES.count]
+    end
+
+    class QuestionDeck < Struct.new(:category, :index)
+      def initialize(category) = super(category, 0)
+
+      def next
+        result_index = index
+        self.index += 1
+        "#{category} Question #{result_index}"
+      end
+    end
+
     class Game < Struct.new(:players, :questions)
-      def initialize = super(PlayerQueue.new, QuestionDeck.new)
+      def initialize = super(PlayerQueue.new, QuestionBank.new)
 
       def add(player_name)
         players.add(player_name)
