@@ -1,25 +1,17 @@
 module TennisKata
   class Player < Struct.new(:name, :points)
-    def initialize(name)
-      super(name, 0)
-    end
+    def initialize(name) = super(name, 0)
 
-    def win_point
-      self.points += 1
-    end
+    def win_point = self.points += 1
 
     def score = %w[Love Fifteen Thirty Forty][points]
     def to_s = name
   end
 
   class TennisGame < Struct.new(:player1, :player2)
-    def initialize(player1_name, player2_name)
-      super(Player.new(player1_name), Player.new(player2_name))
-    end
+    def initialize(player1_name, player2_name) = super(Player.new(player1_name), Player.new(player2_name))
 
-    def won_point(player_name)
-      find_player(player_name).win_point
-    end
+    def won_point(player_name) = find_player(player_name).win_point
 
     def score
       case [point_diff, max_points]

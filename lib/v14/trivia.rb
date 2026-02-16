@@ -1,17 +1,10 @@
 module TriviaKata
   module UglyTrivia
     class PlayerQueue < Struct.new(:players)
-      def initialize
-        super([])
-      end
+      def initialize = super([])
 
-      def add(player_name)
-        players << Player.new(player_name)
-      end
-
-      def next
-        players.rotate!
-      end
+      def add(player_name) = players << Player.new(player_name)
+      def next = players.rotate!
 
       def count = players.count
       def current = players.first
@@ -21,9 +14,7 @@ module TriviaKata
     class QuestionDeck < Struct.new(:questions)
       CATEGORIES = %w[Pop Science Sports Rock]
 
-      def initialize
-        super(CATEGORIES.to_h { [it, 0] })
-      end
+      def initialize = super(CATEGORIES.to_h { [it, 0] })
 
       def next_question(location)
         category = category_for(location)
@@ -38,34 +29,19 @@ module TriviaKata
     class Player < Struct.new(:name, :location, :purse, :in_penalty_box)
       alias in_penalty_box? in_penalty_box
 
-      def initialize(name)
-        super(name, 0, 0, false)
-      end
+      def initialize(name) = super(name, 0, 0, false)
 
-      def receive_winnings
-        self.purse += 1
-      end
-
-      def move_to_next_location(roll)
-        self.location = (location + roll) % 12
-      end
-
-      def enter_penalty_box
-        self.in_penalty_box = true
-      end
-
-      def leave_penalty_box
-        self.in_penalty_box = false
-      end
+      def receive_winnings = self.purse += 1
+      def move_to_next_location(roll) = self.location = (location + roll) % 12
+      def enter_penalty_box = self.in_penalty_box = true
+      def leave_penalty_box = self.in_penalty_box = false
 
       def to_s = name
       def winner? = purse >= 6
     end
 
     class Game < Struct.new(:players, :questions)
-      def initialize
-        super(PlayerQueue.new, QuestionDeck.new)
-      end
+      def initialize = super(PlayerQueue.new, QuestionDeck.new)
 
       def add(player_name)
         players.add(player_name)
@@ -116,13 +92,8 @@ module TriviaKata
         end
       end
 
-      def next_question
-        questions.next_question(current_location)
-      end
-
-      def advance_to_next_player
-        players.next
-      end
+      def next_question = questions.next_question(current_location)
+      def advance_to_next_player = players.next
 
       def current_category = %w[Pop Science Sports Rock][current_location % 4]
       def current_location = current_player.location

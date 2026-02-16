@@ -1,12 +1,8 @@
 module YatzyKata
   class Yatzy < Struct.new(:dice)
-    def self.method_missing(method, *)
-      new(*).send(method)
-    end
+    def self.method_missing(method, *) = new(*).send(method)
 
-    def initialize(*dice)
-      super(dice.flatten)
-    end
+    def initialize(*dice) = super(dice.flatten)
 
     def chance = dice.sum
     def ones = dice.count(1) * 1
