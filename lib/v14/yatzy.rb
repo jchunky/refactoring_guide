@@ -15,14 +15,15 @@ module YatzyKata
     def score_pair = score_n_of_a_kind(2)
     def three_of_a_kind = score_n_of_a_kind(3)
     def four_of_a_kind = score_n_of_a_kind(4)
+    def small_straight = score_straight(1..5)
+    def large_straight = score_straight(2..6)
     def two_pair = pairs.count == 2 ? pairs.sum * 2 : 0
-    def small_straight = dice.sort == (1..5).to_a ? dice.sum : 0
-    def large_straight = dice.sort == (2..6).to_a ? dice.sum : 0
     def full_house = dice.tally.values.sort == [2, 3] ? dice.sum : 0
 
     private
 
-    def score_n_of_a_kind(n) = dice.uniq.select { dice.count(it) >= n }.max.to_i * n
     def pairs = dice.uniq.select { dice.count(it) >= 2 }
+    def score_straight(range) = dice.sort == range.to_a ? dice.sum : 0
+    def score_n_of_a_kind(n) = dice.uniq.select { dice.count(it) >= n }.max.to_i * n
   end
 end
