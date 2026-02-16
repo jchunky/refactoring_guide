@@ -1,20 +1,18 @@
 class Integer
-    def day = days
-    def days = self
-    def ago = Date.today - self
-    def from_now = Date.today + self
+  def day = days
+  def days = self
+  def ago = Date.today - self
+  def from_now = Date.today + self
 end
 
 class Date
-    def advance(options = {})
-      self + (options[:days] || 0)
-    end
+  def advance(options = {})
+    self + (options[:days] || 0)
+  end
 end
 
 module MedicineClashKata
   require 'date'
-
-
 
   class Prescription
     attr_reader :dispense_date, :days_supply

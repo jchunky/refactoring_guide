@@ -1,31 +1,29 @@
 class Integer
-    def day
-       days
-    end
+  def day
+     days
+  end
 
-    def days
-       self
-    end
+  def days
+     self
+  end
 
-    def ago
-      Date.today - self
-    end
-  
-    def from_now
-      Date.today + self
-    end
+  def ago
+    Date.today - self
+  end
+
+  def from_now
+    Date.today + self
+  end
 end
 
 class Date
-    def advance(options={})
-      self + (options[:days] || 0)
-    end
+  def advance(options={})
+    self + (options[:days] || 0)
+  end
 end
 
 module MedicineClashKata
   require 'date'
-
-
 
   class Prescription
 
@@ -52,14 +50,14 @@ module MedicineClashKata
   end
 
   class Medicine
-  
+
     attr_reader :name, :prescriptions
-  
+
     def initialize(name)
       @name = name
       @prescriptions = []
     end
-  
+
     def first_prescription
       @first_prescription ||= prescriptions.sort.first
     end
@@ -67,13 +65,13 @@ module MedicineClashKata
     def last_prescription
       @last_prescription ||= prescriptions.sort.last
     end
-  
+
     def days_supply
       valid_prescriptions? ? last_prescription.days_supply : read_attribute(:days_supply)
     end
-  
+
     def possession_end_date
-      most_recent_prescription.completion_date 
+      most_recent_prescription.completion_date
     end
 
     def possession_effective_end_date
@@ -125,7 +123,7 @@ module MedicineClashKata
     end
 
     protected
-  
+
     def possession_effective_range(day_count)
       possession_effective_start_date(day_count)...possession_effective_end_date
     end

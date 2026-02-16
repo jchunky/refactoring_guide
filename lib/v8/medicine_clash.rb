@@ -1,25 +1,25 @@
 class Integer
-    def day
-      days
-    end
+  def day
+    days
+  end
 
-    def days
-      self
-    end
+  def days
+    self
+  end
 
-    def ago
-      Date.today - self
-    end
+  def ago
+    Date.today - self
+  end
 
-    def from_now
-      Date.today + self
-    end
+  def from_now
+    Date.today + self
+  end
 end
 
 class Date
-    def advance(options = {})
-      self + (options[:days] || 0)
-    end
+  def advance(options = {})
+    self + (options[:days] || 0)
+  end
 end
 
 module MedicineClashKata
@@ -27,8 +27,6 @@ module MedicineClashKata
   # - Feature Envy: DateRange handles its own intersection logic
   # - Data Clumps: Date range data grouped into DateRange class
   require 'date'
-
-
 
   # Data Clump: Date range with start and end dates
   class DateRange

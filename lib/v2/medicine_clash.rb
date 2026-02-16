@@ -1,18 +1,16 @@
 class Integer
-    def day = self
-    def days = self
-    def ago = Date.today - self
-    def from_now = Date.today + self
+  def day = self
+  def days = self
+  def ago = Date.today - self
+  def from_now = Date.today + self
 end
 
 class Date
-    def advance(options = {}) = self + (options[:days] || 0)
+  def advance(options = {}) = self + (options[:days] || 0)
 end
 
 module MedicineClashKata
   require "date"
-
-
 
   class Prescription < Struct.new(:dispense_date, :days_supply)
     def days_taken = (dispense_date...completion_date).to_a

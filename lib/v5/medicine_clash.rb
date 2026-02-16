@@ -1,25 +1,25 @@
 class Integer
-    def day
-      days
-    end
+  def day
+    days
+  end
 
-    def days
-      self
-    end
+  def days
+    self
+  end
 
-    def ago
-      Date.today - self
-    end
+  def ago
+    Date.today - self
+  end
 
-    def from_now
-      Date.today + self
-    end
+  def from_now
+    Date.today + self
+  end
 end
 
 class Date
-    def advance(options = {})
-      self + (options[:days] || 0)
-    end
+  def advance(options = {})
+    self + (options[:days] || 0)
+  end
 end
 
 module MedicineClashKata
@@ -30,8 +30,6 @@ module MedicineClashKata
   # - Consistent approach to date range handling
 
   require 'date'
-
-
 
   class Prescription
     attr_reader :dispense_date, :days_supply
