@@ -18,12 +18,12 @@ echo "=== Refactoring Guide Test Runner ==="
 echo "Testing version: $VERSION"
 echo ""
 
-# Check if version files exist
-if ! ls lib/*_${VERSION}.rb &> /dev/null; then
-  echo "Error: No implementation files found for version '$VERSION'"
+# Check if version directory exists
+if [ ! -d "lib/${VERSION}" ]; then
+  echo "Error: No implementation directory found for version '$VERSION'"
   echo ""
   echo "Available versions:"
-  ls lib/*.rb | sed 's/.*_/  /' | sed 's/\.rb$//' | sort -u
+  ls -d lib/*/ | xargs -n1 basename | sed 's/^/  /'
   exit 1
 fi
 

@@ -10,9 +10,12 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-for original in lib/*_original.rb; do
-  base=$(basename "$original" _original.rb)
-  target="lib/${base}_${VERSION}.rb"
+TARGET_DIR="lib/${VERSION}"
+mkdir -p "$TARGET_DIR"
+
+for original in lib/original/*.rb; do
+  base=$(basename "$original")
+  target="${TARGET_DIR}/${base}"
   cp "$original" "$target"
   echo "Created $target"
 done

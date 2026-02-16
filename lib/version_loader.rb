@@ -9,6 +9,12 @@
 #   VERSION=v2 rake test          # Test v2 refactored code
 #
 # Default: original
+#
+# Directory Structure:
+#   lib/original/    - Original kata implementations
+#   lib/v1/          - Version 1 refactored code + prompt.md
+#   lib/v2/          - Version 2 refactored code + prompt.md
+#   ...
 
 module VersionLoader
   VERSION = ENV.fetch('VERSION', 'original')
@@ -18,7 +24,7 @@ module VersionLoader
   end
 
   def self.require_kata(kata_name)
-    require_relative "#{kata_name}_#{VERSION}"
+    require_relative "#{VERSION}/#{kata_name}"
   end
 
   # List of all katas
