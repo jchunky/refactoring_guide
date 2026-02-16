@@ -594,6 +594,49 @@ module CharacterCreatorKata
       end
       stats[n] = dice[0...4].inject(0,:+) - dice[0...4].min
     end
-    return stats
-  end
+  return stats
+end
+end
+
+# Allow running this file directly for manual testing
+if __FILE__ == $0
+  include CharacterCreatorKata
+
+  puts "Welcome to the D&D Character Creator!"
+  puts "=" * 40
+
+  charclass = classpick
+  race = racepick
+  background = backgroundpick
+
+  stats = statroll
+  puts "You rolled: #{stats.inspect}"
+  finalstats = statpick(stats)
+
+  level = 1
+  str, dex, con, int, wis, cha = finalstats
+  strmod = my_modcalc(str)
+  dexmod = my_modcalc(dex)
+  conmod = my_modcalc(con)
+  intmod = my_modcalc(int)
+  wismod = my_modcalc(wis)
+  chamod = my_modcalc(cha)
+
+  prof = proficiency(level)
+  hitpoints = hitpointcalculator(charclass, level, conmod)
+  skills = skillpopulator
+
+  puts "\nWhat is your character's name?"
+  charname = get_input("Adventurer")
+
+  $charstats = DnDchars.new(
+    charname, level, race, charclass, background,
+    str, strmod, dex, dexmod, con, conmod, int, intmod, wis, wismod, cha, chamod,
+    10 + dexmod, prof, hitpoints, skills
+  )
+
+  puts "\n" + "=" * 40
+  puts "Character Created!"
+  puts "=" * 40
+  puts $charstats.context
 end
