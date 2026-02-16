@@ -1,10 +1,6 @@
 module BottlesKata
   class BottleNumber < Data.define(:n)
-    def self.for(n)
-      Object.const_get("BottleNumber#{n}").new(n)
-    rescue NameError
-      BottleNumber.new(n)
-    end
+    def self.for(n) = Object.const_get("BottleNumber#{n}").new(n) rescue BottleNumber.new(n)
 
     def to_s = [quantity, containers].join(" ")
     def action = "Take #{pronoun} down and pass it around"
