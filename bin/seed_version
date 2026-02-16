@@ -1,25 +1,67 @@
 #!/bin/bash
-# Seed a new version of kata code by copying original files
-# Usage: bin/seed_version v3
+# Seed a new version of kata code by copying from a source version
+#
+# Usage:
+#   bin/seed_version <target>            # copies from original
+#   bin/seed_version <source> <target>   # copies from source
+#
+# Examples:
+#   bin/seed_version v12          # original → v12
+#   bin/seed_version v11 v12      # v11 → v12
 
-VERSION=$1
-
-if [ -z "$VERSION" ]; then
-  echo "Usage: bin/seed_version <version>"
-  echo "Example: bin/seed_version v3"
+if [ -z "$1" ]; then
+  echo "Usage: bin/seed_version <target>            # copies from original"
+  echo "       bin/seed_version <source> <target>   # copies from source"
+  echo ""
+  echo "Examples:"
+  echo "  bin/seed_version v12          # original → v12"
+  echo "  bin/seed_version v11 v12      # v11 → v12"
   exit 1
 fi
 
+if [ -n "$2" ]; then
+  SOURCE=$1
+  VERSION=$2
+else
+  SOURCE="original"
+  VERSION=$1
+fi
+
+SOURCE_DIR="lib/${SOURCE}"
 TARGET_DIR="lib/${VERSION}"
+
+if [ ! -d "$SOURCE_DIR" ]; then
+  echo "Error: Source directory '$SOURCE_DIR' does not exist."
+  echo ""
+  echo "Available versions:"
+  ls -d lib/*/ | xargs -n1 basename | sed 's/^/  /'
+  exit 1
+fi
+
 mkdir -p "$TARGET_DIR"
 
-for original in lib/original/*.rb; do
-  base=$(basename "$original")
+echo "Copying from ${SOURCE} → ${VERSION}"
+echo ""
+
+for source_file in "$SOURCE_DIR"/*.rb; do
+  [ -f "$source_file" ] || continue
+  base=$(basename "$source_file")
   target="${TARGET_DIR}/${base}"
-  cp "$original" "$target"
+  cp "$source_file" "$target"
   echo "Created $target"
 done
 
-# Copy prompt.md
-cp "lib/original/prompt.md" "${TARGET_DIR}/prompt.md"
-echo "Created ${TARGET_DIR}/prompt.md"
+# Copy prompt.md (always create one, even if empty)
+if [ -f "${SOURCE_DIR}/prompt.md" ]; then
+  cp "${SOURCE_DIR}/prompt.md" "${TARGET_DIR}/prompt.md"
+  echo "Created ${TARGET_DIR}/prompt.md"
+else
+  touch "${TARGET_DIR}/prompt.md"
+  echo "Created ${TARGET_DIR}/prompt.md (empty)"
+fi
+
+# Copy plan.md if it exists in source
+if [ -f "${SOURCE_DIR}/plan.md" ]; then
+  cp "${SOURCE_DIR}/plan.md" "${TARGET_DIR}/plan.md"
+  echo "Created ${TARGET_DIR}/plan.md"
+fi

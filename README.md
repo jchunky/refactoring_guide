@@ -8,11 +8,6 @@ the same original code, allowing comparison of different refactoring approaches.
 
 ## Quick Start
 
-> **Important:** Always use `bin/test` to run tests — it sources `~/.zshrc`
-> to ensure the correct Ruby version and tools are available. Running
-> `bundle exec rake test` directly may fail if your shell hasn't been
-> configured (e.g., asdf/rbenv not loaded).
-
 Run tests for a specific version:
 
 ```bash
@@ -70,11 +65,14 @@ independent refactoring experiment using a specific prompt.
 Direct the AI to create the new version directory:
 
 ```
-run bin/seed_version v9
+bin/seed_version v9            # copies from original
+bin/seed_version v8 v9         # copies from v8 (source before target)
 ```
 
-This creates `lib/v9/` with copies of all original files plus an empty
-`prompt.md`.
+With one argument, this copies from `lib/original/`. With two arguments,
+the first is the source version and the second is the target. This creates
+`lib/v9/` with copies of all source `.rb` files plus `prompt.md` (and
+`plan.md` if present in the source).
 
 ### Step 2: Write the Prompt (Human)
 
