@@ -1,7 +1,7 @@
 module TriviaKata
   module UglyTrivia
-    class PlayerQueue < Struct.new(:players)
-      def initialize = super([])
+    class PlayerQueue < Data.define(:players)
+      def initialize(players: []) = super
 
       def add(player_name) = players << Player.new(player_name)
       def next = players.rotate!
@@ -11,10 +11,10 @@ module TriviaKata
       def winner? = players.any?(&:winner?)
     end
 
-    class QuestionDeck < Struct.new(:questions)
+    class QuestionDeck < Data.define(:questions)
       CATEGORIES = %w[Pop Science Sports Rock]
 
-      def initialize = super(CATEGORIES.to_h { [it, 0] })
+      def initialize(questions: CATEGORIES.to_h { [it, 0] }) = super
 
       def next_question(location)
         category = category_for(location)
@@ -40,8 +40,8 @@ module TriviaKata
       def winner? = purse >= 6
     end
 
-    class Game < Struct.new(:players, :questions)
-      def initialize = super(PlayerQueue.new, QuestionDeck.new)
+    class Game < Data.define(:players, :questions)
+      def initialize(players: PlayerQueue.new, questions: QuestionDeck.new) = super
 
       def add(player_name)
         players.add(player_name)

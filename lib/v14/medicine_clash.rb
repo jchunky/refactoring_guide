@@ -13,8 +13,8 @@ module MedicineClashKata
     def completion_date = dispense_date + days_supply
   end
 
-  class Medicine < Struct.new(:name, :prescriptions)
-    def initialize(name) = super(name, [])
+  class Medicine < Data.define(:name, :prescriptions)
+    def initialize(name:, prescriptions: []) = super
     def days_taken = prescriptions.flat_map(&:days_taken).uniq
   end
 

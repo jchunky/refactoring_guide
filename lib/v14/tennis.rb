@@ -8,8 +8,8 @@ module TennisKata
     def to_s = name
   end
 
-  class TennisGame < Struct.new(:player1, :player2)
-    def initialize(player1_name, player2_name) = super(Player.new(player1_name), Player.new(player2_name))
+  class TennisGame < Data.define(:player1, :player2)
+    def initialize(player1:, player2:) = super(player1: Player.new(player1), player2: Player.new(player2))
 
     def won_point(player_name) = find_player(player_name).win_point
 
