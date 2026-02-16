@@ -42,8 +42,7 @@ lib/
     prompt.md
     bottles.rb
     ...
-test/                    # Test files (shared across all versions)
-spec/                    # RSpec files (shared across all versions)
+test/                    # Minitest files (shared across all versions)
 bin/
   seed_version           # Script to create new version directory
   test                   # Test runner supporting VERSION env var
@@ -123,7 +122,7 @@ Tests use `include XxxKata` to bring classes into scope. This allows each kata
 to define classes with the same names (e.g., `Player`) without conflicts.
 
 **Note:** Core class extensions (e.g., `Integer#days` in medicine_clash.rb)
-remain global as they're required by spec files
+remain global as they're required by test files
 
 ---
 
