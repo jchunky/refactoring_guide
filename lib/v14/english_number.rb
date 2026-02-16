@@ -37,8 +37,6 @@ module EnglishNumberKata
   end
 
   def say(n)
-    return if n == 0
-
     case n
     when (1..20)
       NUMBERS[n]
