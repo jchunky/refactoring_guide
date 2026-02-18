@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NamerKata
   require "digest"
   require "securerandom"

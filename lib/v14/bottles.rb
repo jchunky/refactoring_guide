@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BottlesKata
   class BottleNumber < Data.define(:n)
     def self.for(n) = Object.const_get("BottleNumber#{n}").new(n) rescue BottleNumber.new(n)

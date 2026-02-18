@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module EnglishNumberKata
   NUMBERS = {
     1 => "one",
@@ -27,7 +29,7 @@ module EnglishNumberKata
     70 => "seventy",
     80 => "eighty",
     90 => "ninety",
-  }
+  }.freeze
 
   def english_number(n)
     return "Please enter a number that isn't negative." if n < 0

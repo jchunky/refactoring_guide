@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TennisKata
   class Player < Struct.new(:name, :points)
     def initialize(name) = super(name, 0)

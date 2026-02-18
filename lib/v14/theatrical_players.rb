@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TheatricalPlayersKata
   class Performance < Data.define(:play_name, :play_type, :seat_count)
     def self.build(plays, performance_data)
@@ -47,7 +49,7 @@ module TheatricalPlayersKata
     def total_credits = performances.sum(&:credits)
     def performances = invoice["performances"].map { Performance.build(plays, it) }
 
-    def format_performance(it) = format(" %s: %s (%s seats)", it.play_name, usd(it.price), it.seat_count)
+    def format_performance(p) = format(" %s: %s (%s seats)", p.play_name, usd(p.price), p.seat_count)
     def usd(amount) = format("$%.2f", amount / 100.0)
   end
 

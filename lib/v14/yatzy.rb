@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module YatzyKata
   class Yatzy < Struct.new(:dice)
     def self.method_missing(method, *) = new(*).send(method)

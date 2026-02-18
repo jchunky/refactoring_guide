@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ParrotKata
   class Parrot < Data.define(:type, :number_of_coconuts, :voltage, :nailed)
     def speed

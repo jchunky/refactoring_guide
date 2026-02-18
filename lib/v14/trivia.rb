@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TriviaKata
   module UglyTrivia
     class PlayerQueue < Struct.new(:players)
@@ -26,7 +28,7 @@ module TriviaKata
     end
 
     class QuestionBank < Struct.new(:decks)
-      CATEGORIES = %w[Pop Science Sports Rock]
+      CATEGORIES = %w[Pop Science Sports Rock].freeze
 
       def initialize = super(CATEGORIES.map { QuestionDeck.new(it) })
 
