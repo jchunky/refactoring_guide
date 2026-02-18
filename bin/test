@@ -3,15 +3,27 @@
 # This script runs all tests for the specified version.
 #
 # Usage:
-#   bin/test                 # Test 'original' version (default)
-#   bin/test original        # Test original version
+#   bin/test <version>
+#
+# Examples:
+#   bin/test v0              # Test original (v0) code
 #   bin/test v1              # Test v1 version
-#   VERSION=v1 bin/test      # Alternative syntax
 
 source ~/.zshrc
 
-# Use command line argument or environment variable, default to 'original'
-VERSION=${1:-${VERSION:-original}}
+if [ -z "$1" ]; then
+  echo "Usage: bin/test <version>"
+  echo ""
+  echo "Examples:"
+  echo "  bin/test v0"
+  echo "  bin/test v1"
+  echo ""
+  echo "Available versions:"
+  ls -d lib/*/ | xargs -n1 basename | sed 's/^/  /'
+  exit 1
+fi
+
+VERSION=$1
 export VERSION
 
 echo "=== Refactoring Guide Test Runner ==="

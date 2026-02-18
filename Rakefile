@@ -1,7 +1,7 @@
 require 'rake/testtask'
 
-# Default version is 'original'
-VERSION = ENV.fetch('VERSION', 'original')
+# Default version is 'v0'
+VERSION = ENV.fetch('VERSION', 'v0')
 
 Rake::TestTask.new(:test) do |t|
   t.libs << 'test'

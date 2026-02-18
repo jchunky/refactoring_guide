@@ -11,15 +11,15 @@ the same original code, allowing comparison of different refactoring approaches.
 Run tests for a specific version:
 
 ```bash
-VERSION=v3 bin/test
+bin/test v0              # test original (v0) code
+bin/test v3              # test v3 version
 ```
 
-Run tests for the original code:
+Run rubocop on all Ruby files for a specific version:
 
 ```bash
-bin/test
-# or
-VERSION=original bin/test
+bin/lint v0              # lint original (v0) code
+bin/lint v3              # lint v3 version
 ```
 
 > **AI agents:** Before executing _any_ shell command (not just tests),
@@ -32,8 +32,7 @@ VERSION=original bin/test
 
 ```
 lib/
-  original/              # Original code (never modified)
-    prompt.md            # Empty placeholder (copied when seeding)
+  v0/                    # Original code (never modified)
     bottles.rb
     gilded_rose.rb
     ...
@@ -48,8 +47,9 @@ lib/
     ...
 test/                    # Minitest files (shared across all versions)
 bin/
-  seed_version           # Script to create new version directory
-  test                   # Test runner supporting VERSION env var
+  lint                   # Rubocop runner — requires version argument
+  seed_version           # Seed a new version — requires source and target
+  test                   # Test runner — requires version argument
 ```
 
 ---
@@ -65,14 +65,13 @@ independent refactoring experiment using a specific prompt.
 Direct the AI to create the new version directory:
 
 ```
-bin/seed_version v9            # copies from original
-bin/seed_version v8 v9         # copies from v8 (source before target)
+bin/seed_version v0 v9         # v0 → v9 (from original code)
+bin/seed_version v8 v9         # v8 → v9 (from another version)
 ```
 
-With one argument, this copies from `lib/original/`. With two arguments,
-the first is the source version and the second is the target. This creates
-`lib/v9/` with copies of all source `.rb` files plus `prompt.md` (and
-`plan.md` if present in the source).
+Both arguments are required: the first is the source version and the second
+is the target. This creates `lib/v9/` with copies of all source `.rb` files
+plus empty `prompt.md` and `plan.md` files.
 
 ### Step 2: Write the Prompt (Human)
 
@@ -108,7 +107,7 @@ The AI will then:
 4. **Refactor all version files** - Apply the prompt's guidelines to
    transform each file in `lib/v9/`
 
-5. **Run tests** - Verify all tests pass with `VERSION=v9 bin/test`
+5. **Run tests** - Verify all tests pass with `bin/test v9`
 
 6. **Commit and push** - Commit the prompt, plan, and refactored code together
 

@@ -1,0 +1,59 @@
+#!/bin/zsh
+# Lint runner script for refactoring_guide project
+# This script runs rubocop on all Ruby files for the specified version.
+#
+# Usage:
+#   bin/lint <version>
+#
+# Examples:
+#   bin/lint v0              # Lint original (v0) code
+#   bin/lint v1              # Lint v1 version
+
+source ~/.zshrc
+
+if [ -z "$1" ]; then
+  echo "Usage: bin/lint <version>"
+  echo ""
+  echo "Examples:"
+  echo "  bin/lint v0"
+  echo "  bin/lint v1"
+  echo ""
+  echo "Available versions:"
+  ls -d lib/*/ | xargs -n1 basename | sed 's/^/  /'
+  exit 1
+fi
+
+VERSION=$1
+export VERSION
+
+echo "=== Refactoring Guide Lint Runner ==="
+echo "Linting version: $VERSION"
+echo ""
+
+# Check if version directory exists
+if [ ! -d "lib/${VERSION}" ]; then
+  echo "Error: No implementation directory found for version '$VERSION'"
+  echo ""
+  echo "Available versions:"
+  ls -d lib/*/ | xargs -n1 basename | sed 's/^/  /'
+  exit 1
+fi
+
+# Collect all Ruby files in the version directory
+ruby_files=(lib/${VERSION}/*.rb)
+
+if [ ${#ruby_files[@]} -eq 0 ]; then
+  echo "No Ruby files found in lib/${VERSION}/"
+  exit 1
+fi
+
+echo "Running rubocop on ${#ruby_files[@]} file(s) in lib/${VERSION}/..."
+echo ""
+
+bundle exec rubocop "${ruby_files[@]}"
+
+exit_code=$?
+
+echo ""
+echo "=== Lint run complete (version: $VERSION) ==="
+exit $exit_code

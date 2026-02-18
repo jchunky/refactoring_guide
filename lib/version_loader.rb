@@ -4,20 +4,20 @@
 # the VERSION environment variable.
 #
 # Usage:
-#   VERSION=original rake test    # Test original (unrefactored) code
-#   VERSION=v1 rake test          # Test v1 refactored code
-#   VERSION=v2 rake test          # Test v2 refactored code
+#   VERSION=v0 rake test    # Test original (v0) code
+#   VERSION=v1 rake test    # Test v1 refactored code
+#   VERSION=v2 rake test    # Test v2 refactored code
 #
-# Default: original
+# Default: v0
 #
 # Directory Structure:
-#   lib/original/    - Original kata implementations
+#   lib/v0/          - Original kata implementations
 #   lib/v1/          - Version 1 refactored code + prompt.md
 #   lib/v2/          - Version 2 refactored code + prompt.md
 #   ...
 
 module VersionLoader
-  VERSION = ENV.fetch('VERSION', 'original')
+  VERSION = ENV.fetch('VERSION', 'v0')
 
   def self.version
     VERSION

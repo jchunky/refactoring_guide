@@ -2,30 +2,26 @@
 # Seed a new version of kata code by copying from a source version
 #
 # Usage:
-#   bin/seed_version <target>            # copies from original
-#   bin/seed_version <source> <target>   # copies from source
+#   bin/seed_version <source> <target>
 #
 # Examples:
-#   bin/seed_version v12          # original → v12
-#   bin/seed_version v11 v12      # v11 → v12
+#   bin/seed_version v0 v22        # v0 → v22
+#   bin/seed_version v11 v12       # v11 → v12
 
-if [ -z "$1" ]; then
-  echo "Usage: bin/seed_version <target>            # copies from original"
-  echo "       bin/seed_version <source> <target>   # copies from source"
+if [ $# -ne 2 ]; then
+  echo "Usage: bin/seed_version <source> <target>"
   echo ""
   echo "Examples:"
-  echo "  bin/seed_version v12          # original → v12"
-  echo "  bin/seed_version v11 v12      # v11 → v12"
+  echo "  bin/seed_version v0 v22        # v0 → v22"
+  echo "  bin/seed_version v11 v12       # v11 → v12"
+  echo ""
+  echo "Available versions:"
+  ls -d lib/*/ | xargs -n1 basename | sed 's/^/  /'
   exit 1
 fi
 
-if [ -n "$2" ]; then
-  SOURCE=$1
-  VERSION=$2
-else
-  SOURCE="original"
-  VERSION=$1
-fi
+SOURCE=$1
+VERSION=$2
 
 SOURCE_DIR="lib/${SOURCE}"
 TARGET_DIR="lib/${VERSION}"
