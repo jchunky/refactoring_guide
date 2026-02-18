@@ -3,20 +3,38 @@
 # This script runs rubocop on all Ruby files for the specified version.
 #
 # Usage:
-#   bin/lint <version>
+#   bin/lint <version>           # lint only
+#   bin/lint -a <version>        # safe autocorrect
+#   bin/lint -A <version>        # all autocorrect (including unsafe)
 #
 # Examples:
-#   bin/lint v0              # Lint original (v0) code
-#   bin/lint v1              # Lint v1 version
+#   bin/lint v0
+#   bin/lint -a v1
+#   bin/lint -A v3
 
 source ~/.zshrc
 
+# Parse optional flag
+AUTOCORRECT=""
+if [ "$1" = "-a" ]; then
+  AUTOCORRECT="--autocorrect"
+  shift
+elif [ "$1" = "-A" ]; then
+  AUTOCORRECT="--autocorrect-all"
+  shift
+fi
+
 if [ -z "$1" ]; then
-  echo "Usage: bin/lint <version>"
+  echo "Usage: bin/lint [-a | -A] <version>"
+  echo ""
+  echo "Options:"
+  echo "  -a    Safe autocorrect"
+  echo "  -A    All autocorrect (including unsafe)"
   echo ""
   echo "Examples:"
   echo "  bin/lint v0"
-  echo "  bin/lint v1"
+  echo "  bin/lint -a v1"
+  echo "  bin/lint -A v3"
   echo ""
   echo "Available versions:"
   ls -d lib/*/ | xargs -n1 basename | sed 's/^/  /'
@@ -28,6 +46,9 @@ export VERSION
 
 echo "=== Refactoring Guide Lint Runner ==="
 echo "Linting version: $VERSION"
+if [ -n "$AUTOCORRECT" ]; then
+  echo "Autocorrect: $AUTOCORRECT"
+fi
 echo ""
 
 # Check if version directory exists
@@ -50,7 +71,7 @@ fi
 echo "Running rubocop on ${#ruby_files[@]} file(s) in lib/${VERSION}/..."
 echo ""
 
-bundle exec rubocop "${ruby_files[@]}"
+bundle exec rubocop $AUTOCORRECT "${ruby_files[@]}"
 
 exit_code=$?
 

@@ -18,8 +18,9 @@ bin/test v3              # test v3 version
 Run rubocop on all Ruby files for a specific version:
 
 ```bash
-bin/lint v0              # lint original (v0) code
-bin/lint v3              # lint v3 version
+bin/lint v0              # lint only
+bin/lint -a v3           # safe autocorrect
+bin/lint -A v3           # all autocorrect (including unsafe)
 ```
 
 > **AI agents:** Before executing _any_ shell command (not just tests),
