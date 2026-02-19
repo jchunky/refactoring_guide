@@ -1,0 +1,328 @@
+# frozen_string_literal: true
+
+require "delegate"
+
+module CharacterCreatorKata
+  module World
+    ABILITIES = [
+      STR = "STR",
+      DEX = "DEX",
+      CON = "CON",
+      INT = "INT",
+      WIS = "WIS",
+      CHA = "CHA",
+    ].freeze
+
+    SKILLS = {
+      ACROBATICS = "Acrobatics" => { ability: DEX },
+      ANIMAL_HANDLING = "Animal Handling" => { ability: WIS },
+      ARCANA = "Arcana" => { ability: INT },
+      ATHLETICS = "Athletics" => { ability: STR },
+      DECEPTION = "Deception" => { ability: CHA },
+      HISTORY = "History" => { ability: INT },
+      INSIGHT = "Insight" => { ability: WIS },
+      INTIMIDATION = "Intimidation" => { ability: CHA },
+      INVESTIGATION = "Investigation" => { ability: INT },
+      MEDICINE = "Medicine" => { ability: WIS },
+      NATURE = "Nature" => { ability: INT },
+      PERCEPTION = "Perception" => { ability: WIS },
+      PERFORMANCE = "Performance" => { ability: CHA },
+      PERSUASION = "Persuasion" => { ability: CHA },
+      RELIGION = "Religion" => { ability: INT },
+      SLEIGHT_OF_HAND = "Sleight of Hand" => { ability: DEX },
+      STEALTH = "Stealth" => { ability: DEX },
+      SURVIVAL = "Survival" => { ability: WIS },
+    }.freeze
+
+    BACKGROUNDS = {
+      "Acolyte" => { abilities: [INT, WIS, CHA], skills: [INSIGHT, RELIGION] },
+      "Criminal" => { abilities: [DEX, CON, INT], skills: [SLEIGHT_OF_HAND, STEALTH] },
+      "Sage" => { abilities: [CON, INT, WIS], skills: [ARCANA, HISTORY] },
+      "Soldier" => { abilities: [STR, DEX, CON], skills: [ATHLETICS, INTIMIDATION] },
+    }.freeze
+
+    CLASSES = {
+      "Barbarian" => { hd: 12, abilities: [STR, CON], skill_count: 2, skills: [ANIMAL_HANDLING, ATHLETICS, INTIMIDATION, NATURE, PERCEPTION, SURVIVAL] },
+      "Bard" => { hd: 8, abilities: [DEX, CHA], skill_count: 3, skills: SKILLS.keys },
+      "Cleric" => { hd: 8, abilities: [WIS, CHA], skill_count: 2, skills: [HISTORY, INSIGHT, MEDICINE, PERSUASION, RELIGION] },
+      "Druid" => { hd: 8, abilities: [INT, WIS], skill_count: 2, skills: [ARCANA, ANIMAL_HANDLING, INSIGHT, MEDICINE, NATURE, PERCEPTION, RELIGION, SURVIVAL] },
+      "Fighter" => { hd: 10, abilities: [STR, DEX], skill_count: 2, skills: [ACROBATICS, ANIMAL_HANDLING, ATHLETICS, HISTORY, INSIGHT, INTIMIDATION, PERCEPTION, PERSUASION, SURVIVAL] },
+      "Monk" => { hd: 8, abilities: [STR, DEX], skill_count: 2, skills: [ACROBATICS, ATHLETICS, HISTORY, INSIGHT, RELIGION, STEALTH] },
+      "Paladin" => { hd: 10, abilities: [WIS, CHA], skill_count: 2, skills: [ATHLETICS, INSIGHT, INTIMIDATION, MEDICINE, PERSUASION, RELIGION] },
+      "Ranger" => { hd: 10, abilities: [STR, DEX], skill_count: 3, skills: [ANIMAL_HANDLING, ATHLETICS, INSIGHT, INVESTIGATION, NATURE, PERCEPTION, STEALTH, SURVIVAL] },
+      "Rogue" => { hd: 8, abilities: [DEX, INT], skill_count: 4, skills: [ACROBATICS, ATHLETICS, DECEPTION, INSIGHT, INTIMIDATION, INVESTIGATION, PERCEPTION, PERSUASION, SLEIGHT_OF_HAND, STEALTH] },
+      "Sorcerer" => { hd: 6, abilities: [CON, CHA], skill_count: 2, skills: [ARCANA, DECEPTION, INSIGHT, INTIMIDATION, PERSUASION, RELIGION] },
+      "Warlock" => { hd: 8, abilities: [WIS, CHA], skill_count: 2, skills: [ARCANA, DECEPTION, HISTORY, INTIMIDATION, INVESTIGATION, NATURE, RELIGION] },
+      "Wizard" => { hd: 6, abilities: [INT, WIS], skill_count: 2, skills: [ARCANA, HISTORY, INSIGHT, INVESTIGATION, MEDICINE, NATURE, RELIGION] },
+    }.freeze
+
+    SPECIES = {
+      "Dragonborn" => { speed: 30 },
+      "Dwarf" => { speed: 30 },
+      "Elf" => { speed: 30 },
+      "Gnome" => { speed: 30 },
+      "Goliath" => { speed: 35 },
+      "Halfling" => { speed: 30 },
+      "Human" => { speed: 30 },
+      "Orc" => { speed: 30 },
+      "Tiefling" => { speed: 30 },
+    }.freeze
+  end
+
+  class Character < Data.define(:name, :level, :species, :character_class, :background, :skills, :stats)
+    include World
+
+    def self.create = CreateCharacter.new.run
+
+    def ac = 10 + dex_mod
+    def hp = hd + con_mod + ((level - 1) * ((hd / 2) + 1 + con_mod))
+    def proficiency_bonus = ((level - 1) / 4) + 2
+    def speed = SPECIES[species][:speed]
+    def initiative = dex_mod
+    def passive_perception = 10 + wis_mod
+    def passive_investigation = 10 + int_mod
+    def passive_insight = 10 + wis_mod
+
+    def str_mod = mod_of(str)
+    def dex_mod = mod_of(dex)
+    def con_mod = mod_of(con)
+    def int_mod = mod_of(int)
+    def wis_mod = mod_of(wis)
+    def cha_mod = mod_of(cha)
+
+    def str = stats[0]
+    def dex = stats[1]
+    def con = stats[2]
+    def int = stats[3]
+    def wis = stats[4]
+    def cha = stats[5]
+
+    def print = DisplayCharacter.new(self).run
+
+    private
+
+    def hd = CLASSES[character_class][:hd]
+    def mod_of(stat) = (stat / 2) - 5
+  end
+
+  class DisplayCharacter < SimpleDelegator
+    include World
+
+    def run
+      print_title "Character"
+      puts format("%23s: %s", "Name", name)
+      puts format("%23s: %s", "Level", level)
+      puts format("%23s: %s", "Species", species)
+      puts format("%23s: %s", "Class", character_class)
+      puts format("%23s: %s", "Background", background)
+      puts format("%23s: %+i", "Proficiency Bonus", proficiency_bonus)
+      puts format("%23s: %s ft", "Speed", speed)
+      puts
+      puts format("%23s: %s", "AC", ac)
+      puts format("%23s: %s", "HP", hp)
+      puts format("%23s: %+i", "Initiative", initiative)
+      puts
+      puts format("%23s: %d", "Passive Perception", passive_perception)
+      puts format("%23s: %d", "Passive Investigation", passive_investigation)
+      puts format("%23s: %d", "Passive Insight", passive_insight)
+
+      print_title "Abilities"
+      puts format("%23s: %2d (%+i)", "STR", str, str_mod)
+      puts format("%23s: %2d (%+i)", "DEX", dex, dex_mod)
+      puts format("%23s: %2d (%+i)", "CON", con, con_mod)
+      puts format("%23s: %2d (%+i)", "INT", int, int_mod)
+      puts format("%23s: %2d (%+i)", "WIS", wis, wis_mod)
+      puts format("%23s: %2d (%+i)", "CHA", cha, cha_mod)
+
+      print_title "Saving Throws"
+      puts format("%23s: %+i", "STR", str_mod)
+      puts format("%23s: %+i", "DEX", dex_mod)
+      puts format("%23s: %+i", "CON", con_mod)
+      puts format("%23s: %+i", "INT", int_mod)
+      puts format("%23s: %+i", "WIS", wis_mod)
+      puts format("%23s: %+i", "CHA", cha_mod)
+
+      print_title "Skills"
+      skills.each do |skill, mod|
+        puts format("%23s: %+i", skill, mod)
+      end
+    end
+
+    private
+
+    def print_title(title)
+      puts
+      puts ["-" * 4, title, "-" * 4].join(" ").center(48)
+    end
+  end
+
+  module Input
+    class << self
+      include World
+
+      def pick_stats(input_stats)
+        with_confirmation do
+          final_stats = []
+          stats = input_stats.dup
+
+          ABILITIES[0..-2].each.with_index do |ability, i|
+            stat = pick_stat(stats, ability)
+            final_stats << stat
+            stats.delete_at(stats.index(stat))
+          end
+
+          final_stats += stats
+
+          puts
+          puts "Your stats:"
+          ABILITIES.zip(final_stats).each do |ability, stat|
+            puts format("%s: %2d", ability, stat)
+          end
+
+          final_stats
+        end
+      end
+
+      def pick_option(options, prompt)
+        pick_option_inner(options, prompt)
+          .tap { puts "Selected: #{it}" }
+      end
+
+      def get_input(default)
+        puts default
+        default.to_s
+        # gets
+      end
+
+      def stat_roll
+        [15, 14, 13, 12, 10, 8]
+      end
+
+      private
+
+      def pick_stat(stats, ability)
+        puts
+        puts format("Remaining stats: %s", stats.join(", "))
+        print "Pick stat for #{ability}: "
+
+        loop do
+          stat = get_input(stats.first)
+          match = stats.find { it.to_s == stat }
+          return match if match
+
+          puts "Please select one of the available numbers"
+        end
+      end
+
+      def pick_option_inner(options, prompt)
+        puts
+        options.each.with_index(1) do |option, index|
+          puts format("%i. %s", index, option)
+        end
+        print prompt
+        loop do
+          input = get_input("1")
+          match = input.to_i - 1
+          return options[match] if (0...options.size).cover?(match)
+
+          match = options.find { it.to_s.downcase == input.downcase }
+          return match if match
+
+          match = options.find { it.to_s.downcase.include?(input).downcase }
+          return match if match
+
+          puts "Please select an option from the list"
+        end
+      end
+
+      def with_confirmation
+        loop do
+          result = yield
+          return result if confirmed?
+        end
+      end
+
+      def confirmed?
+        print "Are you satisfied with this (y/n)? "
+        loop do
+          input = get_input("y")
+          return true if input == "y"
+          return false if input == "n"
+
+          puts "Please select 'y' to complete this process or 'n' to start over"
+        end
+      end
+    end
+  end
+
+  class CreateCharacter
+    include World
+
+    def run
+      puts
+      puts "=" * 40
+      puts "Welcome to the D&D Character Creator!"
+      puts "=" * 40
+
+      character_class = pick_character_class
+      species = pick_species
+      background = pick_background
+      stats = pick_stats
+      level = pick_level
+      skills = pick_skills
+      name = pick_name
+
+      Character.new(
+        name:,
+        level:,
+        species:,
+        character_class:,
+        background:,
+        skills:,
+        stats:,
+      )
+    end
+
+    private
+
+    def pick_stats
+      stats = Input.stat_roll
+      puts
+      puts "You rolled: #{stats.join(", ")}"
+      Input.pick_stats(stats)
+    end
+
+    def pick_name
+      puts
+      print "Pick name: "
+      Input.get_input("Adventurer")
+    end
+
+    def pick_background
+      Input.pick_option(BACKGROUNDS.keys, "Pick background: ")
+    end
+
+    def pick_character_class
+      Input.pick_option(CLASSES.keys, "Pick class: ")
+    end
+
+    def pick_species
+      Input.pick_option(SPECIES.keys, "Pick species: ")
+    end
+
+    def pick_skills
+      SKILLS.keys.to_h { [it, 0] }
+    end
+
+    def pick_level
+      puts
+      print "Pick level (1-20): "
+      Input.get_input("1").to_i.clamp(1, 20)
+    end
+  end
+end
+
+# Allow running this file directly for manual testing
+if __FILE__ == $PROGRAM_NAME
+  CharacterCreatorKata::Character.create.print
+end
