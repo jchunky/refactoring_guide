@@ -166,7 +166,7 @@ module CharacterCreatorKata
 
       print_title "Skills"
       skills.each do |skill, ability, mod, prof|
-        puts format("%16s (%s): %+i %s", skill, ability, mod(mod), prof(prof))
+        puts format("%17s (%s): %+i %s", skill, ability, mod(mod), prof(prof))
       end
     end
 
