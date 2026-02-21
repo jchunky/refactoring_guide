@@ -81,23 +81,25 @@ module CharacterCreatorKata
     def proficiency_bonus = ((level - 1) / 4) + 2
     def speed = SPECIES[species][:speed]
     def initiative = dex_mod
-    def passive_perception = 10 + wis_mod
-    def passive_investigation = 10 + int_mod
-    def passive_insight = 10 + wis_mod
+    def passive_perception = 10 + perception
+    def passive_investigation = 10 + investigation
+    def passive_insight = 10 + insight
 
-    def str_mod = mod_of(str)
-    def dex_mod = mod_of(dex)
-    def con_mod = mod_of(con)
-    def int_mod = mod_of(int)
-    def wis_mod = mod_of(wis)
-    def cha_mod = mod_of(cha)
+    ABILITIES.each_with_index do |ability, i|
+      define_method(ability.downcase) { stats[i] }
+      define_method("#{ability.downcase}_mod") { mod_of(stats[i]) }
+    end
 
-    def str = stats[0] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[0]) ? 1 : 0)
-    def dex = stats[1] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[1]) ? 1 : 0)
-    def con = stats[2] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[2]) ? 1 : 0)
-    def int = stats[3] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[3]) ? 1 : 0)
-    def wis = stats[4] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[4]) ? 1 : 0)
-    def cha = stats[5] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[5]) ? 1 : 0)
+    SKILLS.keys.map do |skill|
+      define_method(skill.downcase.gsub(" ", "_")) do
+        ability = SKILLS[skill][:ability]
+        score = send(ability.downcase)
+        mod = mod_of(score)
+        prof = proficient_skills.include?(skill)
+        mod += proficiency_bonus if prof
+        mod
+      end
+    end
 
     def ability_scores
       ABILITIES.map do |ability|
@@ -108,7 +110,7 @@ module CharacterCreatorKata
     end
 
     def savings_throws
-      ABILITIES.map do |ability|
+      ABILITIES.map.with_index do |ability, i|
         score = send(ability.downcase)
         mod = mod_of(score)
         prof = CLASSES[character_class][:abilities].include?(ability)
@@ -120,9 +122,8 @@ module CharacterCreatorKata
     def skills
       SKILLS.keys.map do |skill|
         ability = SKILLS[skill][:ability]
-        mod = mod_of(send(ability.downcase))
+        mod = send(skill.downcase.gsub(" ", "_"))
         prof = proficient_skills.include?(skill)
-        mod += proficiency_bonus if prof
         [skill, ability, mod, prof]
       end
     end
@@ -156,7 +157,7 @@ module CharacterCreatorKata
 
       print_title "Abilities"
       ability_scores.each do |ability, score, mod|
-        puts format("%23s: %2d (%s)", ability, score, mod(str_mod))
+        puts format("%23s: %2d (%s)", ability, score, mod(mod))
       end
 
       print_title "Saving Throws"
@@ -308,9 +309,10 @@ module CharacterCreatorKata
       species = pick_species
       background = pick_background
       proficient_skills = pick_skills(character_class, background)
-      stats = pick_stats
+      raw_stats = pick_stats
       level = pick_level
       name = pick_name
+      stats = aggregated_stats(raw_stats, background)
 
       Character.new(
         name:,
@@ -361,6 +363,12 @@ module CharacterCreatorKata
       puts
       print "Pick level (1-20): "
       Input.get_input("1").to_i.clamp(1, 20)
+    end
+
+    def aggregated_stats(raw_stats, background)
+      ABILITIES.zip(raw_stats).map do |ability, stat|
+        stat + (BACKGROUNDS[background][:abilities].include?(ability) ? 1 : 0)
+      end
     end
   end
 end
