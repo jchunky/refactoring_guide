@@ -34,6 +34,11 @@ module CharacterCreatorKata
       SURVIVAL = "Survival" => { ability: WIS },
     }.freeze
 
+    module Skills
+      def self.all = SKILLS.keys
+      def self.ability(name) = SKILLS[name][:ability]
+    end
+
     BACKGROUNDS = {
       "Acolyte" => { abilities: [INT, WIS, CHA], skills: [INSIGHT, RELIGION] },
       "Criminal" => { abilities: [DEX, CON, INT], skills: [SLEIGHT_OF_HAND, STEALTH] },
@@ -41,9 +46,15 @@ module CharacterCreatorKata
       "Soldier" => { abilities: [STR, DEX, CON], skills: [ATHLETICS, INTIMIDATION] },
     }.freeze
 
+    module Backgrounds
+      def self.all = BACKGROUNDS.keys
+      def self.abilities(name) = BACKGROUNDS[name][:abilities]
+      def self.skills(name) = BACKGROUNDS[name][:skills]
+    end
+
     CLASSES = {
       "Barbarian" => { hd: 12, abilities: [STR, CON], skill_count: 2, skills: [ANIMAL_HANDLING, ATHLETICS, INTIMIDATION, NATURE, PERCEPTION, SURVIVAL] },
-      "Bard" => { hd: 8, abilities: [DEX, CHA], skill_count: 3, skills: SKILLS.keys },
+      "Bard" => { hd: 8, abilities: [DEX, CHA], skill_count: 3, skills: Skills.all },
       "Cleric" => { hd: 8, abilities: [WIS, CHA], skill_count: 2, skills: [HISTORY, INSIGHT, MEDICINE, PERSUASION, RELIGION] },
       "Druid" => { hd: 8, abilities: [INT, WIS], skill_count: 2, skills: [ARCANA, ANIMAL_HANDLING, INSIGHT, MEDICINE, NATURE, PERCEPTION, RELIGION, SURVIVAL] },
       "Fighter" => { hd: 10, abilities: [STR, DEX], skill_count: 2, skills: [ACROBATICS, ANIMAL_HANDLING, ATHLETICS, HISTORY, INSIGHT, INTIMIDATION, PERCEPTION, PERSUASION, SURVIVAL] },
@@ -56,6 +67,14 @@ module CharacterCreatorKata
       "Wizard" => { hd: 6, abilities: [INT, WIS], skill_count: 2, skills: [ARCANA, HISTORY, INSIGHT, INVESTIGATION, MEDICINE, NATURE, RELIGION] },
     }.freeze
 
+    module Classes
+      def self.all = CLASSES.keys
+      def self.hd(name) = CLASSES[name][:hd]
+      def self.abilities(name) = CLASSES[name][:abilities]
+      def self.skill_count(name) = CLASSES[name][:skill_count]
+      def self.skills(name) = CLASSES[name][:skills]
+    end
+
     SPECIES = {
       "Dragonborn" => { speed: 30 },
       "Dwarf" => { speed: 30 },
@@ -67,33 +86,39 @@ module CharacterCreatorKata
       "Orc" => { speed: 30 },
       "Tiefling" => { speed: 30 },
     }.freeze
+
+    module Species
+      def self.all = SPECIES.keys
+      def self.speed(name) = SPECIES[name][:speed]
+    end
   end
 
   class Character < Data.define(:name, :level, :species, :character_class, :background, :proficient_skills, :stats)
     include World
 
     def self.create = CreateCharacter.new.run
+    def self.method(name) = name.downcase.gsub(" ", "_")
 
     def print = DisplayCharacter.new(self).run
 
     def ac = 10 + dex_mod
     def hp = hd + con_mod + ((level - 1) * ((hd / 2) + 1 + con_mod))
     def proficiency_bonus = ((level - 1) / 4) + 2
-    def speed = SPECIES[species][:speed]
+    def speed = Species.speed(species)
     def initiative = dex_mod
     def passive_perception = 10 + perception
     def passive_investigation = 10 + investigation
     def passive_insight = 10 + insight
 
     ABILITIES.each_with_index do |ability, i|
-      define_method(ability.downcase) { stats[i] }
-      define_method("#{ability.downcase}_mod") { mod_of(stats[i]) }
+      define_method(method(ability)) { stats[i] }
+      define_method("#{method(ability)}_mod") { mod_of(stats[i]) }
     end
 
-    SKILLS.keys.map do |skill|
-      define_method(skill.downcase.gsub(" ", "_")) do
-        ability = SKILLS[skill][:ability]
-        score = send(ability.downcase)
+    Skills.all.map do |skill|
+      define_method(method(skill)) do
+        ability = Skills.ability(skill)
+        score = send(method(ability))
         mod = mod_of(score)
         prof = proficient_skills.include?(skill)
         mod += proficiency_bonus if prof
@@ -103,7 +128,7 @@ module CharacterCreatorKata
 
     def ability_scores
       ABILITIES.map do |ability|
-        score = send(ability.downcase)
+        score = send(method(ability))
         mod = mod_of(score)
         [ability, score, mod]
       end
@@ -111,7 +136,7 @@ module CharacterCreatorKata
 
     def savings_throws
       ABILITIES.map do |ability|
-        score = send(ability.downcase)
+        score = send(method(ability))
         mod = mod_of(score)
         prof = class_abilities.include?(ability)
         mod += proficiency_bonus if prof
@@ -121,8 +146,8 @@ module CharacterCreatorKata
 
     def skills
       SKILLS.keys.map do |skill|
-        ability = SKILLS[skill][:ability]
-        mod = send(skill.downcase.gsub(" ", "_"))
+        ability = Skills.ability(skill)
+        mod = send(method(skill))
         prof = proficient_skills.include?(skill)
         [skill, ability, mod, prof]
       end
@@ -130,9 +155,10 @@ module CharacterCreatorKata
 
     private
 
-    def hd = CLASSES[character_class][:hd]
+    def hd = Classes.hd(character_class)
     def mod_of(stat) = (stat / 2) - 5
-    def class_abilities = CLASSES[character_class][:abilities]
+    def class_abilities = Classes.abilities(character_class)
+    def method(name) = self.class.method(name)
   end
 
   class DisplayCharacter < SimpleDelegator
@@ -342,7 +368,7 @@ module CharacterCreatorKata
     end
 
     def pick_background
-      Input.pick_option(BACKGROUNDS.keys, "Pick background: ")
+      Input.pick_option(Backgrounds.all, "Pick background: ")
     end
 
     def pick_character_class
@@ -350,14 +376,14 @@ module CharacterCreatorKata
     end
 
     def pick_species
-      Input.pick_option(SPECIES.keys, "Pick species: ")
+      Input.pick_option(Species.all, "Pick species: ")
     end
 
     def pick_skills(character_class, background)
-      class_skills = CLASSES[character_class][:skills]
-      background_skills = BACKGROUNDS[background][:skills]
+      class_skills = Classes.skills(character_class)
+      background_skills = Backgrounds.skills(background)
       skills = class_skills - background_skills
-      skill_count = CLASSES[character_class][:skill_count]
+      skill_count = Classes.skill_count(character_class)
       picked_skills = Input.pick_skills(skills, skill_count)
       picked_skills + background_skills
     end
@@ -369,7 +395,7 @@ module CharacterCreatorKata
     end
 
     def aggregated_stats(raw_stats, background)
-      background_abilities = BACKGROUNDS[background][:abilities]
+      background_abilities = Backgrounds.abilities(background)
       ABILITIES.zip(raw_stats).map do |ability, stat|
         stat + (background_abilities.include?(ability) ? 1 : 0)
       end
