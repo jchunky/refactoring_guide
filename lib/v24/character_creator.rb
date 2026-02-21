@@ -13,7 +13,7 @@ module CharacterCreatorKata
       cha
     ].freeze
 
-    module Abilities
+    module Ability
       def self.format(id) = id.to_s.upcase
     end
 
@@ -38,7 +38,7 @@ module CharacterCreatorKata
       survival: { ability: :wis },
     }.freeze
 
-    module Skills
+    module Skill
       def self.all = SKILLS.keys
       def self.ability(name) = SKILLS[name][:ability]
       def self.to_name(id) = id.to_s.gsub("_", " ").split.map(&:capitalize).join(" ")
@@ -53,15 +53,15 @@ module CharacterCreatorKata
       "Soldier" => { abilities: %i[str dex con], skills: %i[athletics intimidation] },
     }.freeze
 
-    module Backgrounds
+    module Background
       def self.all = BACKGROUNDS.keys
       def self.abilities(name) = BACKGROUNDS[name][:abilities]
       def self.skills(name) = BACKGROUNDS[name][:skills]
     end
 
-    CLASSES = {
+    CHARACTER_CLASSES = {
       "Barbarian" => { hd: 12, abilities: %i[str con], skill_count: 2, skills: %i[animal_handling athletics intimidation nature perception survival] },
-      "Bard" => { hd: 8, abilities: %i[dex cha], skill_count: 3, skills: Skills.all },
+      "Bard" => { hd: 8, abilities: %i[dex cha], skill_count: 3, skills: Skill.all },
       "Cleric" => { hd: 8, abilities: %i[wis cha], skill_count: 2, skills: %i[history insight medicine persuasion religion] },
       "Druid" => { hd: 8, abilities: %i[int wis], skill_count: 2, skills: %i[arcana animal_handling insight medicine nature perception religion survival] },
       "Fighter" => { hd: 10, abilities: %i[str dex], skill_count: 2, skills: %i[acrobatics animal_handling athletics history insight intimidation perception persuasion survival] },
@@ -74,12 +74,12 @@ module CharacterCreatorKata
       "Wizard" => { hd: 6, abilities: %i[int wis], skill_count: 2, skills: %i[arcana history insight investigation medicine nature religion] },
     }.freeze
 
-    module Classes
-      def self.all = CLASSES.keys
-      def self.hd(name) = CLASSES[name][:hd]
-      def self.abilities(name) = CLASSES[name][:abilities]
-      def self.skill_count(name) = CLASSES[name][:skill_count]
-      def self.skills(name) = CLASSES[name][:skills]
+    module CharacterClass
+      def self.all = CHARACTER_CLASSES.keys
+      def self.hd(name) = CHARACTER_CLASSES[name][:hd]
+      def self.abilities(name) = CHARACTER_CLASSES[name][:abilities]
+      def self.skill_count(name) = CHARACTER_CLASSES[name][:skill_count]
+      def self.skills(name) = CHARACTER_CLASSES[name][:skills]
     end
 
     SPECIES = {
@@ -121,9 +121,9 @@ module CharacterCreatorKata
       define_method("#{ability}_mod") { mod_of(stats[i]) }
     end
 
-    Skills.all.map do |skill|
+    Skill.all.map do |skill|
       define_method(skill) do
-        ability = Skills.ability(skill)
+        ability = Skill.ability(skill)
         score = send(ability)
         mod = mod_of(score)
         prof = proficient_skills.include?(skill)
@@ -151,8 +151,8 @@ module CharacterCreatorKata
     end
 
     def skills
-      Skills.all.map do |skill|
-        ability = Skills.ability(skill)
+      Skill.all.map do |skill|
+        ability = Skill.ability(skill)
         mod = send(skill)
         prof = proficient_skills.include?(skill)
         [skill, ability, mod, prof]
@@ -161,9 +161,9 @@ module CharacterCreatorKata
 
     private
 
-    def hd = Classes.hd(character_class)
+    def hd = CharacterClass.hd(character_class)
     def mod_of(stat) = (stat / 2) - 5
-    def class_abilities = Classes.abilities(character_class)
+    def class_abilities = CharacterClass.abilities(character_class)
   end
 
   class DisplayCharacter < SimpleDelegator
@@ -189,17 +189,17 @@ module CharacterCreatorKata
 
       print_title "Abilities"
       ability_scores.each do |ability, score, mod|
-        puts format("%23s: %2d (%s)", Abilities.format(ability), score, mod(mod))
+        puts format("%23s: %2d (%s)", Ability.format(ability), score, mod(mod))
       end
 
       print_title "Saving Throws"
       savings_throws.each do |ability, mod, prof|
-        puts format("%23s: %s %s", Abilities.format(ability), mod(mod), prof(prof))
+        puts format("%23s: %s %s", Ability.format(ability), mod(mod), prof(prof))
       end
 
       print_title "Skills"
       skills.each do |skill, ability, mod, prof|
-        puts format("%17s (%s): %+i %s", Skills.format(skill), Abilities.format(ability), mod(mod), prof(prof))
+        puts format("%17s (%s): %+i %s", Skill.format(skill), Ability.format(ability), mod(mod), prof(prof))
       end
     end
 
@@ -227,7 +227,8 @@ module CharacterCreatorKata
         skills = skills.dup
         skill_count.times.map do |i|
           prompt = format("Pick skill (%i/%i): ", i + 1, skill_count)
-          skill = pick_option(skills, prompt)
+          skill_names = skills.map { |skill| Skill.to_name(skill) }
+          skill = Skill.to_id(pick_option(skill_names, prompt))
           skills.delete(skill)
           skill
         end
@@ -249,7 +250,7 @@ module CharacterCreatorKata
           puts
           puts "Your stats:"
           ABILITIES.zip(final_stats).each do |ability, stat|
-            puts format("%s: %2d", Abilities.format(ability), stat)
+            puts format("%s: %2d", Ability.format(ability), stat)
           end
 
           final_stats
@@ -276,7 +277,7 @@ module CharacterCreatorKata
       def pick_stat(stats, ability)
         puts
         puts format("Remaining stats: %s", stats.join(", "))
-        print "Pick stat for #{Abilities.format(ability)}: "
+        print "Pick stat for #{Ability.format(ability)}: "
 
         loop do
           stat = get_input(stats.first)
@@ -373,11 +374,11 @@ module CharacterCreatorKata
     end
 
     def pick_background
-      Input.pick_option(Backgrounds.all, "Pick background: ")
+      Input.pick_option(Background.all, "Pick background: ")
     end
 
     def pick_character_class
-      Input.pick_option(Classes.all, "Pick class: ")
+      Input.pick_option(CharacterClass.all, "Pick class: ")
     end
 
     def pick_species
@@ -385,10 +386,10 @@ module CharacterCreatorKata
     end
 
     def pick_skills(character_class, background)
-      class_skills = Classes.skills(character_class)
-      background_skills = Backgrounds.skills(background)
+      class_skills = CharacterClass.skills(character_class)
+      background_skills = Background.skills(background)
       skills = class_skills - background_skills
-      skill_count = Classes.skill_count(character_class)
+      skill_count = CharacterClass.skill_count(character_class)
       picked_skills = Input.pick_skills(skills, skill_count)
       picked_skills + background_skills
     end
@@ -400,7 +401,7 @@ module CharacterCreatorKata
     end
 
     def aggregated_stats(raw_stats, background)
-      background_abilities = Backgrounds.abilities(background)
+      background_abilities = Background.abilities(background)
       ABILITIES.zip(raw_stats).map do |ability, stat|
         stat + (background_abilities.include?(ability) ? 1 : 0)
       end
