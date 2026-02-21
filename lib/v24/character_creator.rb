@@ -145,7 +145,7 @@ module CharacterCreatorKata
     end
 
     def skills
-      SKILLS.keys.map do |skill|
+      Skills.all.map do |skill|
         ability = Skills.ability(skill)
         mod = send(method(skill))
         prof = proficient_skills.include?(skill)
@@ -372,7 +372,7 @@ module CharacterCreatorKata
     end
 
     def pick_character_class
-      Input.pick_option(CLASSES.keys, "Pick class: ")
+      Input.pick_option(Classes.all, "Pick class: ")
     end
 
     def pick_species
