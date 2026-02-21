@@ -295,7 +295,7 @@ module CharacterCreatorKata
           match = options.find { it.to_s.downcase == input.downcase }
           return match if match
 
-          match = options.find { it.to_s.downcase.include?(input).downcase }
+          match = options.find { it.to_s.downcase.include?(input.downcase) }
           return match if match
 
           puts "Please select an option from the list"
