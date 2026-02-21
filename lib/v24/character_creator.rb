@@ -13,6 +13,10 @@ module CharacterCreatorKata
       cha
     ].freeze
 
+    module Abilities
+      def self.format(id) = id.to_s.upcase
+    end
+
     SKILLS = {
       acrobatics: { ability: :dex },
       animal_handling: { ability: :wis },
@@ -37,6 +41,9 @@ module CharacterCreatorKata
     module Skills
       def self.all = SKILLS.keys
       def self.ability(name) = SKILLS[name][:ability]
+      def self.to_name(id) = id.to_s.gsub("_", " ").split.map(&:capitalize).join(" ")
+      def self.to_id(name) = name.downcase.split.join("_").to_sym
+      def self.format(id) = id.to_s.gsub("_", " ").split.map(&:capitalize).join(" ")
     end
 
     BACKGROUNDS = {
@@ -90,16 +97,6 @@ module CharacterCreatorKata
     module Species
       def self.all = SPECIES.keys
       def self.speed(name) = SPECIES[name][:speed]
-    end
-  end
-
-  module Format
-    def self.ability(value)
-      value.to_s.upcase
-    end
-
-    def self.skill(value)
-      value.to_s.gsub("_", " ").split.map(&:capitalize).join(" ")
     end
   end
 
@@ -192,17 +189,17 @@ module CharacterCreatorKata
 
       print_title "Abilities"
       ability_scores.each do |ability, score, mod|
-        puts format("%23s: %2d (%s)", Format.ability(ability), score, mod(mod))
+        puts format("%23s: %2d (%s)", Abilities.format(ability), score, mod(mod))
       end
 
       print_title "Saving Throws"
       savings_throws.each do |ability, mod, prof|
-        puts format("%23s: %s %s", Format.ability(ability), mod(mod), prof(prof))
+        puts format("%23s: %s %s", Abilities.format(ability), mod(mod), prof(prof))
       end
 
       print_title "Skills"
       skills.each do |skill, ability, mod, prof|
-        puts format("%17s (%s): %+i %s", Format.skill(skill), Format.ability(ability), mod(mod), prof(prof))
+        puts format("%17s (%s): %+i %s", Skills.format(skill), Abilities.format(ability), mod(mod), prof(prof))
       end
     end
 
@@ -252,7 +249,7 @@ module CharacterCreatorKata
           puts
           puts "Your stats:"
           ABILITIES.zip(final_stats).each do |ability, stat|
-            puts format("%s: %2d", Format.ability(ability), stat)
+            puts format("%s: %2d", Abilities.format(ability), stat)
           end
 
           final_stats
@@ -279,7 +276,7 @@ module CharacterCreatorKata
       def pick_stat(stats, ability)
         puts
         puts format("Remaining stats: %s", stats.join(", "))
-        print "Pick stat for #{Format.ability(ability)}: "
+        print "Pick stat for #{Abilities.format(ability)}: "
 
         loop do
           stat = get_input(stats.first)
