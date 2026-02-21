@@ -69,10 +69,12 @@ module CharacterCreatorKata
     }.freeze
   end
 
-  class Character < Data.define(:name, :level, :species, :character_class, :background, :skills, :stats)
+  class Character < Data.define(:name, :level, :species, :character_class, :background, :proficient_skills, :stats)
     include World
 
     def self.create = CreateCharacter.new.run
+
+    def print = DisplayCharacter.new(self).run
 
     def ac = 10 + dex_mod
     def hp = hd + con_mod + ((level - 1) * ((hd / 2) + 1 + con_mod))
@@ -90,14 +92,40 @@ module CharacterCreatorKata
     def wis_mod = mod_of(wis)
     def cha_mod = mod_of(cha)
 
-    def str = stats[0]
-    def dex = stats[1]
-    def con = stats[2]
-    def int = stats[3]
-    def wis = stats[4]
-    def cha = stats[5]
+    def str = stats[0] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[0]) ? 1 : 0)
+    def dex = stats[1] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[1]) ? 1 : 0)
+    def con = stats[2] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[2]) ? 1 : 0)
+    def int = stats[3] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[3]) ? 1 : 0)
+    def wis = stats[4] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[4]) ? 1 : 0)
+    def cha = stats[5] + (BACKGROUNDS[background][:abilities].include?(ABILITIES[5]) ? 1 : 0)
 
-    def print = DisplayCharacter.new(self).run
+    def ability_scores
+      ABILITIES.map do |ability|
+        score = send(ability.downcase)
+        mod = mod_of(score)
+        [ability, score, mod]
+      end
+    end
+
+    def savings_throws
+      ABILITIES.map do |ability|
+        score = send(ability.downcase)
+        mod = mod_of(score)
+        prof = CLASSES[character_class][:abilities].include?(ability)
+        mod += proficiency_bonus if prof
+        [ability, mod, prof]
+      end
+    end
+
+    def skills
+      SKILLS.keys.map do |skill|
+        ability = SKILLS[skill][:ability]
+        mod = mod_of(send(ability.downcase))
+        prof = proficient_skills.include?(skill)
+        mod += proficiency_bonus if prof
+        [skill, ability, mod, prof]
+      end
+    end
 
     private
 
@@ -115,36 +143,30 @@ module CharacterCreatorKata
       puts format("%23s: %s", "Species", species)
       puts format("%23s: %s", "Class", character_class)
       puts format("%23s: %s", "Background", background)
-      puts format("%23s: %+i", "Proficiency Bonus", proficiency_bonus)
+      puts format("%23s: %s", "Proficiency Bonus", mod(proficiency_bonus))
       puts format("%23s: %s ft", "Speed", speed)
       puts
       puts format("%23s: %s", "AC", ac)
       puts format("%23s: %s", "HP", hp)
-      puts format("%23s: %+i", "Initiative", initiative)
+      puts format("%23s: %s", "Initiative", mod(initiative))
       puts
       puts format("%23s: %d", "Passive Perception", passive_perception)
       puts format("%23s: %d", "Passive Investigation", passive_investigation)
       puts format("%23s: %d", "Passive Insight", passive_insight)
 
       print_title "Abilities"
-      puts format("%23s: %2d (%+i)", "STR", str, str_mod)
-      puts format("%23s: %2d (%+i)", "DEX", dex, dex_mod)
-      puts format("%23s: %2d (%+i)", "CON", con, con_mod)
-      puts format("%23s: %2d (%+i)", "INT", int, int_mod)
-      puts format("%23s: %2d (%+i)", "WIS", wis, wis_mod)
-      puts format("%23s: %2d (%+i)", "CHA", cha, cha_mod)
+      ability_scores.each do |ability, score, mod|
+        puts format("%23s: %2d (%s)", ability, score, mod(str_mod))
+      end
 
       print_title "Saving Throws"
-      puts format("%23s: %+i", "STR", str_mod)
-      puts format("%23s: %+i", "DEX", dex_mod)
-      puts format("%23s: %+i", "CON", con_mod)
-      puts format("%23s: %+i", "INT", int_mod)
-      puts format("%23s: %+i", "WIS", wis_mod)
-      puts format("%23s: %+i", "CHA", cha_mod)
+      savings_throws.each do |ability, mod, prof|
+        puts format("%23s: %s %s", ability, mod(mod), prof(prof))
+      end
 
       print_title "Skills"
-      skills.each do |skill, mod|
-        puts format("%23s: %+i", skill, mod)
+      skills.each do |skill, ability, mod, prof|
+        puts format("%16s (%s): %+i %s", skill, ability, mod(mod), prof(prof))
       end
     end
 
@@ -154,11 +176,29 @@ module CharacterCreatorKata
       puts
       puts ["-" * 4, title, "-" * 4].join(" ").center(48)
     end
+
+    def mod(value)
+      format("%+i", value)
+    end
+
+    def prof(value)
+      value ? "<prof>" : ""
+    end
   end
 
   module Input
     class << self
       include World
+
+      def pick_skills(skills, skill_count)
+        skills = skills.dup
+        skill_count.times.map do |i|
+          prompt = format("Pick skill (%i/%i): ", i + 1, skill_count)
+          skill = pick_option(skills, prompt)
+          skills.delete(skill)
+          skill
+        end
+      end
 
       def pick_stats(input_stats)
         with_confirmation do
@@ -191,7 +231,7 @@ module CharacterCreatorKata
       def get_input(default)
         puts default
         default.to_s
-        # gets
+        # gets.chomp
       end
 
       def stat_roll
@@ -267,9 +307,9 @@ module CharacterCreatorKata
       character_class = pick_character_class
       species = pick_species
       background = pick_background
+      proficient_skills = pick_skills(character_class, background)
       stats = pick_stats
       level = pick_level
-      skills = pick_skills
       name = pick_name
 
       Character.new(
@@ -278,7 +318,7 @@ module CharacterCreatorKata
         species:,
         character_class:,
         background:,
-        skills:,
+        proficient_skills:,
         stats:,
       )
     end
@@ -310,8 +350,11 @@ module CharacterCreatorKata
       Input.pick_option(SPECIES.keys, "Pick species: ")
     end
 
-    def pick_skills
-      SKILLS.keys.to_h { [it, 0] }
+    def pick_skills(character_class, background)
+      skills = CLASSES[character_class][:skills] - BACKGROUNDS[background][:skills]
+      skill_count = CLASSES[character_class][:skill_count]
+      picked_skills = Input.pick_skills(skills, skill_count)
+      picked_skills + BACKGROUNDS[background][:skills]
     end
 
     def pick_level
@@ -322,7 +365,6 @@ module CharacterCreatorKata
   end
 end
 
-# Allow running this file directly for manual testing
 if __FILE__ == $PROGRAM_NAME
   CharacterCreatorKata::Character.create.print
 end
