@@ -4,34 +4,34 @@ require "delegate"
 
 module CharacterCreatorKata
   module World
-    ABILITIES = [
-      STR = "STR",
-      DEX = "DEX",
-      CON = "CON",
-      INT = "INT",
-      WIS = "WIS",
-      CHA = "CHA",
+    ABILITIES = %i[
+      str
+      dex
+      con
+      int
+      wis
+      cha
     ].freeze
 
     SKILLS = {
-      ACROBATICS = "Acrobatics" => { ability: DEX },
-      ANIMAL_HANDLING = "Animal Handling" => { ability: WIS },
-      ARCANA = "Arcana" => { ability: INT },
-      ATHLETICS = "Athletics" => { ability: STR },
-      DECEPTION = "Deception" => { ability: CHA },
-      HISTORY = "History" => { ability: INT },
-      INSIGHT = "Insight" => { ability: WIS },
-      INTIMIDATION = "Intimidation" => { ability: CHA },
-      INVESTIGATION = "Investigation" => { ability: INT },
-      MEDICINE = "Medicine" => { ability: WIS },
-      NATURE = "Nature" => { ability: INT },
-      PERCEPTION = "Perception" => { ability: WIS },
-      PERFORMANCE = "Performance" => { ability: CHA },
-      PERSUASION = "Persuasion" => { ability: CHA },
-      RELIGION = "Religion" => { ability: INT },
-      SLEIGHT_OF_HAND = "Sleight of Hand" => { ability: DEX },
-      STEALTH = "Stealth" => { ability: DEX },
-      SURVIVAL = "Survival" => { ability: WIS },
+      acrobatics: { ability: :dex },
+      animal_handling: { ability: :wis },
+      arcana: { ability: :int },
+      athletics: { ability: :str },
+      deception: { ability: :cha },
+      history: { ability: :int },
+      insight: { ability: :wis },
+      intimidation: { ability: :cha },
+      investigation: { ability: :int },
+      medicine: { ability: :wis },
+      nature: { ability: :int },
+      perception: { ability: :wis },
+      performance: { ability: :cha },
+      persuasion: { ability: :cha },
+      religion: { ability: :int },
+      sleight_of_hand: { ability: :dex },
+      stealth: { ability: :dex },
+      survival: { ability: :wis },
     }.freeze
 
     module Skills
@@ -40,10 +40,10 @@ module CharacterCreatorKata
     end
 
     BACKGROUNDS = {
-      "Acolyte" => { abilities: [INT, WIS, CHA], skills: [INSIGHT, RELIGION] },
-      "Criminal" => { abilities: [DEX, CON, INT], skills: [SLEIGHT_OF_HAND, STEALTH] },
-      "Sage" => { abilities: [CON, INT, WIS], skills: [ARCANA, HISTORY] },
-      "Soldier" => { abilities: [STR, DEX, CON], skills: [ATHLETICS, INTIMIDATION] },
+      "Acolyte" => { abilities: %i[int wis cha], skills: %i[insight religion] },
+      "Criminal" => { abilities: %i[dex con int], skills: %i[sleight_of_hand stealth] },
+      "Sage" => { abilities: %i[con int wis], skills: %i[arcana history] },
+      "Soldier" => { abilities: %i[str dex con], skills: %i[athletics intimidation] },
     }.freeze
 
     module Backgrounds
@@ -53,18 +53,18 @@ module CharacterCreatorKata
     end
 
     CLASSES = {
-      "Barbarian" => { hd: 12, abilities: [STR, CON], skill_count: 2, skills: [ANIMAL_HANDLING, ATHLETICS, INTIMIDATION, NATURE, PERCEPTION, SURVIVAL] },
-      "Bard" => { hd: 8, abilities: [DEX, CHA], skill_count: 3, skills: Skills.all },
-      "Cleric" => { hd: 8, abilities: [WIS, CHA], skill_count: 2, skills: [HISTORY, INSIGHT, MEDICINE, PERSUASION, RELIGION] },
-      "Druid" => { hd: 8, abilities: [INT, WIS], skill_count: 2, skills: [ARCANA, ANIMAL_HANDLING, INSIGHT, MEDICINE, NATURE, PERCEPTION, RELIGION, SURVIVAL] },
-      "Fighter" => { hd: 10, abilities: [STR, DEX], skill_count: 2, skills: [ACROBATICS, ANIMAL_HANDLING, ATHLETICS, HISTORY, INSIGHT, INTIMIDATION, PERCEPTION, PERSUASION, SURVIVAL] },
-      "Monk" => { hd: 8, abilities: [STR, DEX], skill_count: 2, skills: [ACROBATICS, ATHLETICS, HISTORY, INSIGHT, RELIGION, STEALTH] },
-      "Paladin" => { hd: 10, abilities: [WIS, CHA], skill_count: 2, skills: [ATHLETICS, INSIGHT, INTIMIDATION, MEDICINE, PERSUASION, RELIGION] },
-      "Ranger" => { hd: 10, abilities: [STR, DEX], skill_count: 3, skills: [ANIMAL_HANDLING, ATHLETICS, INSIGHT, INVESTIGATION, NATURE, PERCEPTION, STEALTH, SURVIVAL] },
-      "Rogue" => { hd: 8, abilities: [DEX, INT], skill_count: 4, skills: [ACROBATICS, ATHLETICS, DECEPTION, INSIGHT, INTIMIDATION, INVESTIGATION, PERCEPTION, PERSUASION, SLEIGHT_OF_HAND, STEALTH] },
-      "Sorcerer" => { hd: 6, abilities: [CON, CHA], skill_count: 2, skills: [ARCANA, DECEPTION, INSIGHT, INTIMIDATION, PERSUASION, RELIGION] },
-      "Warlock" => { hd: 8, abilities: [WIS, CHA], skill_count: 2, skills: [ARCANA, DECEPTION, HISTORY, INTIMIDATION, INVESTIGATION, NATURE, RELIGION] },
-      "Wizard" => { hd: 6, abilities: [INT, WIS], skill_count: 2, skills: [ARCANA, HISTORY, INSIGHT, INVESTIGATION, MEDICINE, NATURE, RELIGION] },
+      "Barbarian" => { hd: 12, abilities: %i[str con], skill_count: 2, skills: %i[animal_handling athletics intimidation nature perception survival] },
+      "Bard" => { hd: 8, abilities: %i[dex cha], skill_count: 3, skills: Skills.all },
+      "Cleric" => { hd: 8, abilities: %i[wis cha], skill_count: 2, skills: %i[history insight medicine persuasion religion] },
+      "Druid" => { hd: 8, abilities: %i[int wis], skill_count: 2, skills: %i[arcana animal_handling insight medicine nature perception religion survival] },
+      "Fighter" => { hd: 10, abilities: %i[str dex], skill_count: 2, skills: %i[acrobatics animal_handling athletics history insight intimidation perception persuasion survival] },
+      "Monk" => { hd: 8, abilities: %i[str dex], skill_count: 2, skills: %i[acrobatics athletics history insight religion stealth] },
+      "Paladin" => { hd: 10, abilities: %i[wis cha], skill_count: 2, skills: %i[athletics insight intimidation medicine persuasion religion] },
+      "Ranger" => { hd: 10, abilities: %i[str dex], skill_count: 3, skills: %i[animal_handling athletics insight investigation nature perception stealth survival] },
+      "Rogue" => { hd: 8, abilities: %i[dex int], skill_count: 4, skills: %i[acrobatics athletics deception insight intimidation investigation perception persuasion sleight_of_hand stealth] },
+      "Sorcerer" => { hd: 6, abilities: %i[con cha], skill_count: 2, skills: %i[arcana deception insight intimidation persuasion religion] },
+      "Warlock" => { hd: 8, abilities: %i[wis cha], skill_count: 2, skills: %i[arcana deception history intimidation investigation nature religion] },
+      "Wizard" => { hd: 6, abilities: %i[int wis], skill_count: 2, skills: %i[arcana history insight investigation medicine nature religion] },
     }.freeze
 
     module Classes
@@ -93,11 +93,20 @@ module CharacterCreatorKata
     end
   end
 
+  module Format
+    def self.ability(value)
+      value.to_s.upcase
+    end
+
+    def self.skill(value)
+      value.to_s.gsub("_", " ").split.map(&:capitalize).join(" ")
+    end
+  end
+
   class Character < Data.define(:name, :level, :species, :character_class, :background, :proficient_skills, :stats)
     include World
 
     def self.create = CreateCharacter.new.run
-    def self.method(name) = name.downcase.gsub(" ", "_")
 
     def print = DisplayCharacter.new(self).run
 
@@ -111,14 +120,14 @@ module CharacterCreatorKata
     def passive_insight = 10 + insight
 
     ABILITIES.each_with_index do |ability, i|
-      define_method(method(ability)) { stats[i] }
-      define_method("#{method(ability)}_mod") { mod_of(stats[i]) }
+      define_method(ability) { stats[i] }
+      define_method("#{ability}_mod") { mod_of(stats[i]) }
     end
 
     Skills.all.map do |skill|
-      define_method(method(skill)) do
+      define_method(skill) do
         ability = Skills.ability(skill)
-        score = send(method(ability))
+        score = send(ability)
         mod = mod_of(score)
         prof = proficient_skills.include?(skill)
         mod += proficiency_bonus if prof
@@ -128,7 +137,7 @@ module CharacterCreatorKata
 
     def ability_scores
       ABILITIES.map do |ability|
-        score = send(method(ability))
+        score = send(ability)
         mod = mod_of(score)
         [ability, score, mod]
       end
@@ -136,7 +145,7 @@ module CharacterCreatorKata
 
     def savings_throws
       ABILITIES.map do |ability|
-        score = send(method(ability))
+        score = send(ability)
         mod = mod_of(score)
         prof = class_abilities.include?(ability)
         mod += proficiency_bonus if prof
@@ -147,7 +156,7 @@ module CharacterCreatorKata
     def skills
       Skills.all.map do |skill|
         ability = Skills.ability(skill)
-        mod = send(method(skill))
+        mod = send(skill)
         prof = proficient_skills.include?(skill)
         [skill, ability, mod, prof]
       end
@@ -158,7 +167,6 @@ module CharacterCreatorKata
     def hd = Classes.hd(character_class)
     def mod_of(stat) = (stat / 2) - 5
     def class_abilities = Classes.abilities(character_class)
-    def method(name) = self.class.method(name)
   end
 
   class DisplayCharacter < SimpleDelegator
@@ -184,17 +192,17 @@ module CharacterCreatorKata
 
       print_title "Abilities"
       ability_scores.each do |ability, score, mod|
-        puts format("%23s: %2d (%s)", ability, score, mod(mod))
+        puts format("%23s: %2d (%s)", Format.ability(ability), score, mod(mod))
       end
 
       print_title "Saving Throws"
       savings_throws.each do |ability, mod, prof|
-        puts format("%23s: %s %s", ability, mod(mod), prof(prof))
+        puts format("%23s: %s %s", Format.ability(ability), mod(mod), prof(prof))
       end
 
       print_title "Skills"
       skills.each do |skill, ability, mod, prof|
-        puts format("%17s (%s): %+i %s", skill, ability, mod(mod), prof(prof))
+        puts format("%17s (%s): %+i %s", Format.skill(skill), Format.ability(ability), mod(mod), prof(prof))
       end
     end
 
@@ -244,7 +252,7 @@ module CharacterCreatorKata
           puts
           puts "Your stats:"
           ABILITIES.zip(final_stats).each do |ability, stat|
-            puts format("%s: %2d", ability, stat)
+            puts format("%s: %2d", Format.ability(ability), stat)
           end
 
           final_stats
@@ -271,7 +279,7 @@ module CharacterCreatorKata
       def pick_stat(stats, ability)
         puts
         puts format("Remaining stats: %s", stats.join(", "))
-        print "Pick stat for #{ability}: "
+        print "Pick stat for #{Format.ability(ability)}: "
 
         loop do
           stat = get_input(stats.first)
