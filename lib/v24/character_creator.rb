@@ -41,9 +41,9 @@ module CharacterCreatorKata
     module Skill
       def self.all = SKILLS.keys
       def self.ability(name) = SKILLS[name][:ability]
+      def self.format(id) = to_name(id)
       def self.to_name(id) = id.to_s.gsub("_", " ").split.map(&:capitalize).join(" ")
       def self.to_id(name) = name.downcase.split.join("_").to_sym
-      def self.format(id) = id.to_s.gsub("_", " ").split.map(&:capitalize).join(" ")
     end
 
     BACKGROUNDS = {
@@ -226,7 +226,7 @@ module CharacterCreatorKata
       def pick_skills(skills, skill_count)
         skills = skills.dup
         skill_count.times.map do |i|
-          prompt = format("Pick skill (%i/%i): ", i + 1, skill_count)
+          prompt = format("Pick skill (%i of %i): ", i + 1, skill_count)
           skill_names = skills.map { |skill| Skill.to_name(skill) }
           skill = Skill.to_id(pick_option(skill_names, prompt))
           skills.delete(skill)
