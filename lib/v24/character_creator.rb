@@ -4,14 +4,7 @@ require "delegate"
 
 module CharacterCreatorKata
   module World
-    ABILITIES = %i[
-      str
-      dex
-      con
-      int
-      wis
-      cha
-    ].freeze
+    ABILITIES = %i[str dex con int wis cha].freeze
 
     module Ability
       def self.format(id) = id.to_s.upcase
