@@ -110,10 +110,10 @@ module CharacterCreatorKata
     end
 
     def savings_throws
-      ABILITIES.map.with_index do |ability, i|
+      ABILITIES.map do |ability|
         score = send(ability.downcase)
         mod = mod_of(score)
-        prof = CLASSES[character_class][:abilities].include?(ability)
+        prof = class_abilities.include?(ability)
         mod += proficiency_bonus if prof
         [ability, mod, prof]
       end
@@ -132,6 +132,7 @@ module CharacterCreatorKata
 
     def hd = CLASSES[character_class][:hd]
     def mod_of(stat) = (stat / 2) - 5
+    def class_abilities = CLASSES[character_class][:abilities]
   end
 
   class DisplayCharacter < SimpleDelegator
@@ -353,10 +354,12 @@ module CharacterCreatorKata
     end
 
     def pick_skills(character_class, background)
-      skills = CLASSES[character_class][:skills] - BACKGROUNDS[background][:skills]
+      class_skills = CLASSES[character_class][:skills]
+      background_skills = BACKGROUNDS[background][:skills]
+      skills = class_skills - background_skills
       skill_count = CLASSES[character_class][:skill_count]
       picked_skills = Input.pick_skills(skills, skill_count)
-      picked_skills + BACKGROUNDS[background][:skills]
+      picked_skills + background_skills
     end
 
     def pick_level
@@ -366,8 +369,9 @@ module CharacterCreatorKata
     end
 
     def aggregated_stats(raw_stats, background)
+      background_abilities = BACKGROUNDS[background][:abilities]
       ABILITIES.zip(raw_stats).map do |ability, stat|
-        stat + (BACKGROUNDS[background][:abilities].include?(ability) ? 1 : 0)
+        stat + (background_abilities.include?(ability) ? 1 : 0)
       end
     end
   end
