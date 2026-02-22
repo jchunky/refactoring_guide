@@ -1,8 +1,8 @@
 require 'minitest/autorun'
 require 'minitest/reporters'
 require_relative '../lib/version_loader'
-VersionLoader.require_kata('supermarket')
-include SupermarketKata
+VersionLoader.require_kata('supermarket_receipt')
+include SupermarketReceiptKata
 
 class SupermarketTest < Minitest::Test
   include SpecialOfferType

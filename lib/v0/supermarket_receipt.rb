@@ -1,4 +1,4 @@
-module SupermarketKata
+module SupermarketReceiptKata
   class Discount
     attr_reader :product, :description, :discount_amount
 
