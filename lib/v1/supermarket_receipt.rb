@@ -1,49 +1,19 @@
 # frozen_string_literal: true
 
 module SupermarketReceiptKata
-  module ProductUnit
-    EACH = Object.new
-    KILO = Object.new
+  class Discount < Data.define(:product, :description, :discount_amount)
   end
 
-  module SpecialOfferType
-    THREE_FOR_TWO = Object.new
-    TEN_PERCENT_DISCOUNT = Object.new
-    TWO_FOR_AMOUNT = Object.new
-    FIVE_FOR_AMOUNT = Object.new
+  class Offer < Data.define(:offer_type, :product, :argument)
   end
 
-  class Discount
-    attr_reader :product, :description, :discount_amount
-
-    def initialize(product, description, discount_amount)
-      @product = product
-      @description = description
-      @discount_amount = discount_amount
-    end
+  class Product < Data.define(:name, :unit)
   end
 
-  class Offer
-    attr_reader :product, :offer_type, :argument
-
-    def initialize(offer_type, product, argument)
-      @offer_type = offer_type
-      @argument = argument
-      @product = product
-    end
+  class ProductQuantity < Data.define(:product, :quantity)
   end
 
-  Product = Struct.new(:name, :unit) do
-    undef :name=, :unit=
-  end
-
-  class ProductQuantity
-    attr_reader :product, :quantity
-
-    def initialize(product, weight)
-      @product = product
-      @quantity = weight
-    end
+  class ReceiptItem < Data.define(:product, :quantity, :price, :total_price)
   end
 
   class Receipt
@@ -80,10 +50,10 @@ module SupermarketReceiptKata
     def discounts
       Array.new @discounts
     end
-  end
 
-  ReceiptItem = Struct.new(:product, :quantity, :price, :total_price) do
-    undef :product=, :quantity=, :price=, :total_price=
+    def print
+      PrintReceipt.new(self).run
+    end
   end
 
   class ShoppingCart
@@ -105,62 +75,58 @@ module SupermarketReceiptKata
 
     def add_item_quantity(product, quantity)
       @items << ProductQuantity.new(product, quantity)
-      product_quantities[product] = if @product_quantities.key?(product)
-                                      product_quantities[product] + quantity
-                                    else
-                                      quantity
-                                    end
+      product_quantities[product] =
+        if @product_quantities.key?(product)
+          product_quantities[product] + quantity
+        else
+          quantity
+        end
     end
 
     def handle_offers(receipt, offers, catalog)
-      @product_quantities.each_key do |p|
-        quantity = @product_quantities[p]
-        next unless offers.key?(p)
+      @product_quantities
+        .keys
+        .map { |p| build_discount(offers, catalog, p) }
+        .compact
+        .each { |discount| receipt.add_discount(discount) }
+    end
 
-        offer = offers[p]
-        unit_price = catalog.unit_price(p)
-        quantity_as_int = quantity.to_i
-        discount = nil
-        x = 1
-        if offer.offer_type == SpecialOfferType::THREE_FOR_TWO
-          x = 3
+    private
 
-        elsif offer.offer_type == SpecialOfferType::TWO_FOR_AMOUNT
-          x = 2
-          if quantity_as_int >= 2
-            total = (offer.argument * (quantity_as_int / x)) + (quantity_as_int % 2 * unit_price)
-            discount_n = (unit_price * quantity) - total
-            discount = Discount.new(
-              p,
-              "2 for #{offer.argument}",
-              discount_n,
-            )
-          end
+    def build_discount(offers, catalog, p)
+      quantity = @product_quantities[p]
+      return unless offers.key?(p)
 
-        end
-        x = 5 if offer.offer_type == SpecialOfferType::FIVE_FOR_AMOUNT
+      offer = offers[p]
+      unit_price = catalog.unit_price(p)
+      quantity_as_int = quantity.to_i
+
+      case offer.offer_type
+      when :three_for_two
+        x = 3
         number_of_x = quantity_as_int / x
-        if offer.offer_type == SpecialOfferType::THREE_FOR_TWO && quantity_as_int > 2
-          discount_amount = (quantity * unit_price) - ((number_of_x * 2 * unit_price) + (quantity_as_int % 3 * unit_price))
-          discount = Discount.new(p, "3 for 2", discount_amount)
-        end
-        if offer.offer_type == SpecialOfferType::TEN_PERCENT_DISCOUNT
-          discount = Discount.new(
-            p,
-            "#{offer.argument}% off",
-            quantity * unit_price * offer.argument / 100.0,
-          )
-        end
-        if offer.offer_type == SpecialOfferType::FIVE_FOR_AMOUNT && quantity_as_int >= 5
-          discount_total = (unit_price * quantity) - ((offer.argument * number_of_x) + (quantity_as_int % 5 * unit_price))
-          discount = Discount.new(
-            p,
-            "#{x} for #{offer.argument}",
-            discount_total,
-          )
-        end
+        return unless quantity_as_int >= x
 
-        receipt.add_discount(discount) if discount
+        discount_amount = (quantity * unit_price) - ((number_of_x * 2 * unit_price) + (quantity_as_int % 3 * unit_price))
+        Discount.new(p, "3 for 2", discount_amount)
+      when :two_for_amount
+        x = 2
+        return unless quantity_as_int >= x
+
+        total = (offer.argument * (quantity_as_int / x)) + (quantity_as_int % 2 * unit_price)
+        discount_n = (unit_price * quantity) - total
+        Discount.new(p, "2 for #{offer.argument}", discount_n)
+      when :five_for_amount
+        x = 5
+        number_of_x = quantity_as_int / x
+        return unless quantity_as_int >= x
+
+        discount_total = (unit_price * quantity) - ((offer.argument * number_of_x) + (quantity_as_int % 5 * unit_price))
+        Discount.new(p, "#{x} for #{offer.argument}", discount_total)
+      when :ten_percent_discount
+        Discount.new(p, "#{offer.argument}% off", quantity * unit_price * offer.argument / 100.0)
+      else
+        raise "Unexpected offer type: #{offer.offer_type}"
       end
     end
   end
@@ -201,15 +167,20 @@ module SupermarketReceiptKata
     end
   end
 
-  class ReceiptPrinter
-    def initialize(columns = 40) = @columns = columns
+  class PrintReceipt
+    attr_reader :receipt, :width
 
-    def print_receipt(receipt)
+    def initialize(receipt, width = 40)
+      @receipt = receipt
+      @width = width
+    end
+
+    def run
       [
         receipt.items.map(&method(:format_receipt_item)),
         receipt.discounts.map(&method(:format_discount)),
         "\n",
-        total_line(receipt),
+        total_line,
       ].join
     end
 
@@ -220,7 +191,7 @@ module SupermarketReceiptKata
       quantity = format_quantity(item)
       name = item.product.name
       unit_price = usd(item.price)
-      price_width = @columns - name.length - 1
+      price_width = width - name.length - 1
       line = format("%s %s\n", name, price.rjust(price_width))
       line += "  #{unit_price} * #{quantity}\n" if item.quantity != 1
       line
@@ -230,12 +201,12 @@ module SupermarketReceiptKata
       product_presentation = discount.product.name
       price_presentation = usd(-1 * discount.discount_amount)
       description = discount.description
-      price_width = @columns - description.length - product_presentation.length - 3
+      price_width = width - description.length - product_presentation.length - 3
       format("%s(%s) %s\n", description, product_presentation, price_presentation.rjust(price_width))
     end
 
-    def total_line(receipt)
-      price_width = @columns - 7
+    def total_line
+      price_width = width - 7
       format("Total: %s", usd(receipt.total_price).rjust(price_width))
     end
 
@@ -243,8 +214,8 @@ module SupermarketReceiptKata
       unit = item.product.unit
       quantity = item.quantity
       case unit
-      when ProductUnit::EACH then format("%i", quantity)
-      when ProductUnit::KILO then format("%.3f", quantity)
+      when :each then format("%i", quantity)
+      when :kilo then format("%.3f", quantity)
       else raise "Unexpected unit: #{unit}"
       end
     end
