@@ -2,6 +2,43 @@
 
 module SupermarketReceiptKata
   class Discount < Data.define(:product, :description, :discount_amount)
+    def self.build(product_quantities, p)
+      quantity = product_quantities[p]
+      return unless p.offer_type
+
+      unit_price = p.unit_price
+      quantity_as_int = quantity
+
+      case p.offer_type
+      when :three_for_two
+        x = 3
+        y = 2
+        number_of_x = quantity_as_int / x
+        return unless quantity_as_int >= x
+
+        discount_amount = (quantity * unit_price) - ((number_of_x * y * unit_price) + (quantity_as_int % x * unit_price))
+        Discount.new(p, "#{x} for #{y}", discount_amount)
+      when :two_for_amount
+        x = 2
+        return unless quantity_as_int >= x
+
+        total = (p.argument * (quantity_as_int / x)) + (quantity_as_int % 2 * unit_price)
+        discount_amount = (unit_price * quantity) - total
+        Discount.new(p, "#{x} for #{p.argument}", discount_amount)
+      when :five_for_amount
+        x = 5
+        number_of_x = quantity_as_int / x
+        return unless quantity_as_int >= x
+
+        discount_total = (unit_price * quantity) - ((p.argument * number_of_x) + (quantity_as_int % 5 * unit_price))
+        Discount.new(p, "#{x} for #{p.argument}", discount_total)
+      when :ten_percent_discount
+        discount_amount = quantity * unit_price * p.argument / 100.0
+        Discount.new(p, "#{p.argument}% off", discount_amount)
+      else
+        raise "Unexpected offer type: #{p.offer_type}"
+      end
+    end
   end
 
   class Product < Struct.new(:name, :unit, :unit_price, :offer_type, :argument)
@@ -51,45 +88,6 @@ module SupermarketReceiptKata
         .map { |p| Discount.build(product_quantities, p) }
         .compact
         .each { |discount| receipt.add_discount(discount) }
-    end
-  end
-
-  class Discount
-    def self.build(product_quantities, p)
-      quantity = product_quantities[p]
-      return unless p.offer_type
-
-      unit_price = p.unit_price
-      quantity_as_int = quantity
-
-      case p.offer_type
-      when :three_for_two
-        x = 3
-        number_of_x = quantity_as_int / x
-        return unless quantity_as_int >= x
-
-        discount_amount = (quantity * unit_price) - ((number_of_x * 2 * unit_price) + (quantity_as_int % 3 * unit_price))
-        Discount.new(p, "3 for 2", discount_amount)
-      when :two_for_amount
-        x = 2
-        return unless quantity_as_int >= x
-
-        total = (p.argument * (quantity_as_int / x)) + (quantity_as_int % 2 * unit_price)
-        discount_amount = (unit_price * quantity) - total
-        Discount.new(p, "2 for #{p.argument}", discount_amount)
-      when :five_for_amount
-        x = 5
-        number_of_x = quantity_as_int / x
-        return unless quantity_as_int >= x
-
-        discount_total = (unit_price * quantity) - ((p.argument * number_of_x) + (quantity_as_int % 5 * unit_price))
-        Discount.new(p, "#{x} for #{p.argument}", discount_total)
-      when :ten_percent_discount
-        discount_amount = quantity * unit_price * p.argument / 100.0
-        Discount.new(p, "#{p.argument}% off", discount_amount)
-      else
-        raise "Unexpected offer type: #{p.offer_type}"
-      end
     end
   end
 
