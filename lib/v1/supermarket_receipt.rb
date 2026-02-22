@@ -4,44 +4,40 @@ module SupermarketReceiptKata
   class Discount < Data.define(:product, :description, :discount_amount)
     def self.build(product_quantities, p)
       quantity = product_quantities[p]
-      return unless p.offer_type
+      discount = p.discount
+      return unless discount
 
       unit_price = p.unit_price
       quantity_as_int = quantity
 
-      case p.offer_type
-      when :three_for_two
-        x = 3
-        y = 2
+      case discount[:type]
+      when :x_for_y
+        x = discount[:x]
+        y = discount[:y]
         number_of_x = quantity_as_int / x
         return unless quantity_as_int >= x
 
         discount_amount = (quantity * unit_price) - ((number_of_x * y * unit_price) + (quantity_as_int % x * unit_price))
         Discount.new(p, "#{x} for #{y}", discount_amount)
-      when :two_for_amount
-        x = 2
+      when :x_for_amount
+        x = discount[:x]
+        amount = discount[:amount]
         return unless quantity_as_int >= x
 
-        total = (p.argument * (quantity_as_int / x)) + (quantity_as_int % 2 * unit_price)
+        total = (amount * (quantity_as_int / x)) + (quantity_as_int % x * unit_price)
         discount_amount = (unit_price * quantity) - total
-        Discount.new(p, "#{x} for #{p.argument}", discount_amount)
-      when :five_for_amount
-        x = 5
-        number_of_x = quantity_as_int / x
-        return unless quantity_as_int >= x
-
-        discount_total = (unit_price * quantity) - ((p.argument * number_of_x) + (quantity_as_int % 5 * unit_price))
-        Discount.new(p, "#{x} for #{p.argument}", discount_total)
-      when :ten_percent_discount
-        discount_amount = quantity * unit_price * p.argument / 100.0
-        Discount.new(p, "#{p.argument}% off", discount_amount)
+        Discount.new(p, "#{x} for #{amount}", discount_amount)
+      when :percent_discount
+        percent = discount[:percent]
+        discount_amount = quantity * unit_price * percent / 100.0
+        Discount.new(p, "#{percent}% off", discount_amount)
       else
-        raise "Unexpected offer type: #{p.offer_type}"
+        raise "Unexpected offer type: #{discount[:type]}"
       end
     end
   end
 
-  class Product < Struct.new(:name, :unit, :unit_price, :offer_type, :argument)
+  class Product < Struct.new(:name, :unit, :unit_price, :discount)
   end
 
   class ProductQuantity < Data.define(:product, :quantity)

@@ -9,19 +9,19 @@ class SupermarketTest < Minitest::Test
     cart = ShoppingCart.new
     teller = Teller.new
 
-    toothbrush = Product.new("toothbrush", :each,  0.99, :three_for_two, nil)
+    toothbrush = Product.new(name: "toothbrush", unit: :each, unit_price: 0.99, discount: { type: :x_for_y, x: 3, y: 2})
     cart.add_item_quantity(toothbrush, 5)
 
-    apples = Product.new("apples", :kilo,  1.99, :ten_percent_discount, 20)
+    apples = Product.new(name: "apples", unit: :kilo, unit_price: 1.99, discount: { type: :percent_discount, percent: 20 })
     cart.add_item_quantity(apples, 2.5)
 
-    rice = Product.new("rice", :each,  2.49, :ten_percent_discount, 10)
+    rice = Product.new(name: "rice", unit: :each, unit_price: 2.49, discount: { type: :percent_discount, percent: 10 })
     cart.add_item_quantity(rice, 2)
 
-    toothpaste = Product.new("toothpaste", :each,  1.79, :five_for_amount, 7.49)
+    toothpaste = Product.new(name: "toothpaste", unit: :each, unit_price: 1.79, discount: { type: :x_for_amount, x: 5, amount: 7.49 })
     cart.add_item_quantity(toothpaste, 6)
 
-    cherry_tomatoes = Product.new("cherry tomatoes", :each,  0.69, :two_for_amount, 0.99)
+    cherry_tomatoes = Product.new(name: "cherry tomatoes", unit: :each, unit_price: 0.69, discount: { type: :x_for_amount, x: 2, amount: 0.99 })
     cart.add_item_quantity(cherry_tomatoes, 5)
 
     receipt = teller.checks_out_articles_from(cart)
@@ -53,10 +53,10 @@ class SupermarketTest < Minitest::Test
     cart = ShoppingCart.new
     teller = Teller.new
 
-    toothbrush = Product.new("toothbrush", :each,  0.33, :ten_percent_discount, 20)
+    toothbrush = Product.new(name: "toothbrush", unit: :each, unit_price: 0.33, discount: { type: :percent_discount, percent: 20 })
     cart.add_item_quantity(toothbrush, 1)
 
-    toothpaste = Product.new("toothpaste", :each,  0.33, :ten_percent_discount, 20)
+    toothpaste = Product.new(name: "toothpaste", unit: :each, unit_price: 0.33, discount: { type: :percent_discount, percent: 20 })
     cart.add_item_quantity(toothpaste, 1)
 
     receipt = teller.checks_out_articles_from(cart)
@@ -79,7 +79,7 @@ class SupermarketTest < Minitest::Test
     cart = ShoppingCart.new
     teller = Teller.new
 
-    apples = Product.new("apples", :kilo,  1.00)
+    apples = Product.new(name: "apples", unit: :kilo, unit_price: 1.00)
     cart.add_item_quantity(apples, 1.005)
 
     receipt = teller.checks_out_articles_from(cart)
