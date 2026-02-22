@@ -53,7 +53,7 @@ class SupermarketTest < Minitest::Test
 
     receipt = teller.checks_out_articles_from(cart)
 
-    output = receipt.print
+    output = receipt.to_s
 
     assert_equal <<~EXPECTED_OUTPUT.strip, output
       toothbrush                          4.95
@@ -93,7 +93,7 @@ class SupermarketTest < Minitest::Test
 
     receipt = teller.checks_out_articles_from(cart)
 
-    output = receipt.print
+    output = receipt.to_s
 
     assert_equal <<~EXPECTED_OUTPUT.strip, output
       toothbrush                          0.33
@@ -118,7 +118,7 @@ class SupermarketTest < Minitest::Test
 
     receipt = teller.checks_out_articles_from(cart)
 
-    output = receipt.print
+    output = receipt.to_s
 
     assert_equal <<~EXPECTED_OUTPUT.strip, output
       apples                              1.00
