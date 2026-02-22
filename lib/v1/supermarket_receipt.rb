@@ -47,9 +47,10 @@ module SupermarketReceiptKata
   class Receipt < Struct.new(:items)
     def initialize = super([])
 
-    def add_receipt_item(product, quantity)
-      items << ReceiptItem.new(product, quantity)
-    end
+    def add_receipt_item(product, quantity) = items << ReceiptItem.new(product, quantity)
+
+    def to_s = PrintReceipt.new(self).run
+    def total_price = items.sum(&:total_price) - discounts.sum(&:discount_amount)
 
     def discounts
       items
@@ -60,21 +61,10 @@ module SupermarketReceiptKata
         }
         .compact
     end
-
-    def to_s = PrintReceipt.new(self).run
-
-    def total_price
-      items.sum(&:total_price) - discounts.sum(&:discount_amount)
-    end
   end
 
-  class PrintReceipt
-    attr_reader :receipt, :width
-
-    def initialize(receipt, width = 40)
-      @receipt = receipt
-      @width = width
-    end
+  class PrintReceipt < Struct.new(:receipt, :width)
+    def initialize(receipt, width = 40) = super
 
     def run
       [
