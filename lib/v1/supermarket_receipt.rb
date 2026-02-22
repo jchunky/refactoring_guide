@@ -7,10 +7,10 @@ module SupermarketReceiptKata
       return unless discount
 
       unit_price = p.unit_price
-      quantity_as_int = quantity
 
       case discount[:type]
       when :x_for_y
+        quantity_as_int = quantity
         x = discount[:x]
         y = discount[:y]
         number_of_x = quantity_as_int / x
@@ -19,6 +19,7 @@ module SupermarketReceiptKata
         discount_amount = (quantity * unit_price) - ((number_of_x * y * unit_price) + (quantity_as_int % x * unit_price))
         Discount.new(p, "#{x} for #{y}", discount_amount)
       when :x_for_amount
+        quantity_as_int = quantity
         x = discount[:x]
         amount = discount[:amount]
         return unless quantity_as_int >= x
@@ -37,6 +38,7 @@ module SupermarketReceiptKata
   end
 
   class Product < Struct.new(:name, :unit, :unit_price, :discount)
+    def initialize(name, unit, unit_price, discount: nil) = super(name, unit, unit_price, discount)
   end
 
   class ReceiptItem < Data.define(:product, :quantity)
@@ -53,7 +55,7 @@ module SupermarketReceiptKata
     def total_price = items.sum(&:total_price) - discounts.sum(&:discount_amount)
 
     def discounts
-      items
+      @discounts ||= items
         .group_by(&:product)
         .map { |product, receipt_items|
           quantity = receipt_items.sum(&:quantity)
