@@ -2,8 +2,7 @@
 
 module SupermarketReceiptKata
   class Discount < Data.define(:product, :description, :discount_amount)
-    def self.build(product_quantities, p)
-      quantity = product_quantities[p]
+    def self.build(p, quantity)
       discount = p.discount
       return unless discount
 
@@ -43,47 +42,50 @@ module SupermarketReceiptKata
   class ProductQuantity < Data.define(:product, :quantity)
   end
 
-  class ReceiptItem < Data.define(:product, :quantity, :unit_price)
+  class ReceiptItem < Data.define(:product, :quantity)
     def total_price = quantity * unit_price
+    def unit_price = product.unit_price
   end
 
-  class Receipt < Struct.new(:items, :discounts)
-    def initialize = super([], [])
+  class Receipt < Struct.new(:items)
+    def initialize = super([])
 
-    def add_product(pq) = items << ReceiptItem.new(pq.product, pq.quantity, pq.product.unit_price)
-    def add_discount(discount) = discounts << discount
+    def add_receipt_item(pq)
+      items << ReceiptItem.new(pq.product, pq.quantity)
+    end
+
+    def discounts
+      items
+        .group_by(&:product)
+        .map { |product, receipt_items|
+          quantity = receipt_items.sum(&:quantity)
+          Discount.build(product, quantity)
+        }
+        .compact
+    end
 
     def to_s = PrintReceipt.new(self).run
-    def total_price = items.sum(&:total_price) - discounts.sum(&:discount_amount)
+
+    def total_price
+      items.sum(&:total_price) - discounts.sum(&:discount_amount)
+    end
   end
 
   class Teller
     def checks_out_articles_from(the_cart)
       receipt = Receipt.new
       the_cart.items.each do |pq|
-        receipt.add_product(pq)
+        receipt.add_receipt_item(pq)
       end
-      the_cart.handle_offers(receipt)
-
       receipt
     end
   end
 
-  class ShoppingCart < Struct.new(:items, :product_quantities)
-    def initialize = super([], {})
+  class ShoppingCart < Struct.new(:items)
+    def initialize = super([])
 
     def add_item_quantity(product, quantity)
       items << ProductQuantity.new(product, quantity)
-      product_quantities[product] ||= 0
-      product_quantities[product] += quantity
-    end
-
-    def handle_offers(receipt)
-      product_quantities
-        .keys
-        .map { |p| Discount.build(product_quantities, p) }
-        .compact
-        .each { |discount| receipt.add_discount(discount) }
     end
   end
 
