@@ -4,9 +4,6 @@ module SupermarketReceiptKata
   class Discount < Data.define(:product, :description, :discount_amount)
   end
 
-  class Offer < Data.define(:offer_type, :product, :argument)
-  end
-
   class Product < Struct.new(:name, :unit, :unit_price, :offer_type, :argument)
   end
 
@@ -28,10 +25,6 @@ module SupermarketReceiptKata
 
   class ShoppingCart < Struct.new(:items, :product_quantities)
     def initialize = super([], {})
-
-    def add_item(product)
-      add_item_quantity(product, 1.0)
-    end
 
     def add_item_quantity(product, quantity)
       items << ProductQuantity.new(product, quantity)
@@ -87,20 +80,9 @@ module SupermarketReceiptKata
     end
   end
 
-  class SupermarketCatalog
-    def add_product(product, price)
-      raise NotImplementedError
-    end
-  end
-
   class Teller
-    def initialize(catalog)
-      @catalog = catalog
+    def initialize
       @offers = {}
-    end
-
-    def add_special_offer(offer_type, product, argument)
-      @offers[product] = Offer.new(offer_type, product, argument)
     end
 
     def checks_out_articles_from(the_cart)

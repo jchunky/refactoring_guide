@@ -5,39 +5,23 @@ VersionLoader.require_kata('supermarket_receipt')
 include SupermarketReceiptKata
 
 class SupermarketTest < Minitest::Test
-  class FakeCatalog < SupermarketCatalog
-    def initialize
-      @products = {}
-    end
-
-    def add_product(product)
-      @products[product.name] = product
-    end
-  end
-
   def test_discounts
-    catalog = FakeCatalog.new
     cart = ShoppingCart.new
-    teller = Teller.new(catalog)
+    teller = Teller.new
 
     toothbrush = Product.new("toothbrush", :each,  0.99, :three_for_two, nil)
-    catalog.add_product(toothbrush)
     cart.add_item_quantity(toothbrush, 5)
 
     apples = Product.new("apples", :kilo,  1.99, :ten_percent_discount, 20)
-    catalog.add_product(apples)
     cart.add_item_quantity(apples, 2.5)
 
     rice = Product.new("rice", :each,  2.49, :ten_percent_discount, 10)
-    catalog.add_product(rice)
     cart.add_item_quantity(rice, 2)
 
     toothpaste = Product.new("toothpaste", :each,  1.79, :five_for_amount, 7.49)
-    catalog.add_product(toothpaste)
     cart.add_item_quantity(toothpaste, 6)
 
     cherry_tomatoes = Product.new("cherry tomatoes", :each,  0.69, :two_for_amount, 0.99)
-    catalog.add_product(cherry_tomatoes)
     cart.add_item_quantity(cherry_tomatoes, 5)
 
     receipt = teller.checks_out_articles_from(cart)
@@ -66,16 +50,13 @@ class SupermarketTest < Minitest::Test
   end
 
   def test_total_is_sum_of_line_items
-    catalog = FakeCatalog.new
     cart = ShoppingCart.new
-    teller = Teller.new(catalog)
+    teller = Teller.new
 
     toothbrush = Product.new("toothbrush", :each,  0.33, :ten_percent_discount, 20)
-    catalog.add_product(toothbrush)
     cart.add_item_quantity(toothbrush, 1)
 
     toothpaste = Product.new("toothpaste", :each,  0.33, :ten_percent_discount, 20)
-    catalog.add_product(toothpaste)
     cart.add_item_quantity(toothpaste, 1)
 
     receipt = teller.checks_out_articles_from(cart)
@@ -95,12 +76,10 @@ class SupermarketTest < Minitest::Test
   end
 
   def test_no_floating_point_rounding_errors
-    catalog = FakeCatalog.new
     cart = ShoppingCart.new
-    teller = Teller.new(catalog)
+    teller = Teller.new
 
     apples = Product.new("apples", :kilo,  1.00)
-    catalog.add_product(apples)
     cart.add_item_quantity(apples, 1.005)
 
     receipt = teller.checks_out_articles_from(cart)
