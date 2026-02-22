@@ -93,7 +93,6 @@ module YatzyKata
       counts[d3 - 1] += 1
       counts[d4 - 1] += 1
       counts[d5 - 1] += 1
-      at = 0
       (0...6).each do |at|
         if counts[6 - at - 1] >= 2
           return (6 - at) * 2
@@ -189,7 +188,6 @@ module YatzyKata
     def self.full_house(d1, d2, d3, d4, d5)
       tallies = []
       _d2 = false
-      i = 0
       _d2_at = 0
       _d3 = false
       _d3_at = 0
@@ -243,7 +241,6 @@ module YatzyKata
 
     def fives
       s = 0
-      i = 0
       Range.new(0, @dice.size).each do |i|
         if @dice[i] == 5
           s += 5
