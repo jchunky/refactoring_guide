@@ -1,6 +1,18 @@
 # frozen_string_literal: true
 
 module SupermarketReceiptKata
+  module ProductUnit
+    EACH = Object.new
+    KILO = Object.new
+  end
+
+  module SpecialOfferType
+    THREE_FOR_TWO = Object.new
+    TEN_PERCENT_DISCOUNT = Object.new
+    TWO_FOR_AMOUNT = Object.new
+    FIVE_FOR_AMOUNT = Object.new
+  end
+
   class Discount
     attr_reader :product, :description, :discount_amount
 
@@ -32,11 +44,6 @@ module SupermarketReceiptKata
       @product = product
       @quantity = weight
     end
-  end
-
-  module ProductUnit
-    EACH = Object.new
-    KILO = Object.new
   end
 
   class Receipt
@@ -158,13 +165,6 @@ module SupermarketReceiptKata
     end
   end
 
-  module SpecialOfferType
-    THREE_FOR_TWO = Object.new
-    TEN_PERCENT_DISCOUNT = Object.new
-    TWO_FOR_AMOUNT = Object.new
-    FIVE_FOR_AMOUNT = Object.new
-  end
-
   class SupermarketCatalog
     def add_product(product, price)
       raise NotImplementedError
@@ -202,56 +202,54 @@ module SupermarketReceiptKata
   end
 
   class ReceiptPrinter
-    def self.present_quantity(item)
-      item.product.unit == ProductUnit::EACH ? format("%x", item.quantity.to_i) : "%.3f" % item.quantity
-    end
-
-    def self.whitespace(whitespace_size)
-      whitespace = ""
-      whitespace_size.times do
-        whitespace += " "
-      end
-      whitespace
-    end
-
-    def initialize(columns = 40)
-      @columns = columns
-    end
+    def initialize(columns = 40) = @columns = columns
 
     def print_receipt(receipt)
-      result = ""
-      receipt.items.each do |item|
-        price = "%.2f" % item.total_price
-        quantity = self.class.present_quantity(item)
-        name = item.product.name
-        unit_price = "%.2f" % item.price
-
-        whitespace_size = @columns - name.size - price.size
-        line = "#{name}#{self.class.whitespace(whitespace_size)}#{price}\n"
-
-        line += "  #{unit_price} * #{quantity}\n" if item.quantity != 1
-
-        result += line
-      end
-      receipt.discounts.each do |discount|
-        product_presentation = discount.product.name
-        price_presentation = "%.2f" % discount.discount_amount
-        description = discount.description
-        result += description
-        result += "("
-        result += product_presentation
-        result += ")"
-        result += self.class.whitespace(@columns - 3 - product_presentation.size - description.size - price_presentation.size)
-        result += "-"
-        result += price_presentation
-        result += "\n"
-      end
-      result += "\n"
-      price_presentation = format("%.2f", receipt.total_price.to_f)
-      total = "Total: "
-      whitespace = self.class.whitespace(@columns - total.size - price_presentation.size)
-      result += total + whitespace + price_presentation
-      result.to_s
+      [
+        receipt.items.map(&method(:format_receipt_item)),
+        receipt.discounts.map(&method(:format_discount)),
+        "\n",
+        total_line(receipt),
+      ].join
     end
+
+    private
+
+    def format_receipt_item(item)
+      price = usd(item.total_price)
+      quantity = format_quantity(item)
+      name = item.product.name
+      unit_price = usd(item.price)
+      price_width = @columns - name.length - 1
+      line = format("%s %s\n", name, price.rjust(price_width))
+      line += "  #{unit_price} * #{quantity}\n" if item.quantity != 1
+      line
+    end
+
+    def format_discount(discount)
+      product_presentation = discount.product.name
+      price_presentation = usd(-1 * discount.discount_amount)
+      description = discount.description
+      price_width = @columns - description.length - product_presentation.length - 3
+      format("%s(%s) %s\n", description, product_presentation, price_presentation.rjust(price_width))
+    end
+
+    def total_line(receipt)
+      price_width = @columns - 7
+      format("Total: %s", usd(receipt.total_price).rjust(price_width))
+    end
+
+    def format_quantity(item)
+      unit = item.product.unit
+      quantity = item.quantity
+      case unit
+      when ProductUnit::EACH then format("%i", quantity)
+      when ProductUnit::KILO then format("%.3f", quantity)
+      else raise "Unexpected unit: #{unit}"
+      end
+    end
+
+    def usd(price) = format("%.2f", price)
+    def whitespace(whitespace_size) = " " * whitespace_size
   end
 end
