@@ -2,35 +2,34 @@
 
 module SupermarketReceiptKata
   class Discount < Data.define(:product, :description, :discount_amount)
-    def self.build(p, quantity)
-      discount = p.discount
+    def self.build(product, quantity)
+      discount = product.discount
       return unless discount
 
-      unit_price = p.unit_price
+      unit_price = product.unit_price
       full_price = quantity * unit_price
 
       case discount[:type]
       when :x_for_y
         x = discount[:x]
         y = discount[:y]
-        number_of_x = quantity / x
         return unless quantity >= x
 
-        discounted_price = ((number_of_x * y * unit_price) + (quantity % x * unit_price))
+        discounted_price = ((quantity / x * y) + (quantity % x)) * unit_price
         discount_amount = full_price - discounted_price
-        Discount.new(p, "#{x} for #{y}", discount_amount)
+        Discount.new(product, "#{x} for #{y}", discount_amount)
       when :x_for_amount
         x = discount[:x]
         amount = discount[:amount]
         return unless quantity >= x
 
-        discounted_price = (amount * (quantity / x)) + (quantity % x * unit_price)
+        discounted_price = (quantity / x * amount) + (quantity % x * unit_price)
         discount_amount = full_price - discounted_price
-        Discount.new(p, "#{x} for #{amount}", discount_amount)
+        Discount.new(product, "#{x} for #{amount}", discount_amount)
       when :percent_discount
         percent = discount[:percent]
         discount_amount = full_price * percent / 100.0
-        Discount.new(p, "#{percent}% off", discount_amount)
+        Discount.new(product, "#{percent}% off", discount_amount)
       else
         raise "Unexpected offer type: #{discount[:type]}"
       end
