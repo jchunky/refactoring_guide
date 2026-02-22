@@ -7,7 +7,7 @@ module SupermarketReceiptKata
   class Offer < Data.define(:offer_type, :product, :argument)
   end
 
-  class Product < Data.define(:name, :unit)
+  class Product < Struct.new(:name, :unit, :unit_price, :offer_type, :argument)
   end
 
   class ProductQuantity < Data.define(:product, :quantity)
@@ -51,13 +51,12 @@ module SupermarketReceiptKata
 
     def build_discount(offers, catalog, p)
       quantity = product_quantities[p]
-      offer = offers[p]
-      return unless offer
+      return unless p.offer_type
 
-      unit_price = catalog.unit_price(p)
+      unit_price = p.unit_price
       quantity_as_int = quantity
 
-      case offer.offer_type
+      case p.offer_type
       when :three_for_two
         x = 3
         number_of_x = quantity_as_int / x
@@ -69,31 +68,27 @@ module SupermarketReceiptKata
         x = 2
         return unless quantity_as_int >= x
 
-        total = (offer.argument * (quantity_as_int / x)) + (quantity_as_int % 2 * unit_price)
+        total = (p.argument * (quantity_as_int / x)) + (quantity_as_int % 2 * unit_price)
         discount_amount = (unit_price * quantity) - total
-        Discount.new(p, "2 for #{offer.argument}", discount_amount)
+        Discount.new(p, "2 for #{p.argument}", discount_amount)
       when :five_for_amount
         x = 5
         number_of_x = quantity_as_int / x
         return unless quantity_as_int >= x
 
-        discount_total = (unit_price * quantity) - ((offer.argument * number_of_x) + (quantity_as_int % 5 * unit_price))
-        Discount.new(p, "#{x} for #{offer.argument}", discount_total)
+        discount_total = (unit_price * quantity) - ((p.argument * number_of_x) + (quantity_as_int % 5 * unit_price))
+        Discount.new(p, "#{x} for #{p.argument}", discount_total)
       when :ten_percent_discount
-        discount_amount = quantity * unit_price * offer.argument / 100.0
-        Discount.new(p, "#{offer.argument}% off", discount_amount)
+        discount_amount = quantity * unit_price * p.argument / 100.0
+        Discount.new(p, "#{p.argument}% off", discount_amount)
       else
-        raise "Unexpected offer type: #{offer.offer_type}"
+        raise "Unexpected offer type: #{p.offer_type}"
       end
     end
   end
 
   class SupermarketCatalog
     def add_product(product, price)
-      raise NotImplementedError
-    end
-
-    def unit_price(product)
       raise NotImplementedError
     end
   end
@@ -114,7 +109,7 @@ module SupermarketReceiptKata
       product_quantities.each do |pq|
         p = pq.product
         quantity = pq.quantity
-        unit_price = @catalog.unit_price(p)
+        unit_price = p.unit_price
         price = quantity * unit_price
         receipt.add_product(p, quantity, unit_price, price)
       end
