@@ -6,25 +6,22 @@ include SupermarketReceiptKata
 
 class SupermarketTest < Minitest::Test
   def test_discounts
-    cart = ShoppingCart.new
-    teller = Teller.new
+    receipt = Receipt.new
 
     toothbrush = Product.new(name: "toothbrush", unit: :each, unit_price: 0.99, discount: { type: :x_for_y, x: 3, y: 2})
-    cart.add_item_quantity(toothbrush, 5)
+    receipt.add_receipt_item(toothbrush, 5)
 
     apples = Product.new(name: "apples", unit: :kilo, unit_price: 1.99, discount: { type: :percent_discount, percent: 20 })
-    cart.add_item_quantity(apples, 2.5)
+    receipt.add_receipt_item(apples, 2.5)
 
     rice = Product.new(name: "rice", unit: :each, unit_price: 2.49, discount: { type: :percent_discount, percent: 10 })
-    cart.add_item_quantity(rice, 2)
+    receipt.add_receipt_item(rice, 2)
 
     toothpaste = Product.new(name: "toothpaste", unit: :each, unit_price: 1.79, discount: { type: :x_for_amount, x: 5, amount: 7.49 })
-    cart.add_item_quantity(toothpaste, 6)
+    receipt.add_receipt_item(toothpaste, 6)
 
     cherry_tomatoes = Product.new(name: "cherry tomatoes", unit: :each, unit_price: 0.69, discount: { type: :x_for_amount, x: 2, amount: 0.99 })
-    cart.add_item_quantity(cherry_tomatoes, 5)
-
-    receipt = teller.checks_out_articles_from(cart)
+    receipt.add_receipt_item(cherry_tomatoes, 5)
 
     output = receipt.to_s
 
@@ -50,16 +47,13 @@ class SupermarketTest < Minitest::Test
   end
 
   def test_total_is_sum_of_line_items
-    cart = ShoppingCart.new
-    teller = Teller.new
+    receipt = Receipt.new
 
     toothbrush = Product.new(name: "toothbrush", unit: :each, unit_price: 0.33, discount: { type: :percent_discount, percent: 20 })
-    cart.add_item_quantity(toothbrush, 1)
+    receipt.add_receipt_item(toothbrush, 1)
 
     toothpaste = Product.new(name: "toothpaste", unit: :each, unit_price: 0.33, discount: { type: :percent_discount, percent: 20 })
-    cart.add_item_quantity(toothpaste, 1)
-
-    receipt = teller.checks_out_articles_from(cart)
+    receipt.add_receipt_item(toothpaste, 1)
 
     output = receipt.to_s
 
@@ -76,13 +70,10 @@ class SupermarketTest < Minitest::Test
   end
 
   def test_no_floating_point_rounding_errors
-    cart = ShoppingCart.new
-    teller = Teller.new
+    receipt = Receipt.new
 
     apples = Product.new(name: "apples", unit: :kilo, unit_price: 1.00)
-    cart.add_item_quantity(apples, 1.005)
-
-    receipt = teller.checks_out_articles_from(cart)
+    receipt.add_receipt_item(apples, 1.005)
 
     output = receipt.to_s
 

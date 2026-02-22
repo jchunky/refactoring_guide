@@ -39,9 +39,6 @@ module SupermarketReceiptKata
   class Product < Struct.new(:name, :unit, :unit_price, :discount)
   end
 
-  class ProductQuantity < Data.define(:product, :quantity)
-  end
-
   class ReceiptItem < Data.define(:product, :quantity)
     def total_price = quantity * unit_price
     def unit_price = product.unit_price
@@ -50,8 +47,8 @@ module SupermarketReceiptKata
   class Receipt < Struct.new(:items)
     def initialize = super([])
 
-    def add_receipt_item(pq)
-      items << ReceiptItem.new(pq.product, pq.quantity)
+    def add_receipt_item(product, quantity)
+      items << ReceiptItem.new(product, quantity)
     end
 
     def discounts
@@ -68,24 +65,6 @@ module SupermarketReceiptKata
 
     def total_price
       items.sum(&:total_price) - discounts.sum(&:discount_amount)
-    end
-  end
-
-  class Teller
-    def checks_out_articles_from(the_cart)
-      receipt = Receipt.new
-      the_cart.items.each do |pq|
-        receipt.add_receipt_item(pq)
-      end
-      receipt
-    end
-  end
-
-  class ShoppingCart < Struct.new(:items)
-    def initialize = super([])
-
-    def add_item_quantity(product, quantity)
-      items << ProductQuantity.new(product, quantity)
     end
   end
 
