@@ -65,7 +65,7 @@ module TriviaKata
           else
             puts "#{@players[@current_player]} is not getting out of the penalty box"
             @is_getting_out_of_penalty_box = false
-            end
+          end
 
         else
 
