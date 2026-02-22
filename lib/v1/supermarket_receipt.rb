@@ -24,6 +24,18 @@ module SupermarketReceiptKata
     def total_price = items.sum(&:total_price) - discounts.sum(&:discount_amount)
   end
 
+  class Teller
+    def checks_out_articles_from(the_cart)
+      receipt = Receipt.new
+      the_cart.items.each do |pq|
+        receipt.add_product(pq)
+      end
+      the_cart.handle_offers(receipt)
+
+      receipt
+    end
+  end
+
   class ShoppingCart < Struct.new(:items, :product_quantities)
     def initialize = super([], {})
 
@@ -33,17 +45,17 @@ module SupermarketReceiptKata
       product_quantities[product] += quantity
     end
 
-    def handle_offers(receipt, offers, catalog)
+    def handle_offers(receipt)
       product_quantities
         .keys
-        .map { |p| build_discount(offers, catalog, p) }
+        .map { |p| Discount.build(product_quantities, p) }
         .compact
         .each { |discount| receipt.add_discount(discount) }
     end
+  end
 
-    private
-
-    def build_discount(offers, catalog, p)
+  class Discount
+    def self.build(product_quantities, p)
       quantity = product_quantities[p]
       return unless p.offer_type
 
@@ -78,22 +90,6 @@ module SupermarketReceiptKata
       else
         raise "Unexpected offer type: #{p.offer_type}"
       end
-    end
-  end
-
-  class Teller
-    def initialize
-      @offers = {}
-    end
-
-    def checks_out_articles_from(the_cart)
-      receipt = Receipt.new
-      the_cart.items.each do |pq|
-        receipt.add_product(pq)
-      end
-      the_cart.handle_offers(receipt, @offers, @catalog)
-
-      receipt
     end
   end
 
