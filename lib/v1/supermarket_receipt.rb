@@ -10,13 +10,14 @@ module SupermarketReceiptKata
   class ProductQuantity < Data.define(:product, :quantity)
   end
 
-  class ReceiptItem < Data.define(:product, :quantity, :price, :total_price)
+  class ReceiptItem < Data.define(:product, :quantity, :unit_price)
+    def total_price = quantity * unit_price
   end
 
   class Receipt < Struct.new(:items, :discounts)
     def initialize = super([], [])
 
-    def add_product(product, quantity, price, total_price) = items << ReceiptItem.new(product, quantity, price, total_price)
+    def add_product(pq) = items << ReceiptItem.new(pq.product, pq.quantity, pq.product.unit_price)
     def add_discount(discount) = discounts << discount
 
     def to_s = PrintReceipt.new(self).run
@@ -87,13 +88,8 @@ module SupermarketReceiptKata
 
     def checks_out_articles_from(the_cart)
       receipt = Receipt.new
-      product_quantities = the_cart.items
-      product_quantities.each do |pq|
-        p = pq.product
-        quantity = pq.quantity
-        unit_price = p.unit_price
-        price = quantity * unit_price
-        receipt.add_product(p, quantity, unit_price, price)
+      the_cart.items.each do |pq|
+        receipt.add_product(pq)
       end
       the_cart.handle_offers(receipt, @offers, @catalog)
 
@@ -124,7 +120,7 @@ module SupermarketReceiptKata
       price = usd(item.total_price)
       quantity = format_quantity(item)
       name = item.product.name
-      unit_price = usd(item.price)
+      unit_price = usd(item.unit_price)
       price_width = width - name.length - 1
       line = format("%s %s\n", name, price.rjust(price_width))
       line += "  #{unit_price} * #{quantity}\n" if item.quantity != 1
