@@ -209,7 +209,7 @@ module SupermarketReceiptKata
     def self.whitespace(whitespace_size)
       whitespace = ""
       whitespace_size.times do
-        whitespace.concat(" ")
+        whitespace += " "
       end
       whitespace
     end
@@ -231,26 +231,26 @@ module SupermarketReceiptKata
 
         line += "  #{unit_price} * #{quantity}\n" if item.quantity != 1
 
-        result.concat(line)
+        result += line
       end
       receipt.discounts.each do |discount|
         product_presentation = discount.product.name
         price_presentation = "%.2f" % discount.discount_amount
         description = discount.description
-        result.concat(description)
-        result.concat("(")
-        result.concat(product_presentation)
-        result.concat(")")
-        result.concat(self.class.whitespace(@columns - 3 - product_presentation.size - description.size - price_presentation.size))
-        result.concat("-")
-        result.concat(price_presentation)
-        result.concat("\n")
+        result += description
+        result += "("
+        result += product_presentation
+        result += ")"
+        result += self.class.whitespace(@columns - 3 - product_presentation.size - description.size - price_presentation.size)
+        result += "-"
+        result += price_presentation
+        result += "\n"
       end
-      result.concat("\n")
+      result += "\n"
       price_presentation = format("%.2f", receipt.total_price.to_f)
       total = "Total: "
       whitespace = self.class.whitespace(@columns - total.size - price_presentation.size)
-      result.concat(total, whitespace, price_presentation)
+      result += total + whitespace + price_presentation
       result.to_s
     end
   end
