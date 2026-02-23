@@ -8,19 +8,19 @@ class SupermarketTest < Minitest::Test
   def test_discounts
     receipt = Receipt.new
 
-    toothbrush = Product.new("toothbrush", :each, 0.99, discount: { type: :x_for_y, x: 3, y: 2})
+    toothbrush = Product.new(name: "toothbrush", unit: :each, unit_price: 0.99, discount: { type: :x_for_y, x: 3, y: 2 })
     receipt.add_receipt_item(toothbrush, 5)
 
-    apples = Product.new("apples", :kilo, 1.99, discount: { type: :percent_discount, percent: 20 })
+    apples = Product.new(name: "apples", unit: :kilo, unit_price: 1.99, discount: { type: :percent_discount, percent: 20 })
     receipt.add_receipt_item(apples, 2.5)
 
-    rice = Product.new("rice", :each, 2.49, discount: { type: :percent_discount, percent: 10 })
+    rice = Product.new(name: "rice", unit: :each, unit_price: 2.49, discount: { type: :percent_discount, percent: 10 })
     receipt.add_receipt_item(rice, 2)
 
-    toothpaste = Product.new("toothpaste", :each, 1.79, discount: { type: :x_for_amount, x: 5, amount: 7.49 })
+    toothpaste = Product.new(name: "toothpaste", unit: :each, unit_price: 1.79, discount: { type: :x_for_amount, x: 5, amount: 7.49 })
     receipt.add_receipt_item(toothpaste, 6)
 
-    cherry_tomatoes = Product.new("cherry tomatoes", :each, 0.69, discount: { type: :x_for_amount, x: 2, amount: 0.99 })
+    cherry_tomatoes = Product.new(name: "cherry tomatoes", unit: :each, unit_price: 0.69, discount: { type: :x_for_amount, x: 2, amount: 0.99 })
     receipt.add_receipt_item(cherry_tomatoes, 5)
 
     output = receipt.to_s
@@ -49,10 +49,10 @@ class SupermarketTest < Minitest::Test
   def test_total_is_sum_of_line_items
     receipt = Receipt.new
 
-    toothbrush = Product.new("toothbrush", :each, 0.33, discount: { type: :percent_discount, percent: 20 })
+    toothbrush = Product.new(name: "toothbrush", unit: :each, unit_price: 0.33, discount: { type: :percent_discount, percent: 20 })
     receipt.add_receipt_item(toothbrush, 1)
 
-    toothpaste = Product.new("toothpaste", :each, 0.33, discount: { type: :percent_discount, percent: 20 })
+    toothpaste = Product.new(name: "toothpaste", unit: :each, unit_price: 0.33, discount: { type: :percent_discount, percent: 20 })
     receipt.add_receipt_item(toothpaste, 1)
 
     output = receipt.to_s
@@ -70,7 +70,7 @@ class SupermarketTest < Minitest::Test
   def test_no_floating_point_rounding_errors
     receipt = Receipt.new
 
-    apples = Product.new("apples", :kilo, 1.00)
+    apples = Product.new(name: "apples", unit: :kilo, unit_price: 1.00)
     receipt.add_receipt_item(apples, 1.005)
 
     output = receipt.to_s

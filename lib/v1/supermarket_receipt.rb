@@ -38,8 +38,8 @@ module SupermarketReceiptKata
     def discount_amount = super.round(2)
   end
 
-  class Product < Struct.new(:name, :unit, :unit_price, :discount)
-    def initialize(name, unit, unit_price, discount: nil) = super(name, unit, unit_price, discount)
+  class Product < Data.define(:name, :unit, :unit_price, :discount)
+    def initialize(name:, unit:, unit_price:, discount: nil) = super
   end
 
   class ReceiptItem < Data.define(:product, :quantity)
@@ -52,7 +52,7 @@ module SupermarketReceiptKata
 
     def add_receipt_item(product, quantity) = items << ReceiptItem.new(product, quantity)
 
-    def to_s = PrintReceipt.new(self).run
+    def to_s = PrintReceipt.new(receipt: self).run
     def total_price = items.sum(&:total_price) - discounts.sum(&:discount_amount)
 
     def discounts
@@ -66,8 +66,8 @@ module SupermarketReceiptKata
     end
   end
 
-  class PrintReceipt < Struct.new(:receipt, :width)
-    def initialize(receipt, width = 40) = super
+  class PrintReceipt < Data.define(:receipt, :width)
+    def initialize(receipt:, width: 40) = super
 
     def run
       [
@@ -115,6 +115,5 @@ module SupermarketReceiptKata
     end
 
     def usd(price) = format("%.2f", price)
-    def whitespace(whitespace_size) = " " * whitespace_size
   end
 end
