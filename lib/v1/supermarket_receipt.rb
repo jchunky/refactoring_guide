@@ -1,43 +1,37 @@
 # frozen_string_literal: true
 
 module SupermarketReceiptKata
-  # Discount strategy objects — each knows how to calculate its own discount
-
-  class PercentDiscount < Data.define(:percent)
-    def calculate(quantity, unit_price)
-      discount_amount = quantity * unit_price * percent / 100.0
-      ["#{percent}% off", discount_amount]
-    end
-  end
-
-  class XForYDiscount < Data.define(:x, :y)
-    def calculate(quantity, unit_price)
-      return if quantity < x
-
-      full_price = quantity * unit_price
-      discounted = ((quantity / x * y) + (quantity % x)) * unit_price
-      ["#{x} for #{y}", full_price - discounted]
-    end
-  end
-
-  class XForAmountDiscount < Data.define(:x, :amount)
-    def calculate(quantity, unit_price)
-      return if quantity < x
-
-      full_price = quantity * unit_price
-      discounted = (quantity / x * amount) + (quantity % x * unit_price)
-      ["#{x} for #{amount}", full_price - discounted]
-    end
-  end
-
-  # Core domain objects
-
   class Discount < Data.define(:product, :description, :discount_amount)
     def self.build(product, quantity)
-      return unless product.discount
+      discount = product.discount
+      return unless discount
 
-      result = product.discount.calculate(quantity, product.unit_price)
-      return unless result
+      unit_price = product.unit_price
+      result =
+        case discount[:type]
+        when :percent
+          percent = discount[:percent]
+          discount_amount = quantity * unit_price * percent / 100.0
+          ["#{percent}% off", discount_amount]
+        when :x_for_y
+          x = discount[:x]
+          y = discount[:y]
+          return if quantity < x
+
+          full_price = quantity * unit_price
+          discounted = ((quantity / x * y) + (quantity % x)) * unit_price
+          ["#{x} for #{y}", full_price - discounted]
+        when :x_for_amount
+          x = discount[:x]
+          amount = discount[:amount]
+          return if quantity < x
+
+          full_price = quantity * unit_price
+          discounted = (quantity / x * amount) + (quantity % x * unit_price)
+          ["#{x} for #{amount}", full_price - discounted]
+        else
+          raise "Unexpected type: #{discount[:type]}"
+        end
 
       description, amount = result
       Discount.new(product, description, amount)
@@ -46,8 +40,8 @@ module SupermarketReceiptKata
     def discount_amount = super.round(2)
   end
 
-  class Product < Data.define(:name, :unit, :unit_price, :discount)
-    def initialize(name:, unit:, unit_price:, discount: nil) = super
+  class Product < Struct.new(:name, :unit, :unit_price, :discount)
+    def initialize(name, unit, unit_price, discount: nil) = super(name, unit, unit_price, discount)
   end
 
   class ReceiptItem < Data.define(:product, :quantity)
