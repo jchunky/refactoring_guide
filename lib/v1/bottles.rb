@@ -28,15 +28,9 @@ module BottlesKata
     end
 
     def verses(start, finish)
-      result = []
-      start.downto(finish) do |num|
-        result << verse(num)
-      end
-      result.join("\n")
+      start.downto(finish).map { |num| verse(num) }.join("\n")
     end
 
-    def song
-      verses(99, 0)
-    end
+    def song = verses(99, 0)
   end
 end

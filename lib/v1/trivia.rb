@@ -2,153 +2,106 @@
 
 module TriviaKata
   module UglyTrivia
+    class Player < Struct.new(:name, :place, :purse, :in_penalty_box)
+      def initialize(name)
+        super(name, 0, 0, false)
+      end
+    end
+
     class Game
+      CATEGORIES = %w[Pop Science Sports Rock].freeze
+      BOARD_SIZE = 12
+      WINNING_PURSE = 6
+
       def initialize
         @players = []
-        @places = Array.new(6, 0)
-        @purses = Array.new(6, 0)
-        @in_penalty_box = Array.new(6, nil)
-
-        @pop_questions = []
-        @science_questions = []
-        @sports_questions = []
-        @rock_questions = []
-
-        @current_player = 0
+        @current_player_index = 0
         @is_getting_out_of_penalty_box = false
-
-        50.times do |i|
-          @pop_questions.push "Pop Question #{i}"
-          @science_questions.push "Science Question #{i}"
-          @sports_questions.push "Sports Question #{i}"
-          @rock_questions.push create_rock_question(i)
+        @questions = CATEGORIES.each_with_object({}) do |category, hash|
+          hash[category] = (0...50).map { |i| "#{category} Question #{i}" }
         end
       end
 
-      def create_rock_question(index)
-        "Rock Question #{index}"
-      end
-
       def is_playable?
-        how_many_players >= 2
+        @players.length >= 2
       end
 
       def add(player_name)
-        @players.push player_name
-        @places[how_many_players] = 0
-        @purses[how_many_players] = 0
-        @in_penalty_box[how_many_players] = false
-
+        @players << Player.new(player_name)
         puts "#{player_name} was added"
         puts "They are player number #{@players.length}"
-
         true
       end
 
-      def how_many_players
-        @players.length
-      end
-
       def roll(roll)
-        puts "#{@players[@current_player]} is the current player"
+        player = current_player
+        puts "#{player.name} is the current player"
         puts "They have rolled a #{roll}"
 
-        if @in_penalty_box[@current_player]
+        if player.in_penalty_box
           if roll.odd?
             @is_getting_out_of_penalty_box = true
-
-            puts "#{@players[@current_player]} is getting out of the penalty box"
-            @places[@current_player] = @places[@current_player] + roll
-            @places[@current_player] = @places[@current_player] - 12 if @places[@current_player] > 11
-
-            puts "#{@players[@current_player]}'s new location is #{@places[@current_player]}"
-            puts "The category is #{current_category}"
+            puts "#{player.name} is getting out of the penalty box"
+            move_player(player, roll)
             ask_question
           else
-            puts "#{@players[@current_player]} is not getting out of the penalty box"
+            puts "#{player.name} is not getting out of the penalty box"
             @is_getting_out_of_penalty_box = false
           end
-
         else
-
-          @places[@current_player] = @places[@current_player] + roll
-          @places[@current_player] = @places[@current_player] - 12 if @places[@current_player] > 11
-
-          puts "#{@players[@current_player]}'s new location is #{@places[@current_player]}"
-          puts "The category is #{current_category}"
+          move_player(player, roll)
           ask_question
         end
       end
 
-      def ask_question
-        puts @pop_questions.shift if current_category == "Pop"
-        puts @science_questions.shift if current_category == "Science"
-        puts @sports_questions.shift if current_category == "Sports"
-        puts @rock_questions.shift if current_category == "Rock"
-      end
-
-      def current_category
-        return "Pop" if @places[@current_player] == 0
-        return "Pop" if @places[@current_player] == 4
-        return "Pop" if @places[@current_player] == 8
-        return "Science" if @places[@current_player] == 1
-        return "Science" if @places[@current_player] == 5
-        return "Science" if @places[@current_player] == 9
-        return "Sports" if @places[@current_player] == 2
-        return "Sports" if @places[@current_player] == 6
-        return "Sports" if @places[@current_player] == 10
-
-        "Rock"
-      end
-
-      public
-
       def was_correctly_answered
-        if @in_penalty_box[@current_player]
-          if @is_getting_out_of_penalty_box
-            puts "Answer was correct!!!!"
-            @purses[@current_player] += 1
-            puts "#{@players[@current_player]} now has #{@purses[@current_player]} Gold Coins."
+        player = current_player
 
-            winner = did_player_win
-            @current_player += 1
-            @current_player = 0 if @current_player == @players.length
-
-            winner
-          else
-            @current_player += 1
-            @current_player = 0 if @current_player == @players.length
-            true
-          end
-
-        else
-
-          puts "Answer was correct!!!!"
-          @purses[@current_player] += 1
-          puts "#{@players[@current_player]} now has #{@purses[@current_player]} Gold Coins."
-
-          winner = did_player_win
-          @current_player += 1
-          @current_player = 0 if @current_player == @players.length
-
-          winner
+        if player.in_penalty_box && !@is_getting_out_of_penalty_box
+          advance_turn
+          return true
         end
+
+        puts "Answer was correct!!!!"
+        player.purse += 1
+        puts "#{player.name} now has #{player.purse} Gold Coins."
+
+        winner = player.purse != WINNING_PURSE
+        advance_turn
+        winner
       end
 
       def wrong_answer
+        player = current_player
         puts "Question was incorrectly answered"
-        puts "#{@players[@current_player]} was sent to the penalty box"
-        @in_penalty_box[@current_player] = true
-
-        @current_player += 1
-        @current_player = 0 if @current_player == @players.length
+        puts "#{player.name} was sent to the penalty box"
+        player.in_penalty_box = true
+        advance_turn
         true
       end
 
       private
 
-      def did_player_win
-        @purses[@current_player] != 6
+      def current_player
+        @players[@current_player_index]
+      end
+
+      def advance_turn
+        @current_player_index = (@current_player_index + 1) % @players.length
+      end
+
+      def move_player(player, roll)
+        player.place = (player.place + roll) % BOARD_SIZE
+        puts "#{player.name}'s new location is #{player.place}"
+        puts "The category is #{current_category}"
+      end
+
+      def current_category
+        CATEGORIES[current_player.place % CATEGORIES.length]
+      end
+
+      def ask_question
+        puts @questions[current_category].shift
       end
     end
   end

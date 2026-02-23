@@ -1,38 +1,46 @@
 # frozen_string_literal: true
 
 module SupermarketReceiptKata
+  # Discount strategy objects — each knows how to calculate its own discount
+
+  class PercentDiscount < Data.define(:percent)
+    def calculate(quantity, unit_price)
+      discount_amount = quantity * unit_price * percent / 100.0
+      ["#{percent}% off", discount_amount]
+    end
+  end
+
+  class XForYDiscount < Data.define(:x, :y)
+    def calculate(quantity, unit_price)
+      return if quantity < x
+
+      full_price = quantity * unit_price
+      discounted = ((quantity / x * y) + (quantity % x)) * unit_price
+      ["#{x} for #{y}", full_price - discounted]
+    end
+  end
+
+  class XForAmountDiscount < Data.define(:x, :amount)
+    def calculate(quantity, unit_price)
+      return if quantity < x
+
+      full_price = quantity * unit_price
+      discounted = (quantity / x * amount) + (quantity % x * unit_price)
+      ["#{x} for #{amount}", full_price - discounted]
+    end
+  end
+
+  # Core domain objects
+
   class Discount < Data.define(:product, :description, :discount_amount)
     def self.build(product, quantity)
-      discount = product.discount
-      return unless discount
+      return unless product.discount
 
-      unit_price = product.unit_price
-      full_price = quantity * unit_price
+      result = product.discount.calculate(quantity, product.unit_price)
+      return unless result
 
-      case discount[:type]
-      when :x_for_y
-        x = discount[:x]
-        y = discount[:y]
-        return unless quantity >= x
-
-        discounted_price = ((quantity / x * y) + (quantity % x)) * unit_price
-        discount_amount = full_price - discounted_price
-        Discount.new(product, "#{x} for #{y}", discount_amount)
-      when :x_for_amount
-        x = discount[:x]
-        amount = discount[:amount]
-        return unless quantity >= x
-
-        discounted_price = (quantity / x * amount) + (quantity % x * unit_price)
-        discount_amount = full_price - discounted_price
-        Discount.new(product, "#{x} for #{amount}", discount_amount)
-      when :percent_discount
-        percent = discount[:percent]
-        discount_amount = full_price * percent / 100.0
-        Discount.new(product, "#{percent}% off", discount_amount)
-      else
-        raise "Unexpected offer type: #{discount[:type]}"
-      end
+      description, amount = result
+      Discount.new(product, description, amount)
     end
 
     def discount_amount = super.round(2)
@@ -45,6 +53,14 @@ module SupermarketReceiptKata
   class ReceiptItem < Data.define(:product, :quantity)
     def total_price = (quantity * unit_price).round(2)
     def unit_price = product.unit_price
+
+    def formatted_quantity
+      case product.unit
+      when :each then format("%i", quantity)
+      when :kilo then format("%.3f", quantity)
+      else raise "Unexpected unit: #{product.unit}"
+      end
+    end
   end
 
   class Receipt < Struct.new(:items)
@@ -56,13 +72,12 @@ module SupermarketReceiptKata
     def total_price = items.sum(&:total_price) - discounts.sum(&:discount_amount)
 
     def discounts
-      @discounts ||= items
+      items
         .group_by(&:product)
-        .map { |product, receipt_items|
+        .filter_map do |product, receipt_items|
           quantity = receipt_items.sum(&:quantity)
           Discount.build(product, quantity)
-        }
-        .compact
+        end
     end
   end
 
@@ -71,8 +86,8 @@ module SupermarketReceiptKata
 
     def run
       [
-        receipt.items.map(&method(:format_receipt_item)),
-        receipt.discounts.map(&method(:format_discount)),
+        receipt.items.map { |item| format_receipt_item(item) },
+        receipt.discounts.map { |discount| format_discount(discount) },
         "\n",
         total_line,
       ].join
@@ -82,36 +97,24 @@ module SupermarketReceiptKata
 
     def format_receipt_item(item)
       price = usd(item.total_price)
-      quantity = format_quantity(item)
       name = item.product.name
-      unit_price = usd(item.unit_price)
       price_width = width - name.length - 1
       line = format("%s %s\n", name, price.rjust(price_width))
-      line += "  #{unit_price} * #{quantity}\n" if item.quantity != 1
+      line += "  #{usd(item.unit_price)} * #{item.formatted_quantity}\n" if item.quantity != 1
       line
     end
 
     def format_discount(discount)
-      product_presentation = discount.product.name
-      price_presentation = usd(-1 * discount.discount_amount)
+      product_name = discount.product.name
+      price = usd(-1 * discount.discount_amount)
       description = discount.description
-      price_width = width - description.length - product_presentation.length - 3
-      format("%s(%s) %s\n", description, product_presentation, price_presentation.rjust(price_width))
+      price_width = width - description.length - product_name.length - 3
+      format("%s(%s) %s\n", description, product_name, price.rjust(price_width))
     end
 
     def total_line
       price_width = width - 7
       format("Total: %s", usd(receipt.total_price).rjust(price_width))
-    end
-
-    def format_quantity(item)
-      unit = item.product.unit
-      quantity = item.quantity
-      case unit
-      when :each then format("%i", quantity)
-      when :kilo then format("%.3f", quantity)
-      else raise "Unexpected unit: #{unit}"
-      end
     end
 
     def usd(price) = format("%.2f", price)
