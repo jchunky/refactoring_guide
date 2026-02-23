@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module SupermarketReceiptKata
   class Discount
     attr_reader :product, :description, :discount_amount
@@ -81,7 +79,6 @@ module SupermarketReceiptKata
 
   class ShoppingCart
     attr_reader :product_quantities
-
     def initialize
       @items = []
       @product_quantities = {}
@@ -121,12 +118,12 @@ module SupermarketReceiptKata
         elsif offer.offer_type == SpecialOfferType::TWO_FOR_AMOUNT
           x = 2
           if quantity_as_int >= 2
-            total = (offer.argument * (quantity_as_int / x)) + (quantity_as_int % 2 * unit_price)
-            discount_n = (unit_price * quantity) - total
+            total = offer.argument * (quantity_as_int / x) + quantity_as_int % 2 * unit_price
+            discount_n = unit_price * quantity - total
             discount = Discount.new(
               p,
-              "2 for #{offer.argument}",
-              discount_n,
+              "2 for " + offer.argument.to_s,
+              discount_n
             )
           end
 
@@ -134,22 +131,22 @@ module SupermarketReceiptKata
         x = 5 if offer.offer_type == SpecialOfferType::FIVE_FOR_AMOUNT
         number_of_x = quantity_as_int / x
         if offer.offer_type == SpecialOfferType::THREE_FOR_TWO && quantity_as_int > 2
-          discount_amount = (quantity * unit_price) - ((number_of_x * 2 * unit_price) + (quantity_as_int % 3 * unit_price))
+          discount_amount = quantity * unit_price - ((number_of_x * 2 * unit_price) + quantity_as_int % 3 * unit_price)
           discount = Discount.new(p, "3 for 2", discount_amount)
         end
         if offer.offer_type == SpecialOfferType::TEN_PERCENT_DISCOUNT
           discount = Discount.new(
             p,
-            "#{offer.argument}% off",
-            quantity * unit_price * offer.argument / 100.0,
+            offer.argument.to_s + "% off",
+            quantity * unit_price * offer.argument / 100.0
           )
         end
         if offer.offer_type == SpecialOfferType::FIVE_FOR_AMOUNT && quantity_as_int >= 5
-          discount_total = (unit_price * quantity) - ((offer.argument * number_of_x) + (quantity_as_int % 5 * unit_price))
+          discount_total = unit_price * quantity - (offer.argument * number_of_x + quantity_as_int % 5 * unit_price)
           discount = Discount.new(
             p,
-            "#{x} for #{offer.argument}",
-            discount_total,
+            x.to_s + " for " + offer.argument.to_s,
+            discount_total
           )
         end
 
@@ -202,18 +199,6 @@ module SupermarketReceiptKata
   end
 
   class ReceiptPrinter
-    def self.present_quantity(item)
-      item.product.unit == ProductUnit::EACH ? format("%x", item.quantity.to_i) : "%.3f" % item.quantity
-    end
-
-    def self.whitespace(whitespace_size)
-      whitespace = ""
-      whitespace_size.times do
-        whitespace += " "
-      end
-      whitespace
-    end
-
     def initialize(columns = 40)
       @columns = columns
     end
@@ -227,9 +212,9 @@ module SupermarketReceiptKata
         unit_price = "%.2f" % item.price
 
         whitespace_size = @columns - name.size - price.size
-        line = "#{name}#{self.class.whitespace(whitespace_size)}#{price}\n"
+        line = name + self.class.whitespace(whitespace_size) + price + "\n"
 
-        line += "  #{unit_price} * #{quantity}\n" if item.quantity != 1
+        line += "  " + unit_price + " * " + quantity + "\n" if item.quantity != 1
 
         result += line
       end
@@ -247,11 +232,23 @@ module SupermarketReceiptKata
         result += "\n"
       end
       result += "\n"
-      price_presentation = format("%.2f", receipt.total_price.to_f)
+      price_presentation = "%.2f" % receipt.total_price.to_f
       total = "Total: "
       whitespace = self.class.whitespace(@columns - total.size - price_presentation.size)
       result += total + whitespace + price_presentation
       result.to_s
+    end
+
+    def self.present_quantity(item)
+      ProductUnit::EACH == item.product.unit ? "%x" % item.quantity.to_i : "%.3f" % item.quantity
+    end
+
+    def self.whitespace(whitespace_size)
+      whitespace = ""
+      whitespace_size.times do
+        whitespace += " "
+      end
+      whitespace
     end
   end
 end

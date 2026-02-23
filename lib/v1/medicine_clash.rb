@@ -1,12 +1,10 @@
-# frozen_string_literal: true
-
 class Integer
   def day
-    days
+     days
   end
 
   def days
-    self
+     self
   end
 
   def ago
@@ -19,15 +17,16 @@ class Integer
 end
 
 class Date
-  def advance(options = {})
+  def advance(options={})
     self + (options[:days] || 0)
   end
 end
 
 module MedicineClashKata
-  require "date"
+  require 'date'
 
   class Prescription
+
     attr_reader :dispense_date, :days_supply
 
     def initialize(options = {})
@@ -38,7 +37,6 @@ module MedicineClashKata
     def <=>(other)
       return -1 if dispense_date.nil?
       return 1 if other.dispense_date.nil?
-
       dispense_date <=> other.dispense_date
     end
 
@@ -52,6 +50,7 @@ module MedicineClashKata
   end
 
   class Medicine
+
     attr_reader :name, :prescriptions
 
     def initialize(name)
@@ -60,11 +59,11 @@ module MedicineClashKata
     end
 
     def first_prescription
-      @first_prescription ||= prescriptions.min
+      @first_prescription ||= prescriptions.sort.first
     end
 
     def last_prescription
-      @last_prescription ||= prescriptions.max
+      @last_prescription ||= prescriptions.sort.last
     end
 
     def days_supply
@@ -92,7 +91,7 @@ module MedicineClashKata
     end
 
     def most_recent_prescription
-      prescriptions.max_by(&:dispense_date)
+      prescriptions.sort_by(&:dispense_date).last
     end
 
     def number_of_days_prescribed(day_count)
@@ -112,9 +111,9 @@ module MedicineClashKata
     end
 
     def dates_prescribed(day_count)
-      prescriptions_in_range(day_count).map { |p|
-        (p.dispense_date...p.dispense_date.advance(days: p.days_supply)).to_a
-      }.flatten.uniq
+      prescriptions_in_range(day_count).map do |p|
+        (p.dispense_date...p.dispense_date.advance(:days => p.days_supply)).to_a
+      end.flatten.uniq
     end
 
     def dates_prescribed_in_effective_range(day_count)
@@ -128,25 +127,27 @@ module MedicineClashKata
     def possession_effective_range(day_count)
       possession_effective_start_date(day_count)...possession_effective_end_date
     end
+
   end
 
   class Patient
+
     attr_reader :medicines
 
-    def initialize
+    def initialize()
       @medicines = []
     end
 
     def clash(medicine_names, days_back)
       medicines_taken = medicines_taken_from(medicine_names)
       return [] if medicines_taken.empty?
-
-      all_dates = medicines_taken.map { |medicine| medicine.dates_prescribed_in_effective_range(days_back) }
-      all_dates.reduce { |x, y| x & y }
+      all_dates = medicines_taken.map { |medicine| medicine.dates_prescribed_in_effective_range(days_back)}
+      all_dates.inject{|x, y| x & y}
     end
 
     def medicines_taken_from(medicine_names)
       @medicines.select { |medicine| medicine_names.include?(medicine.name) }
     end
+
   end
 end
