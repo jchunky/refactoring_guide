@@ -70,9 +70,9 @@ class PatientTest < Minitest::Test
   end
 
   # Skipped: two medicines overlapping with start of period
-  # def test_clash_overlapping_with_start_of_period
-  #   @codeine.prescriptions << Prescription.new(dispense_date: 91.day.ago, days_supply: 30)
-  #   @prozac.prescriptions << Prescription.new(dispense_date: 119.days.ago, days_supply: 30)
-  #   assert_equal [90.days.ago], @patient.clash(["Codeine", "Prozac"], 90)
-  # end
+  def test_clash_overlapping_with_start_of_period
+    @codeine.prescriptions << Prescription.new(dispense_date: 91.day.ago, days_supply: 30)
+    @prozac.prescriptions << Prescription.new(dispense_date: 119.days.ago, days_supply: 30)
+    assert_equal [90.days.ago], @patient.clash(["Codeine", "Prozac"], 90)
+  end
 end
