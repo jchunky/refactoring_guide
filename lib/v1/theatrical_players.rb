@@ -14,48 +14,42 @@ module TheatricalPlayersKata
 
   class Comedy < Performance
     def amount
-      base = 30_000 + (300 * seat_count)
-      base += 10_000 + (500 * (seat_count - 20)) if seat_count > 20
-      base
+      result = 30_000 + (300 * seat_count)
+      result += 10_000 + (500 * (seat_count - 20)) if seat_count > 20
+      result
     end
 
-    def credits
-      credits = [seat_count - 30, 0].max
-      credits += (seat_count / 5).floor
-      credits
-    end
+    def credits = (seat_count - 30).clamp(0..) + (seat_count / 5).floor
   end
 
   class Tragedy < Performance
     def amount
-      base = 40_000
-      base += 1_000 * (seat_count - 30) if seat_count > 30
-      base
+      result = 40_000
+      result += 1_000 * (seat_count - 30) if seat_count > 30
+      result
     end
 
-    def credits
-      [seat_count - 30, 0].max
-    end
+    def credits = (seat_count - 30).clamp(0..)
   end
 
   class Statement < Struct.new(:invoice, :plays)
     def statement
-      result = "Statement for #{customer}\n"
-      performances.each do |perf|
-        result += " #{perf.play_name}: #{format_usd(perf.amount)} (#{perf.seat_count} seats)\n"
-      end
-      result += "Amount owed is #{format_usd(total_amount)}\n"
-      result += "You earned #{total_credits} credits\n"
-      result
+      [
+        "Statement for #{customer}",
+        performances.map(&method(:format_performance)),
+        "Amount owed is #{usd(total_amount)}",
+        "You earned #{total_credits} credits",
+      ].join("\n").concat("\n")
     end
 
     private
 
+    def format_performance(p) = " #{p.play_name}: #{usd(p.amount)} (#{p.seat_count} seats)"
     def customer = invoice["customer"]
     def total_amount = performances.sum(&:amount)
     def total_credits = performances.sum(&:credits)
     def performances = invoice["performances"].map { |perf| Performance.build(plays, perf) }
-    def format_usd(amount_in_cents) = "$#{format("%.2f", amount_in_cents / 100.0)}"
+    def usd(amount_in_cents) = "$#{format("%.2f", amount_in_cents / 100.0)}"
   end
 
   def statement(invoice, plays)
