@@ -34,6 +34,8 @@ module SupermarketReceiptKata
         raise "Unexpected offer type: #{discount[:type]}"
       end
     end
+
+    def discount_amount = super.round(2)
   end
 
   class Product < Struct.new(:name, :unit, :unit_price, :discount)
@@ -41,7 +43,7 @@ module SupermarketReceiptKata
   end
 
   class ReceiptItem < Data.define(:product, :quantity)
-    def total_price = quantity * unit_price
+    def total_price = (quantity * unit_price).round(2)
     def unit_price = product.unit_price
   end
 

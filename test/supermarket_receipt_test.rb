@@ -63,10 +63,8 @@ class SupermarketTest < Minitest::Test
       20% off(toothbrush)                -0.07
       20% off(toothpaste)                -0.07
 
-      Total:                              0.53
+      Total:                              0.52
     EXPECTED_OUTPUT
-
-    # NOTE: Total should be 0.52
   end
 
   def test_no_floating_point_rounding_errors
@@ -78,12 +76,10 @@ class SupermarketTest < Minitest::Test
     output = receipt.to_s
 
     assert_equal <<~EXPECTED_OUTPUT.strip, output
-      apples                              1.00
+      apples                              1.01
         1.00 * 1.005
 
-      Total:                              1.00
+      Total:                              1.01
     EXPECTED_OUTPUT
-
-    # NOTE: Total should be 1.01
   end
 end
