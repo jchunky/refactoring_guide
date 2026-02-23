@@ -1,48 +1,35 @@
 # frozen_string_literal: true
 
 module GildedRoseKata
-  Item = Struct.new(:name, :sell_in, :quality)
-
-  class GildedRose
-    def initialize(items)
-      @items = items
-    end
-
-    def update_quality
-      @items.each { |item| update_item(item) }
-    end
-
-    private
-
-    def update_item(item)
-      case item.name
-      when "Sulfuras, Hand of Ragnaros" then nil # legendary: never changes
-      when "Aged Brie" then update_aged_brie(item)
-      when "Backstage passes to a TAFKAL80ETC concert" then update_backstage_pass(item)
-      else update_normal(item)
+  class Item < Struct.new(:name, :sell_in, :quality)
+    def update
+      case name
+      when "Sulfuras, Hand of Ragnaros"
+        # legendary: never changes
+        nil
+      when "Aged Brie"
+        self.sell_in -= 1
+        self.quality += sell_in < 0 ? 2 : 1
+        self.quality = quality.clamp(0, 50)
+      when "Backstage passes to a TAFKAL80ETC concert"
+        self.sell_in -= 1
+        self.quality +=
+          case sell_in
+          when (10..) then 1
+          when (5..9) then 2
+          when (0..4) then 3
+          when (..-1) then -quality
+          end
+        self.quality = quality.clamp(0, 50)
+      else
+        self.sell_in -= 1
+        self.quality -= sell_in < 0 ? 2 : 1
+        self.quality = quality.clamp(0, 50)
       end
     end
+  end
 
-    def update_aged_brie(item)
-      item.quality += 1 if item.quality < 50
-      item.sell_in -= 1
-      item.quality += 1 if item.sell_in < 0 && item.quality < 50
-    end
-
-    def update_backstage_pass(item)
-      if item.quality < 50
-        item.quality += 1
-        item.quality += 1 if item.sell_in < 11 && item.quality < 50
-        item.quality += 1 if item.sell_in < 6 && item.quality < 50
-      end
-      item.sell_in -= 1
-      item.quality = 0 if item.sell_in < 0
-    end
-
-    def update_normal(item)
-      item.quality -= 1 if item.quality > 0
-      item.sell_in -= 1
-      item.quality -= 1 if item.sell_in < 0 && item.quality > 0
-    end
+  class GildedRose < Struct.new(:items)
+    def update_quality = items.each(&:update)
   end
 end
