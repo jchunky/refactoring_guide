@@ -1,25 +1,37 @@
 # frozen_string_literal: true
 
 module BottlesKata
+  class BottleNumber < Struct.new(:n)
+    def self.for(n) = (Object.const_get("BottleNumber#{n}") rescue BottleNumber).new(n)
+
+    def to_s = [quantity, bottles].join(" ")
+    def successor = BottleNumber.for(n - 1)
+    def quantity = n.to_s
+    def bottles = "bottles"
+    def pronoun = "one"
+    def action = "Take #{pronoun} down and pass it around"
+  end
+
+  class BottleNumber0 < BottleNumber
+    def to_s = [quantity, bottles].join(" ")
+    def successor = BottleNumber.for(99)
+    def quantity = "no more"
+    def action = "Go to the store and buy some more"
+  end
+
+  class BottleNumber1 < BottleNumber
+    def to_s = [quantity, bottles].join(" ")
+    def bottles = "bottle"
+    def pronoun = "it"
+  end
+
   class Bottles
     def song = verses(99, 0)
     def verses(start, finish) = start.downto(finish).map(&method(:verse)).join("\n")
 
     def verse(number)
-      case number
-      when 0
-        "No more bottles of beer on the wall, no more bottles of beer.\n" \
-        "Go to the store and buy some more, 99 bottles of beer on the wall.\n"
-      when 1
-        "1 bottle of beer on the wall, 1 bottle of beer.\n" \
-        "Take it down and pass it around, no more bottles of beer on the wall.\n"
-      when 2
-        "2 bottles of beer on the wall, 2 bottles of beer.\n" \
-        "Take one down and pass it around, 1 bottle of beer on the wall.\n"
-      else
-        "#{number} bottles of beer on the wall, #{number} bottles of beer.\n" \
-        "Take one down and pass it around, #{number - 1} bottles of beer on the wall.\n"
-      end
+      n = BottleNumber.for(number)
+      "#{n.to_s.capitalize} of beer on the wall, #{n} of beer.\n#{n.action}, #{n.successor} of beer on the wall.\n"
     end
   end
 end
