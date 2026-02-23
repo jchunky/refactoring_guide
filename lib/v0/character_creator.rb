@@ -39,24 +39,32 @@ module CharacterCreatorKata
   end
 
   def background_bonuses(background)
-    ability_bonuses = []
-    skill_proficiencies = []
     case background
     when "Acolyte"
-      ability_bonuses = ["Intelligence", "Wisdom", "Charisma"]
-      skill_proficiencies = [Proficiencies::INSIGHT, Proficiencies::RELIGION]
+      {
+        ability_bonuses: ["Intelligence", "Wisdom", "Charisma"],
+        skill_proficiencies: [Proficiencies::INSIGHT, Proficiencies::RELIGION]
+      }
     when "Criminal"
-      ability_bonuses = ["Dexterity", "Constitution", "Intelligence"]
-      skill_proficiencies = [Proficiencies::SLEIGHT_OF_HAND, Proficiencies::STEALTH]
+      {
+        ability_bonuses: ["Dexterity", "Constitution", "Intelligence"],
+        skill_proficiencies: [Proficiencies::SLEIGHT_OF_HAND, Proficiencies::STEALTH]
+      }
     when "Sage"
-      ability_bonuses = ["Constitution", "Intelligence", "Wisdom"]
-      skill_proficiencies = [Proficiencies::ARCANA, Proficiencies::HISTORY]
+      {
+        ability_bonuses: ["Constitution", "Intelligence", "Wisdom"],
+        skill_proficiencies: [Proficiencies::ARCANA, Proficiencies::HISTORY]
+      }
     when "Soldier"
-      ability_bonuses = ["Strength", "Dexterity", "Constitution"]
-      skill_proficiencies = [Proficiencies::ATHLETICS, Proficiencies::INTIMIDATION]
+      {
+        ability_bonuses: ["Strength", "Dexterity", "Constitution"],
+        skill_proficiencies: [Proficiencies::ATHLETICS, Proficiencies::INTIMIDATION]
+      }
     else
-      ability_bonuses = []
-      skill_proficiencies = []
+      {
+        ability_bonuses: [],
+        skill_proficiencies: []
+      }
     end
   end
 
@@ -214,10 +222,9 @@ module CharacterCreatorKata
   end
 
   def proficiency_by_class(character_class)
-    proficiency_options = []
     case character_class
     when "Barbarian"
-      proficiency_options = [
+      [
           Proficiencies::ANIMAL_HANDLING,
           Proficiencies::ATHLETICS,
           Proficiencies::INTIMIDATION,
@@ -226,7 +233,7 @@ module CharacterCreatorKata
           Proficiencies::SURVIVAL
       ]
     when "Bard"
-      proficiency_options = [
+      [
           Proficiencies::ATHLETICS,
           Proficiencies::ACROBATICS,
           Proficiencies::SLEIGHT_OF_HAND,
@@ -248,7 +255,7 @@ module CharacterCreatorKata
           Proficiencies::PERSUASION
       ]
     when "Cleric"
-      proficiency_options = [
+      [
           Proficiencies::HISTORY,
           Proficiencies::INSIGHT,
           Proficiencies::MEDICINE,
@@ -256,7 +263,7 @@ module CharacterCreatorKata
           Proficiencies::RELIGION
          ]
     when "Druid"
-      proficiency_options = [
+      [
           Proficiencies::ARCANA,
           Proficiencies::ANIMAL_HANDLING,
           Proficiencies::INSIGHT,
@@ -267,7 +274,7 @@ module CharacterCreatorKata
           Proficiencies::SURVIVAL
       ]
     when "Fighter"
-      proficiency_options = [
+      [
           Proficiencies::ACROBATICS,
           Proficiencies::ANIMAL_HANDLING,
           Proficiencies::ATHLETICS,
@@ -279,7 +286,7 @@ module CharacterCreatorKata
           Proficiencies::SURVIVAL
       ]
     when "Monk"
-      proficiency_options = [
+      [
           Proficiencies::ACROBATICS,
           Proficiencies::ATHLETICS,
           Proficiencies::HISTORY,
@@ -288,7 +295,7 @@ module CharacterCreatorKata
           Proficiencies::STEALTH
       ]
     when "Paladin"
-      proficiency_options = [
+      [
           Proficiencies::ATHLETICS,
           Proficiencies::INSIGHT,
           Proficiencies::INTIMIDATION,
@@ -297,7 +304,7 @@ module CharacterCreatorKata
           Proficiencies::RELIGION
       ]
     when "Ranger"
-      proficiency_options = [
+      [
           Proficiencies::ANIMAL_HANDLING,
           Proficiencies::ATHLETICS,
           Proficiencies::INSIGHT,
@@ -308,7 +315,7 @@ module CharacterCreatorKata
           Proficiencies::SURVIVAL
       ]
     when "Rogue"
-      proficiency_options = [
+      [
           Proficiencies::ACROBATICS,
           Proficiencies::ATHLETICS,
           Proficiencies::DECEPTION,
@@ -321,7 +328,7 @@ module CharacterCreatorKata
           Proficiencies::STEALTH
       ]
     when "Sorcerer"
-      proficiency_options = [
+      [
           Proficiencies::ARCANA,
           Proficiencies::DECEPTION,
           Proficiencies::INSIGHT,
@@ -330,7 +337,7 @@ module CharacterCreatorKata
           Proficiencies::RELIGION
       ]
     when "Warlock"
-      proficiency_options = [
+      [
           Proficiencies::ARCANA,
           Proficiencies::DECEPTION,
           Proficiencies::HISTORY,
@@ -340,7 +347,7 @@ module CharacterCreatorKata
           Proficiencies::RELIGION
       ]
     when "Wizard"
-      proficiency_options = [
+      [
           Proficiencies::ARCANA,
           Proficiencies::HISTORY,
           Proficiencies::INSIGHT,
@@ -350,7 +357,7 @@ module CharacterCreatorKata
           Proficiencies::RELIGION
       ]
     else
-      proficiency_options = []
+      []
     end
   end
 
@@ -460,7 +467,7 @@ module CharacterCreatorKata
         "persuasion" => 0
     }
     return skillhash
-    end
+  end
 
 
   def statpick(stats)
@@ -486,7 +493,7 @@ module CharacterCreatorKata
             break n
           end
         end
-        end
+      end
     end
 
     puts "These are your remaining stats: "
@@ -606,47 +613,51 @@ module CharacterCreatorKata
   def statroll
     [15, 14, 13, 12, 10, 8]
   end
+
+  def main
+    puts "Welcome to the D&D Character Creator!"
+    puts "=" * 40
+
+    charclass = classpick
+    species = speciespick
+    background = backgroundpick
+
+    stats = statroll
+    puts "You rolled: #{stats.inspect}"
+    finalstats = statpick(stats)
+
+    level = 1
+    str, dex, con, int, wis, cha = finalstats
+    strmod = my_modcalc(str)
+    dexmod = my_modcalc(dex)
+    conmod = my_modcalc(con)
+    intmod = my_modcalc(int)
+    wismod = my_modcalc(wis)
+    chamod = my_modcalc(cha)
+
+    prof = proficiency(level)
+    hitpoints = hitpointcalculator(charclass, level, conmod)
+    skills = skillpopulator
+
+    puts "\nWhat is your character's name?"
+    charname = get_input("Adventurer")
+
+    $charstats = DnDchars.new(
+      charname, level, species, charclass, background,
+      str, strmod, dex, dexmod, con, conmod, int, intmod, wis, wismod, cha, chamod,
+      10 + dexmod, prof, hitpoints, skills
+    )
+
+    puts "\n" + "=" * 40
+    puts "Character Created!"
+    puts "=" * 40
+    puts $charstats.context
+  end
 end
 
 # Allow running this file directly for manual testing
 if __FILE__ == $0
   include CharacterCreatorKata
 
-  puts "Welcome to the D&D Character Creator!"
-  puts "=" * 40
-
-  charclass = classpick
-  species = speciespick
-  background = backgroundpick
-
-  stats = statroll
-  puts "You rolled: #{stats.inspect}"
-  finalstats = statpick(stats)
-
-  level = 1
-  str, dex, con, int, wis, cha = finalstats
-  strmod = my_modcalc(str)
-  dexmod = my_modcalc(dex)
-  conmod = my_modcalc(con)
-  intmod = my_modcalc(int)
-  wismod = my_modcalc(wis)
-  chamod = my_modcalc(cha)
-
-  prof = proficiency(level)
-  hitpoints = hitpointcalculator(charclass, level, conmod)
-  skills = skillpopulator
-
-  puts "\nWhat is your character's name?"
-  charname = get_input("Adventurer")
-
-  $charstats = DnDchars.new(
-    charname, level, species, charclass, background,
-    str, strmod, dex, dexmod, con, conmod, int, intmod, wis, wismod, cha, chamod,
-    10 + dexmod, prof, hitpoints, skills
-  )
-
-  puts "\n" + "=" * 40
-  puts "Character Created!"
-  puts "=" * 40
-  puts $charstats.context
+  main
 end
