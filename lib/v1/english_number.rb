@@ -1,35 +1,48 @@
 # frozen_string_literal: true
 
 module EnglishNumberKata
-  ONES = %w[one two three four five six seven eight nine].freeze
-  TEENS = %w[eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen].freeze
-  TENS = %w[ten twenty thirty forty fifty sixty seventy eighty ninety].freeze
+  NUMBERS = {
+    1 => "one",
+    2 => "two",
+    3 => "three",
+    4 => "four",
+    5 => "five",
+    6 => "six",
+    7 => "seven",
+    8 => "eight",
+    9 => "nine",
+    10 => "ten",
+    11 => "eleven",
+    12 => "twelve",
+    13 => "thirteen",
+    14 => "fourteen",
+    15 => "fifteen",
+    16 => "sixteen",
+    17 => "seventeen",
+    18 => "eighteen",
+    19 => "nineteen",
+    20 => "twenty",
+    30 => "thirty",
+    40 => "forty",
+    50 => "fifty",
+    60 => "sixty",
+    70 => "seventy",
+    80 => "eighty",
+    90 => "ninety",
+  }.freeze
 
-  def english_number(number)
-    return "Please enter a number that isn't negative." if number < 0
-    return "zero" if number == 0
+  def english_number(n)
+    return "Please enter a number that isn't negative." if n < 0
+    return "zero" if n == 0
 
-    result = +""
+    say(n)
+  end
 
-    hundreds, remainder = number.divmod(100)
-    if hundreds > 0
-      result << "#{english_number(hundreds)} hundred"
-      result << " " if remainder > 0
+  def say(n)
+    case n
+    when (1..20) then NUMBERS[n]
+    when (21..99) then [NUMBERS[n.truncate(-1)], NUMBERS[n % 10]].compact.join("-")
+    when (100..) then [say(n / 100), "hundred", say(n % 100)].compact.join(" ")
     end
-
-    tens, ones = remainder.divmod(10)
-    if tens > 0
-      if tens == 1 && ones > 0
-        result << TEENS[ones - 1]
-        return result
-      else
-        result << TENS[tens - 1]
-        result << "-" if ones > 0
-      end
-    end
-
-    result << ONES[ones - 1] if ones > 0
-
-    result
   end
 end
