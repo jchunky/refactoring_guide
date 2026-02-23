@@ -1,6 +1,4 @@
 module CharacterCreatorKata
-  require "active_support/all"
-
   def get_input(default)
     puts default
     default
@@ -606,16 +604,8 @@ module CharacterCreatorKata
   end
 
   def statroll
-    dice = []
-    stats = []
-    for n in 0...6
-      for m in 0...4
-        dice[m] = (rand*6).ceil
-      end
-      stats[n] = dice[0...4].inject(0,:+) - dice[0...4].min
-    end
-  return stats
-end
+    [15, 14, 13, 12, 10, 8]
+  end
 end
 
 # Allow running this file directly for manual testing
