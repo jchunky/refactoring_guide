@@ -82,33 +82,34 @@ module SupermarketReceiptKata
       [
         receipt.items.map { |item| format_receipt_item(item) },
         receipt.discounts.map { |discount| format_discount(discount) },
-        "\n",
+        "",
         total_line,
-      ].join
+      ].flatten.compact.join("\n")
     end
 
     private
 
     def format_receipt_item(item)
+      product_name = item.product.name
       price = usd(item.total_price)
-      name = item.product.name
-      price_width = width - name.length - 1
-      line = format("%s %s\n", name, price.rjust(price_width))
-      line += "  #{usd(item.unit_price)} * #{item.formatted_quantity}\n" if item.quantity != 1
+      line = []
+      line << format_line(product_name, price)
+      line << "  #{usd(item.unit_price)} * #{item.formatted_quantity}" if item.quantity != 1
       line
     end
 
     def format_discount(discount)
       product_name = discount.product.name
-      price = usd(-1 * discount.discount_amount)
-      description = discount.description
-      price_width = width - description.length - product_name.length - 3
-      format("%s(%s) %s\n", description, product_name, price.rjust(price_width))
+      discount_amount = usd(-1 * discount.discount_amount)
+      format_line(format("%s(%s)", discount.description, product_name), discount_amount)
     end
 
     def total_line
-      price_width = width - 7
-      format("Total: %s", usd(receipt.total_price).rjust(price_width))
+      format_line("Total:", usd(receipt.total_price))
+    end
+
+    def format_line(left, right)
+      format("%s%s", left, right.rjust(width - left.length))
     end
 
     def usd(price) = format("%.2f", price)
