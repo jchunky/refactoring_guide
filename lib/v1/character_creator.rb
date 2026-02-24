@@ -113,6 +113,19 @@ module CharacterCreatorKata
     def to_h
       super.merge(**ability_scores.to_h).tap { |h| h.delete(:ability_scores) }
     end
+
+    def to_s
+      s = ability_scores
+      lines = []
+      lines << "--- #{name} (Level #{level} #{char_class}) ---"
+      lines << "Species: #{species} | Background: #{background}"
+      lines << "STR: #{s.str} (%+d)  DEX: #{s.dex} (%+d)  CON: #{s.con} (%+d)" % [s.str_mod, s.dex_mod, s.con_mod]
+      lines << "INT: #{s.int} (%+d)  WIS: #{s.wis} (%+d)  CHA: #{s.cha} (%+d)" % [s.int_mod, s.wis_mod, s.cha_mod]
+      lines << "AC: #{ac}  HP: #{hit_points}  Prof Bonus: +#{proficiency_bonus}"
+      skill_list = skills.map { |name, val| "#{name} %+d" % val }.join(", ")
+      lines << "Skills: #{skill_list}"
+      lines.join("\n")
+    end
   end
 
   # --- Calculations ---
@@ -166,23 +179,27 @@ module CharacterCreatorKata
     default
   end
 
-  def pick_first(options)
-    choice = options.first
+  def pick_from_list(options, prompt)
+    puts "\n#{prompt}"
+    options.each_with_index { |opt, i| puts "  #{i + 1}) #{opt}" }
+    choice = options[get_input("1").to_i - 1]
     puts "  → #{choice}"
     choice
   end
 
   def assign_stats(stats)
-    finalstats = []
     available = stats.dup
+    finalstats = []
 
+    puts "\nAssign Ability Scores (Standard Array: #{stats.inspect})"
     STAT_NAMES[0...-1].each_with_index do |name, i|
+      puts "  #{name} from #{available.compact.inspect}:"
       value = get_input(available.compact.first).to_i
       finalstats[i] = value
       available[available.index(value)] = nil
     end
     finalstats[5] = available.compact.first
-
+    puts "  Charisma: #{finalstats[5]} (auto-assigned)"
     finalstats
   end
 
@@ -193,8 +210,10 @@ module CharacterCreatorKata
 
     return [ability_scores, bg_skills] if candidates.empty?
 
+    puts "\nBackground Ability Bonuses (#{background}: #{candidates.join(", ")})"
     plus2_name = candidates.first
     plus1_name = (candidates - [plus2_name]).first
+    puts "  +2 to #{plus2_name}, +1 to #{plus1_name}"
 
     bonus_hash = {
       plus2_name.downcase[0..2].to_sym => 2,
@@ -206,17 +225,22 @@ module CharacterCreatorKata
   def pick_class_skills(char_class, background_skills)
     available = CharacterCreatorKata.proficiency_by_class(char_class) - background_skills
     count = CharacterCreatorKata.class_skill_count(char_class)
-    available.first(count)
+    chosen = available.first(count)
+    puts "\nSkill Proficiencies"
+    puts "  Background: #{background_skills.join(", ")}"
+    puts "  Class (#{char_class}): #{chosen.join(", ")}"
+    chosen
   end
 
   # --- Main Orchestration ---
 
   def main
     puts "D&D Character Creator"
+    puts "=" * 30
 
-    char_class  = pick_first(CLASSES)
-    species     = pick_first(SPECIES)
-    background  = pick_first(BACKGROUNDS)
+    char_class = pick_from_list(CLASSES, "Choose your class:")
+    species    = pick_from_list(SPECIES, "Choose your species:")
+    background = pick_from_list(BACKGROUNDS, "Choose your background:")
 
     finalstats = assign_stats(CharacterCreatorKata.stat_roll)
 
@@ -232,14 +256,18 @@ module CharacterCreatorKata
     hit_points = CharacterCreatorKata.calculate_hit_points(char_class, level, ability_scores.con_mod)
     skills = CharacterCreatorKata.calculate_skills(ability_scores, prof, all_proficient_skills)
 
+    puts "\nWhat is your character's name?"
     name = get_input("Adventurer").to_s.strip
     name = "Adventurer" if name.empty?
 
-    Character.new(
+    character = Character.new(
       name: name, level: level, species: species, char_class: char_class, background: background,
       ability_scores: ability_scores, ac: 10 + ability_scores.dex_mod,
       proficiency_bonus: prof, hit_points: hit_points, skills: skills
     )
+
+    puts "\n#{character}"
+    character
   end
 end
 

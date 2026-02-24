@@ -460,8 +460,11 @@ class CharacterCreationIntegrationTest < Minitest::Test
     _character, output = capture_stdout { main }
 
     assert_includes output, "D&D Character Creator"
+    assert_includes output, "Choose your class:"
     assert_includes output, "Barbarian"
     assert_includes output, "Dragonborn"
     assert_includes output, "Adventurer"
+    assert_includes output, "Skill Proficiencies"
+    assert_includes output, "Level 1 Barbarian"
   end
 end
