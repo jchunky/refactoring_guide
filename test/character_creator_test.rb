@@ -171,6 +171,9 @@ class BackgroundBonusesTest < Minitest::Test
     CharacterCreatorKata::BACKGROUNDS.each do |name, data|
       assert_equal 3, data[:ability_bonuses].size, "#{name} should have 3 ability bonus candidates"
       assert_equal 2, data[:skill_proficiencies].size, "#{name} should have 2 skill proficiencies"
+      refute_nil data[:feat], "#{name} should have a feat"
+      refute_empty data[:equipment], "#{name} should have equipment"
+      assert_includes data[:equipment], "50 GP", "#{name} should start with 50 GP"
     end
   end
 
@@ -369,8 +372,13 @@ class CharacterTest < Minitest::Test
       passive_perception: 10 + @skills[:perception],
       passive_insight: 10 + @skills[:insight],
       passive_investigation: 10 + @skills[:investigation],
+      species_traits: ["Breath Weapon", "Damage Resistance", "Darkvision (60 ft)", "Draconic Flight (Lv5)"],
+      feat: "Magic Initiate (Cleric)",
+      armor_proficiencies: %w[Light Medium Shield],
+      weapon_proficiencies: %w[Simple Martial],
       saving_throws: CharacterCreatorKata.calculate_saving_throws(@ability_scores, 2, "Barbarian"),
       languages: ["Common", "Draconic", "Dwarvish"],
+      equipment: ["Holy Symbol", "Prayer Book", "Parchment (10)", "Robe", "50 GP"],
       skills: @skills
     )
   end
@@ -422,6 +430,15 @@ class SavingThrowsTest < Minitest::Test
     assert_equal 1, saves[:int]  # INT(+1), not proficient
   end
 
+  def test_each_class_has_armor_and_weapon_data
+    CharacterCreatorKata::CLASSES.each_key do |char_class|
+      data = CharacterCreatorKata::CLASSES[char_class]
+      assert data.key?(:armor), "#{char_class} should have armor key"
+      assert data.key?(:weapons), "#{char_class} should have weapons key"
+      refute_empty data[:weapons], "#{char_class} should have at least one weapon proficiency"
+    end
+  end
+
   def test_each_class_has_saving_throws
     CharacterCreatorKata::CLASSES.each_key do |char_class|
       saves = CharacterCreatorKata.saving_throws_for_class(char_class)
@@ -471,6 +488,18 @@ class CharacterCreationIntegrationTest < Minitest::Test
     assert_equal 18, character.skills.size
     assert_equal 3, character.languages.size
     assert_includes character.languages, "Common"
+    assert_equal "Magic Initiate (Cleric)", character.feat  # Acolyte feat
+    assert_includes character.armor_proficiencies, "Light"
+    assert_includes character.weapon_proficiencies, "Martial"
+    assert_includes character.species_traits, "Breath Weapon"  # Dragonborn trait
+    assert_includes character.equipment, "Holy Symbol"  # Acolyte equipment
+    assert_includes character.equipment, "50 GP"
+  end
+
+  def test_all_species_have_traits
+    CharacterCreatorKata::SPECIES.each do |name, data|
+      refute_empty data[:traits], "#{name} should have at least one trait"
+    end
   end
 
   def test_main_applies_background_ability_bonuses

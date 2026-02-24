@@ -17,30 +17,54 @@ module CharacterCreatorKata
   STANDARD_ARRAY = [15, 14, 13, 12, 10, 8].freeze
 
   CLASSES = {
-    "Barbarian" => { hit_die: 12, skill_count: 2, saving_throws: %i[str con], skills: %i[animal_handling athletics intimidation nature perception survival] },
-    "Bard"      => { hit_die: 8,  skill_count: 3, saving_throws: %i[dex cha], skills: ALL_SKILLS.dup },
-    "Cleric"    => { hit_die: 8,  skill_count: 2, saving_throws: %i[wis cha], skills: %i[history insight medicine persuasion religion] },
-    "Druid"     => { hit_die: 8,  skill_count: 2, saving_throws: %i[int wis], skills: %i[arcana animal_handling insight medicine nature perception religion survival] },
-    "Fighter"   => { hit_die: 10, skill_count: 2, saving_throws: %i[str con], skills: %i[acrobatics animal_handling athletics history insight intimidation perception persuasion survival] },
-    "Monk"      => { hit_die: 8,  skill_count: 2, saving_throws: %i[str dex], skills: %i[acrobatics athletics history insight religion stealth] },
-    "Paladin"   => { hit_die: 10, skill_count: 2, saving_throws: %i[wis cha], skills: %i[athletics insight intimidation medicine persuasion religion] },
-    "Ranger"    => { hit_die: 10, skill_count: 3, saving_throws: %i[str dex], skills: %i[animal_handling athletics insight investigation nature perception stealth survival] },
-    "Rogue"     => { hit_die: 8,  skill_count: 4, saving_throws: %i[dex int], skills: %i[acrobatics athletics deception insight intimidation investigation perception persuasion sleight_of_hand stealth] },
-    "Sorcerer"  => { hit_die: 6,  skill_count: 2, saving_throws: %i[con cha], skills: %i[arcana deception insight intimidation persuasion religion] },
-    "Warlock"   => { hit_die: 8,  skill_count: 2, saving_throws: %i[wis cha], skills: %i[arcana deception history intimidation investigation nature religion] },
-    "Wizard"    => { hit_die: 6,  skill_count: 2, saving_throws: %i[int wis], skills: %i[arcana history insight investigation medicine nature religion] }
+    "Barbarian" => { hit_die: 12, skill_count: 2, saving_throws: %i[str con],
+                     armor: %w[Light Medium Shield], weapons: %w[Simple Martial],
+                     skills: %i[animal_handling athletics intimidation nature perception survival] },
+    "Bard"      => { hit_die: 8,  skill_count: 3, saving_throws: %i[dex cha],
+                     armor: %w[Light], weapons: %w[Simple],
+                     skills: ALL_SKILLS.dup },
+    "Cleric"    => { hit_die: 8,  skill_count: 2, saving_throws: %i[wis cha],
+                     armor: %w[Light Medium Shield], weapons: %w[Simple],
+                     skills: %i[history insight medicine persuasion religion] },
+    "Druid"     => { hit_die: 8,  skill_count: 2, saving_throws: %i[int wis],
+                     armor: %w[Light Shield], weapons: %w[Simple],
+                     skills: %i[arcana animal_handling insight medicine nature perception religion survival] },
+    "Fighter"   => { hit_die: 10, skill_count: 2, saving_throws: %i[str con],
+                     armor: %w[Light Medium Heavy Shield], weapons: %w[Simple Martial],
+                     skills: %i[acrobatics animal_handling athletics history insight intimidation perception persuasion survival] },
+    "Monk"      => { hit_die: 8,  skill_count: 2, saving_throws: %i[str dex],
+                     armor: [], weapons: %w[Simple Martial],
+                     skills: %i[acrobatics athletics history insight religion stealth] },
+    "Paladin"   => { hit_die: 10, skill_count: 2, saving_throws: %i[wis cha],
+                     armor: %w[Light Medium Heavy Shield], weapons: %w[Simple Martial],
+                     skills: %i[athletics insight intimidation medicine persuasion religion] },
+    "Ranger"    => { hit_die: 10, skill_count: 3, saving_throws: %i[str dex],
+                     armor: %w[Light Medium Shield], weapons: %w[Simple Martial],
+                     skills: %i[animal_handling athletics insight investigation nature perception stealth survival] },
+    "Rogue"     => { hit_die: 8,  skill_count: 4, saving_throws: %i[dex int],
+                     armor: %w[Light], weapons: %w[Simple],
+                     skills: %i[acrobatics athletics deception insight intimidation investigation perception persuasion sleight_of_hand stealth] },
+    "Sorcerer"  => { hit_die: 6,  skill_count: 2, saving_throws: %i[con cha],
+                     armor: [], weapons: %w[Simple],
+                     skills: %i[arcana deception insight intimidation persuasion religion] },
+    "Warlock"   => { hit_die: 8,  skill_count: 2, saving_throws: %i[wis cha],
+                     armor: %w[Light], weapons: %w[Simple],
+                     skills: %i[arcana deception history intimidation investigation nature religion] },
+    "Wizard"    => { hit_die: 6,  skill_count: 2, saving_throws: %i[int wis],
+                     armor: [], weapons: %w[Simple],
+                     skills: %i[arcana history insight investigation medicine nature religion] }
   }.freeze
 
   SPECIES = {
-    "Dragonborn" => { speed: 30 },
-    "Dwarf"      => { speed: 30 },
-    "Elf"        => { speed: 30 },
-    "Gnome"      => { speed: 30 },
-    "Goliath"    => { speed: 35 },
-    "Halfling"   => { speed: 30 },
-    "Human"      => { speed: 30 },
-    "Orc"        => { speed: 30 },
-    "Tiefling"   => { speed: 30 }
+    "Dragonborn" => { speed: 30, traits: ["Breath Weapon", "Damage Resistance", "Darkvision (60 ft)", "Draconic Flight (Lv5)"] },
+    "Dwarf"      => { speed: 30, traits: ["Darkvision (120 ft)", "Dwarven Resilience", "Dwarven Toughness", "Stonecunning"] },
+    "Elf"        => { speed: 30, traits: ["Darkvision (60 ft)", "Elven Lineage", "Fey Ancestry", "Keen Senses", "Trance"] },
+    "Gnome"      => { speed: 30, traits: ["Darkvision (60 ft)", "Gnomish Cunning", "Gnomish Lineage"] },
+    "Goliath"    => { speed: 35, traits: ["Giant Ancestry", "Large Form", "Powerful Build"] },
+    "Halfling"   => { speed: 30, traits: ["Brave", "Halfling Nimbleness", "Luck", "Naturally Stealthy"] },
+    "Human"      => { speed: 30, traits: ["Resourceful", "Skillful", "Versatile"] },
+    "Orc"        => { speed: 30, traits: ["Adrenaline Rush", "Darkvision (120 ft)", "Relentless Endurance"] },
+    "Tiefling"   => { speed: 30, traits: ["Darkvision (60 ft)", "Fiendish Legacy", "Otherworldly Presence"] }
   }.freeze
 
   LANGUAGES = %w[Common Draconic Dwarvish Elvish Giant Gnomish Goblin Halfling Orc
@@ -48,22 +72,22 @@ module CharacterCreatorKata
                  Deep\ Speech Druidic Thieves'\ Cant].freeze
 
   BACKGROUNDS = {
-    "Acolyte"      => { ability_bonuses: %i[int wis cha], skill_proficiencies: %i[insight religion] },
-    "Artisan"      => { ability_bonuses: %i[str dex int], skill_proficiencies: %i[investigation persuasion] },
-    "Charlatan"    => { ability_bonuses: %i[dex con cha], skill_proficiencies: %i[deception sleight_of_hand] },
-    "Criminal"     => { ability_bonuses: %i[dex con int], skill_proficiencies: %i[sleight_of_hand stealth] },
-    "Entertainer"  => { ability_bonuses: %i[str dex cha], skill_proficiencies: %i[acrobatics performance] },
-    "Farmer"       => { ability_bonuses: %i[str con wis], skill_proficiencies: %i[animal_handling nature] },
-    "Guard"        => { ability_bonuses: %i[str con wis], skill_proficiencies: %i[athletics perception] },
-    "Guide"        => { ability_bonuses: %i[dex con wis], skill_proficiencies: %i[stealth survival] },
-    "Hermit"       => { ability_bonuses: %i[con wis cha], skill_proficiencies: %i[medicine religion] },
-    "Merchant"     => { ability_bonuses: %i[con int cha], skill_proficiencies: %i[animal_handling persuasion] },
-    "Noble"        => { ability_bonuses: %i[str int cha], skill_proficiencies: %i[history persuasion] },
-    "Sage"         => { ability_bonuses: %i[con int wis], skill_proficiencies: %i[arcana history] },
-    "Sailor"       => { ability_bonuses: %i[str dex wis], skill_proficiencies: %i[acrobatics perception] },
-    "Scribe"       => { ability_bonuses: %i[dex int wis], skill_proficiencies: %i[investigation perception] },
-    "Soldier"      => { ability_bonuses: %i[str dex con], skill_proficiencies: %i[athletics intimidation] },
-    "Wayfarer"     => { ability_bonuses: %i[dex wis cha], skill_proficiencies: %i[insight stealth] }
+    "Acolyte"      => { ability_bonuses: %i[int wis cha], skill_proficiencies: %i[insight religion],          feat: "Magic Initiate (Cleric)",  equipment: ["Holy Symbol", "Prayer Book", "Parchment (10)", "Robe", "50 GP"] },
+    "Artisan"      => { ability_bonuses: %i[str dex int], skill_proficiencies: %i[investigation persuasion],  feat: "Crafter",                  equipment: ["Artisan's Tools", "Traveler's Clothes", "Pouch", "50 GP"] },
+    "Charlatan"    => { ability_bonuses: %i[dex con cha], skill_proficiencies: %i[deception sleight_of_hand], feat: "Skilled",                   equipment: ["Disguise Kit", "Fine Clothes", "Forgery Kit", "50 GP"] },
+    "Criminal"     => { ability_bonuses: %i[dex con int], skill_proficiencies: %i[sleight_of_hand stealth],   feat: "Alert",                    equipment: ["Crowbar", "Dagger (2)", "Thieves' Tools", "50 GP"] },
+    "Entertainer"  => { ability_bonuses: %i[str dex cha], skill_proficiencies: %i[acrobatics performance],    feat: "Musician",                  equipment: ["Musical Instrument", "Costume", "Mirror", "50 GP"] },
+    "Farmer"       => { ability_bonuses: %i[str con wis], skill_proficiencies: %i[animal_handling nature],    feat: "Tough",                    equipment: ["Healer's Kit", "Iron Pot", "Shovel", "50 GP"] },
+    "Guard"        => { ability_bonuses: %i[str con wis], skill_proficiencies: %i[athletics perception],      feat: "Alert",                    equipment: ["Spear", "Light Crossbow", "Bolts (20)", "50 GP"] },
+    "Guide"        => { ability_bonuses: %i[dex con wis], skill_proficiencies: %i[stealth survival],          feat: "Magic Initiate (Druid)",   equipment: ["Bedroll", "Rope (50 ft)", "Tent", "50 GP"] },
+    "Hermit"       => { ability_bonuses: %i[con wis cha], skill_proficiencies: %i[medicine religion],         feat: "Healer",                   equipment: ["Book", "Herbalism Kit", "Lamp", "50 GP"] },
+    "Merchant"     => { ability_bonuses: %i[con int cha], skill_proficiencies: %i[animal_handling persuasion], feat: "Lucky",                   equipment: ["Chest", "Fine Clothes", "Merchant's Scale", "50 GP"] },
+    "Noble"        => { ability_bonuses: %i[str int cha], skill_proficiencies: %i[history persuasion],         feat: "Skilled",                  equipment: ["Fine Clothes", "Signet Ring", "Scroll (5)", "50 GP"] },
+    "Sage"         => { ability_bonuses: %i[con int wis], skill_proficiencies: %i[arcana history],             feat: "Magic Initiate (Wizard)", equipment: ["Book", "Ink", "Ink Pen", "Parchment (10)", "50 GP"] },
+    "Sailor"       => { ability_bonuses: %i[str dex wis], skill_proficiencies: %i[acrobatics perception],     feat: "Tavern Brawler",          equipment: ["Dagger", "Navigator's Tools", "Rope (50 ft)", "50 GP"] },
+    "Scribe"       => { ability_bonuses: %i[dex int wis], skill_proficiencies: %i[investigation perception],  feat: "Skilled",                  equipment: ["Calligrapher's Supplies", "Fine Clothes", "Ink", "50 GP"] },
+    "Soldier"      => { ability_bonuses: %i[str dex con], skill_proficiencies: %i[athletics intimidation],    feat: "Savage Attacker",          equipment: ["Javelin (6)", "Gaming Set", "Healer's Kit", "50 GP"] },
+    "Wayfarer"     => { ability_bonuses: %i[dex wis cha], skill_proficiencies: %i[insight stealth],           feat: "Lucky",                    equipment: ["Bedroll", "Mess Kit", "Waterskin", "50 GP"] }
   }.freeze
 
 
@@ -97,7 +121,8 @@ module CharacterCreatorKata
     :name, :level, :species, :char_class, :background,
     :ability_scores, :ac, :speed, :proficiency_bonus, :hit_points, :initiative,
     :passive_perception, :passive_insight, :passive_investigation,
-    :saving_throws, :languages, :skills
+    :species_traits, :feat, :armor_proficiencies, :weapon_proficiencies,
+    :saving_throws, :languages, :equipment, :skills
   ) do
     def to_h
       super.merge(**ability_scores.to_h).tap { |h| h.delete(:ability_scores) }
@@ -107,14 +132,18 @@ module CharacterCreatorKata
       s = ability_scores
       lines = []
       lines << "--- #{name} (Level #{level} #{char_class}) ---"
-      lines << "Species: #{species} | Background: #{background}"
+      lines << "Species: #{species} | Background: #{background} | Feat: #{feat}"
+      lines << "Traits: #{species_traits.join(", ")}"
       lines << "STR: #{s.str} (%+d)  DEX: #{s.dex} (%+d)  CON: #{s.con} (%+d)" % [s.str_mod, s.dex_mod, s.con_mod]
       lines << "INT: #{s.int} (%+d)  WIS: #{s.wis} (%+d)  CHA: #{s.cha} (%+d)" % [s.int_mod, s.wis_mod, s.cha_mod]
       lines << "AC: #{ac}  HP: #{hit_points}  Speed: #{speed} ft  Prof Bonus: +#{proficiency_bonus}  Initiative: %+d" % initiative
       lines << "Passive Perception: #{passive_perception}  Insight: #{passive_insight}  Investigation: #{passive_investigation}"
       saves = saving_throws.map { |ab, val| "#{ab.to_s.upcase} %+d" % val }.join("  ")
       lines << "Saving Throws: #{saves}"
+      lines << "Armor: #{armor_proficiencies.empty? ? "None" : armor_proficiencies.join(", ")}"
+      lines << "Weapons: #{weapon_proficiencies.join(", ")}"
       lines << "Languages: #{languages.join(", ")}"
+      lines << "Equipment: #{equipment.join(", ")}"
       lines << "Skills:"
       skills.sort_by { |name, _| name }.each do |skill, val|
         lines << "  %-20s %+d" % [CharacterCreatorKata.display_name(skill), val]
@@ -298,12 +327,17 @@ module CharacterCreatorKata
     character = Character.new(
       name: name, level: level, species: species, char_class: char_class, background: background,
       ability_scores: ability_scores, ac: 10 + ability_scores.dex_mod, speed: SPECIES.dig(species, :speed) || 30,
+      species_traits: SPECIES.dig(species, :traits) || [], feat: BACKGROUNDS.dig(background, :feat),
       proficiency_bonus: prof, hit_points: hit_points,
       initiative: ability_scores.dex_mod,
       passive_perception: 10 + skills[:perception],
       passive_insight: 10 + skills[:insight],
       passive_investigation: 10 + skills[:investigation],
-      saving_throws: saving_throws, languages: languages, skills: skills
+      armor_proficiencies: CLASSES.dig(char_class, :armor) || [],
+      weapon_proficiencies: CLASSES.dig(char_class, :weapons) || [],
+      saving_throws: saving_throws, languages: languages,
+      equipment: BACKGROUNDS.dig(background, :equipment) || [],
+      skills: skills
     )
 
     puts "\n#{character}"
