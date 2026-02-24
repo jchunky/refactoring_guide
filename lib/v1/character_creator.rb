@@ -1,75 +1,55 @@
 module CharacterCreatorKata
   # --- Constants ---
 
-  ALL_SKILLS = %w[
-    athletics acrobatics sleight\ of\ hand stealth
+  ALL_SKILLS = %i[
+    athletics acrobatics sleight_of_hand stealth
     arcana history investigation nature religion
-    animal\ handling insight medicine perception survival
+    animal_handling insight medicine perception survival
     deception intimidation performance persuasion
   ].freeze
 
-  HIT_DICE = {
-    "Barbarian" => 12,
-    "Fighter" => 10, "Paladin" => 10, "Ranger" => 10,
-    "Bard" => 8, "Cleric" => 8, "Druid" => 8, "Monk" => 8, "Rogue" => 8, "Warlock" => 8,
-    "Sorcerer" => 6, "Wizard" => 6
+  SKILL_ABILITIES = {
+    athletics: :str,
+    acrobatics: :dex, sleight_of_hand: :dex, stealth: :dex,
+    arcana: :int, history: :int, investigation: :int, nature: :int, religion: :int,
+    animal_handling: :wis, insight: :wis, medicine: :wis, perception: :wis, survival: :wis,
+    deception: :cha, intimidation: :cha, performance: :cha, persuasion: :cha
   }.freeze
 
-  CLASSES = %w[Barbarian Bard Cleric Druid Fighter Monk Paladin Ranger Rogue Sorcerer Warlock Wizard].freeze
-
-  SPECIES = %w[Dragonborn Dwarf Elf Gnome Goliath Halfling Human Orc Tiefling].freeze
-
-  BACKGROUNDS = %w[Acolyte Criminal Sage Soldier].freeze
-
-  BACKGROUND_BONUSES = {
-    "Acolyte"  => { ability_bonuses: %w[Intelligence Wisdom Charisma],    skill_proficiencies: %w[insight religion] },
-    "Criminal" => { ability_bonuses: %w[Dexterity Constitution Intelligence], skill_proficiencies: ["sleight of hand", "stealth"] },
-    "Sage"     => { ability_bonuses: %w[Constitution Intelligence Wisdom], skill_proficiencies: %w[arcana history] },
-    "Soldier"  => { ability_bonuses: %w[Strength Dexterity Constitution],  skill_proficiencies: %w[athletics intimidation] }
-  }.freeze
-
-  DEFAULT_BACKGROUND_BONUS = { ability_bonuses: [], skill_proficiencies: [] }.freeze
-
-  CLASS_PROFICIENCIES = {
-    "Barbarian" => %w[animal\ handling athletics intimidation nature perception survival],
-    "Bard"      => %w[athletics acrobatics sleight\ of\ hand stealth arcana history investigation
-                      nature religion religion animal\ handling insight medicine perception survival
-                      deception intimidation performance persuasion],
-    "Cleric"    => %w[history insight medicine persuasion religion],
-    "Druid"     => %w[arcana animal\ handling insight medicine nature perception religion survival],
-    "Fighter"   => %w[acrobatics animal\ handling athletics history insight intimidation perception persuasion survival],
-    "Monk"      => %w[acrobatics athletics history insight religion stealth],
-    "Paladin"   => %w[athletics insight intimidation medicine persuasion religion],
-    "Ranger"    => %w[animal\ handling athletics insight investigation nature perception stealth survival],
-    "Rogue"     => %w[acrobatics athletics deception insight intimidation investigation perception persuasion sleight\ of\ hand stealth],
-    "Sorcerer"  => %w[arcana deception insight intimidation persuasion religion],
-    "Warlock"   => %w[arcana deception history intimidation investigation nature religion],
-    "Wizard"    => %w[arcana history insight investigation medicine nature religion]
-  }.freeze
+  ABILITY_NAMES = %i[str dex con int wis cha].freeze
 
   STAT_NAMES = %w[Strength Dexterity Constitution Intelligence Wisdom Charisma].freeze
 
   STANDARD_ARRAY = [15, 14, 13, 12, 10, 8].freeze
 
-  SKILL_ABILITIES = {
-    "athletics" => :str,
-    "acrobatics" => :dex, "sleight of hand" => :dex, "stealth" => :dex,
-    "arcana" => :int, "history" => :int, "investigation" => :int, "nature" => :int, "religion" => :int,
-    "animal handling" => :wis, "insight" => :wis, "medicine" => :wis, "perception" => :wis, "survival" => :wis,
-    "deception" => :cha, "intimidation" => :cha, "performance" => :cha, "persuasion" => :cha
+  CLASSES = {
+    "Barbarian" => { hit_die: 12, skill_count: 2, skills: %i[animal_handling athletics intimidation nature perception survival] },
+    "Bard"      => { hit_die: 8,  skill_count: 3, skills: ALL_SKILLS.dup },
+    "Cleric"    => { hit_die: 8,  skill_count: 2, skills: %i[history insight medicine persuasion religion] },
+    "Druid"     => { hit_die: 8,  skill_count: 2, skills: %i[arcana animal_handling insight medicine nature perception religion survival] },
+    "Fighter"   => { hit_die: 10, skill_count: 2, skills: %i[acrobatics animal_handling athletics history insight intimidation perception persuasion survival] },
+    "Monk"      => { hit_die: 8,  skill_count: 2, skills: %i[acrobatics athletics history insight religion stealth] },
+    "Paladin"   => { hit_die: 10, skill_count: 2, skills: %i[athletics insight intimidation medicine persuasion religion] },
+    "Ranger"    => { hit_die: 10, skill_count: 3, skills: %i[animal_handling athletics insight investigation nature perception stealth survival] },
+    "Rogue"     => { hit_die: 8,  skill_count: 4, skills: %i[acrobatics athletics deception insight intimidation investigation perception persuasion sleight_of_hand stealth] },
+    "Sorcerer"  => { hit_die: 6,  skill_count: 2, skills: %i[arcana deception insight intimidation persuasion religion] },
+    "Warlock"   => { hit_die: 8,  skill_count: 2, skills: %i[arcana deception history intimidation investigation nature religion] },
+    "Wizard"    => { hit_die: 6,  skill_count: 2, skills: %i[arcana history insight investigation medicine nature religion] }
   }.freeze
 
-  # D&D 2024: Number of skill proficiencies each class grants
-  CLASS_SKILL_COUNTS = {
-    "Barbarian" => 2, "Bard" => 3, "Cleric" => 2, "Druid" => 2,
-    "Fighter" => 2, "Monk" => 2, "Paladin" => 2, "Ranger" => 3,
-    "Rogue" => 4, "Sorcerer" => 2, "Warlock" => 2, "Wizard" => 2
+  SPECIES = %w[Dragonborn Dwarf Elf Gnome Goliath Halfling Human Orc Tiefling].freeze
+
+  BACKGROUNDS = {
+    "Acolyte"  => { ability_bonuses: %i[int wis cha], skill_proficiencies: %i[insight religion] },
+    "Criminal" => { ability_bonuses: %i[dex con int], skill_proficiencies: %i[sleight_of_hand stealth] },
+    "Sage"     => { ability_bonuses: %i[con int wis], skill_proficiencies: %i[arcana history] },
+    "Soldier"  => { ability_bonuses: %i[str dex con], skill_proficiencies: %i[athletics intimidation] }
   }.freeze
+
 
   # --- Value Objects ---
 
   class AbilityScores
-    ABILITY_NAMES = %i[str dex con int wis cha].freeze
 
     attr_reader :str, :dex, :con, :int, :wis, :cha
 
@@ -122,8 +102,10 @@ module CharacterCreatorKata
       lines << "STR: #{s.str} (%+d)  DEX: #{s.dex} (%+d)  CON: #{s.con} (%+d)" % [s.str_mod, s.dex_mod, s.con_mod]
       lines << "INT: #{s.int} (%+d)  WIS: #{s.wis} (%+d)  CHA: #{s.cha} (%+d)" % [s.int_mod, s.wis_mod, s.cha_mod]
       lines << "AC: #{ac}  HP: #{hit_points}  Prof Bonus: +#{proficiency_bonus}"
-      skill_list = skills.map { |name, val| "#{name} %+d" % val }.join(", ")
-      lines << "Skills: #{skill_list}"
+      lines << "Skills:"
+      skills.sort_by { |name, _| name }.each do |skill, val|
+        lines << "  %-20s %+d" % [CharacterCreatorKata.display_name(skill), val]
+      end
       lines.join("\n")
     end
   end
@@ -139,16 +121,16 @@ module CharacterCreatorKata
   end
 
   def self.calculate_hit_points(char_class, level, con_mod)
-    die = HIT_DICE[char_class]
+    die = CLASSES.dig(char_class, :hit_die)
     die + con_mod + (level * (die / 2 + 1 + con_mod))
   end
 
   def self.background_bonuses(background)
-    BACKGROUND_BONUSES.fetch(background, DEFAULT_BACKGROUND_BONUS)
+    BACKGROUNDS.fetch(background, { ability_bonuses: [], skill_proficiencies: [] })
   end
 
   def self.proficiency_by_class(character_class)
-    CLASS_PROFICIENCIES.fetch(character_class, [])
+    CLASSES.dig(character_class, :skills) || []
   end
 
   def self.initialize_skills
@@ -160,7 +142,7 @@ module CharacterCreatorKata
   end
 
   def self.class_skill_count(char_class)
-    CLASS_SKILL_COUNTS.fetch(char_class, 2)
+    CLASSES.dig(char_class, :skill_count) || 2
   end
 
   def self.calculate_skills(ability_scores, proficiency_bonus, proficient_skills)
@@ -172,6 +154,12 @@ module CharacterCreatorKata
     end
   end
 
+  # --- Display Helpers ---
+
+  def self.display_name(sym)
+    sym.to_s.split("_").map(&:capitalize).join(" ")
+  end
+
   # --- Input Helpers ---
 
   def get_input(default)
@@ -179,11 +167,11 @@ module CharacterCreatorKata
     default
   end
 
-  def pick_from_list(options, prompt)
+  def pick_from_list(options, prompt, display: ->(o) { o.to_s })
     puts "\n#{prompt}"
-    options.each_with_index { |opt, i| puts "  #{i + 1}) #{opt}" }
+    options.each_with_index { |opt, i| puts "  #{i + 1}) #{display.call(opt)}" }
     choice = options[get_input("1").to_i - 1]
-    puts "  → #{choice}"
+    puts "  → #{display.call(choice)}"
     choice
   end
 
@@ -210,26 +198,30 @@ module CharacterCreatorKata
 
     return [ability_scores, bg_skills] if candidates.empty?
 
-    puts "\nBackground Ability Bonuses (#{background}: #{candidates.join(", ")})"
-    plus2_name = candidates.first
-    plus1_name = (candidates - [plus2_name]).first
-    puts "  +2 to #{plus2_name}, +1 to #{plus1_name}"
+    dn = method(:display_name)
+    plus2 = pick_from_list(candidates, "#{background}: Which ability gets +2?", display: dn)
+    plus1 = pick_from_list(candidates - [plus2], "#{background}: Which ability gets +1?", display: dn)
 
-    bonus_hash = {
-      plus2_name.downcase[0..2].to_sym => 2,
-      plus1_name.downcase[0..2].to_sym => 1
-    }
-    [ability_scores.with_bonuses(bonus_hash), bg_skills]
+    [ability_scores.with_bonuses(plus2 => 2, plus1 => 1), bg_skills]
   end
 
   def pick_class_skills(char_class, background_skills)
     available = CharacterCreatorKata.proficiency_by_class(char_class) - background_skills
     count = CharacterCreatorKata.class_skill_count(char_class)
-    chosen = available.first(count)
-    puts "\nSkill Proficiencies"
-    puts "  Background: #{background_skills.join(", ")}"
-    puts "  Class (#{char_class}): #{chosen.join(", ")}"
+    chosen = []
+
+    dn = method(:display_name)
+    bg_names = background_skills.map { |s| CharacterCreatorKata.display_name(s) }.join(", ")
+    puts "\n  Background skills: #{bg_names}" unless background_skills.empty?
+
+    count.times do |i|
+      chosen << pick_from_list(available - chosen, "#{char_class} skill #{i + 1}/#{count}:", display: dn)
+    end
     chosen
+  end
+
+  def display_name(sym)
+    CharacterCreatorKata.display_name(sym)
   end
 
   # --- Main Orchestration ---
@@ -238,9 +230,9 @@ module CharacterCreatorKata
     puts "D&D Character Creator"
     puts "=" * 30
 
-    char_class = pick_from_list(CLASSES, "Choose your class:")
+    char_class = pick_from_list(CLASSES.keys, "Choose your class:")
     species    = pick_from_list(SPECIES, "Choose your species:")
-    background = pick_from_list(BACKGROUNDS, "Choose your background:")
+    background = pick_from_list(BACKGROUNDS.keys, "Choose your background:")
 
     finalstats = assign_stats(CharacterCreatorKata.stat_roll)
 

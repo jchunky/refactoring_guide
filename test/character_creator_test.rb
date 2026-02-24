@@ -129,9 +129,9 @@ class HitPointCalculationTest < Minitest::Test
     assert_equal 115, CharacterCreatorKata.calculate_hit_points("Barbarian", 10, 3)
   end
 
-  def test_all_class_tiers_have_hit_dice
-    CharacterCreatorKata::CLASSES.each do |char_class|
-      assert CharacterCreatorKata::HIT_DICE.key?(char_class),
+  def test_all_classes_have_hit_dice
+    CharacterCreatorKata::CLASSES.each_key do |char_class|
+      assert CharacterCreatorKata::CLASSES.dig(char_class, :hit_die),
              "#{char_class} should have a hit die entry"
     end
   end
@@ -140,30 +140,30 @@ end
 class BackgroundBonusesTest < Minitest::Test
   def test_acolyte_bonuses
     bonuses = CharacterCreatorKata.background_bonuses("Acolyte")
-    assert_equal %w[Intelligence Wisdom Charisma], bonuses[:ability_bonuses]
-    assert_includes bonuses[:skill_proficiencies], "insight"
-    assert_includes bonuses[:skill_proficiencies], "religion"
+    assert_equal %i[int wis cha], bonuses[:ability_bonuses]
+    assert_includes bonuses[:skill_proficiencies], :insight
+    assert_includes bonuses[:skill_proficiencies], :religion
   end
 
   def test_criminal_bonuses
     bonuses = CharacterCreatorKata.background_bonuses("Criminal")
-    assert_equal %w[Dexterity Constitution Intelligence], bonuses[:ability_bonuses]
-    assert_includes bonuses[:skill_proficiencies], "sleight of hand"
-    assert_includes bonuses[:skill_proficiencies], "stealth"
+    assert_equal %i[dex con int], bonuses[:ability_bonuses]
+    assert_includes bonuses[:skill_proficiencies], :sleight_of_hand
+    assert_includes bonuses[:skill_proficiencies], :stealth
   end
 
   def test_sage_bonuses
     bonuses = CharacterCreatorKata.background_bonuses("Sage")
-    assert_equal %w[Constitution Intelligence Wisdom], bonuses[:ability_bonuses]
-    assert_includes bonuses[:skill_proficiencies], "arcana"
-    assert_includes bonuses[:skill_proficiencies], "history"
+    assert_equal %i[con int wis], bonuses[:ability_bonuses]
+    assert_includes bonuses[:skill_proficiencies], :arcana
+    assert_includes bonuses[:skill_proficiencies], :history
   end
 
   def test_soldier_bonuses
     bonuses = CharacterCreatorKata.background_bonuses("Soldier")
-    assert_equal %w[Strength Dexterity Constitution], bonuses[:ability_bonuses]
-    assert_includes bonuses[:skill_proficiencies], "athletics"
-    assert_includes bonuses[:skill_proficiencies], "intimidation"
+    assert_equal %i[str dex con], bonuses[:ability_bonuses]
+    assert_includes bonuses[:skill_proficiencies], :athletics
+    assert_includes bonuses[:skill_proficiencies], :intimidation
   end
 
   def test_unknown_background_returns_empty
@@ -175,7 +175,7 @@ end
 
 class ClassProficienciesTest < Minitest::Test
   def test_each_class_has_proficiency_list
-    CharacterCreatorKata::CLASSES.each do |char_class|
+    CharacterCreatorKata::CLASSES.each_key do |char_class|
       profs = CharacterCreatorKata.proficiency_by_class(char_class)
       refute_empty profs, "#{char_class} should have skill proficiencies"
     end
@@ -183,9 +183,9 @@ class ClassProficienciesTest < Minitest::Test
 
   def test_barbarian_proficiencies
     profs = CharacterCreatorKata.proficiency_by_class("Barbarian")
-    assert_includes profs, "athletics"
-    assert_includes profs, "intimidation"
-    assert_includes profs, "survival"
+    assert_includes profs, :athletics
+    assert_includes profs, :intimidation
+    assert_includes profs, :survival
   end
 
   def test_unknown_class_returns_empty
@@ -208,7 +208,7 @@ class SkillInitializationTest < Minitest::Test
 
   def test_includes_expected_skills
     skills = CharacterCreatorKata.initialize_skills
-    %w[athletics acrobatics stealth arcana perception].each do |skill|
+    %i[athletics acrobatics stealth arcana perception].each do |skill|
       assert skills.key?(skill), "Should include #{skill}"
     end
   end
@@ -271,27 +271,23 @@ class CalculateSkillsTest < Minitest::Test
   end
 
   def test_proficient_skill_gets_ability_mod_plus_prof_bonus
-    skills = CharacterCreatorKata.calculate_skills(@scores, @prof_bonus, ["athletics"])
-    # athletics → STR mod (+2) + prof bonus (+2) = 4
-    assert_equal 4, skills["athletics"]
+    skills = CharacterCreatorKata.calculate_skills(@scores, @prof_bonus, [:athletics])
+    assert_equal 4, skills[:athletics]  # STR(+2) + prof(+2)
   end
 
   def test_non_proficient_skill_gets_only_ability_mod
     skills = CharacterCreatorKata.calculate_skills(@scores, @prof_bonus, [])
-    # athletics → STR mod (+2), no prof bonus
-    assert_equal 2, skills["athletics"]
+    assert_equal 2, skills[:athletics]  # STR(+2), no prof
   end
 
   def test_negative_modifier_skill
     skills = CharacterCreatorKata.calculate_skills(@scores, @prof_bonus, [])
-    # deception → CHA mod (-1)
-    assert_equal(-1, skills["deception"])
+    assert_equal(-1, skills[:deception])  # CHA(-1)
   end
 
   def test_proficient_negative_modifier_skill
-    skills = CharacterCreatorKata.calculate_skills(@scores, @prof_bonus, ["deception"])
-    # deception → CHA mod (-1) + prof bonus (+2) = 1
-    assert_equal 1, skills["deception"]
+    skills = CharacterCreatorKata.calculate_skills(@scores, @prof_bonus, [:deception])
+    assert_equal 1, skills[:deception]  # CHA(-1) + prof(+2)
   end
 
   def test_returns_all_18_skills
@@ -300,12 +296,12 @@ class CalculateSkillsTest < Minitest::Test
   end
 
   def test_multiple_proficiencies
-    proficient = ["athletics", "insight", "stealth"]
+    proficient = %i[athletics insight stealth]
     skills = CharacterCreatorKata.calculate_skills(@scores, @prof_bonus, proficient)
-    assert_equal 4, skills["athletics"]   # STR(+2) + prof(+2)
-    assert_equal 2, skills["insight"]     # WIS(+0) + prof(+2)
-    assert_equal 4, skills["stealth"]     # DEX(+2) + prof(+2)
-    assert_equal 2, skills["acrobatics"]  # DEX(+2), not proficient
+    assert_equal 4, skills[:athletics]    # STR(+2) + prof(+2)
+    assert_equal 2, skills[:insight]      # WIS(+0) + prof(+2)
+    assert_equal 4, skills[:stealth]      # DEX(+2) + prof(+2)
+    assert_equal 2, skills[:acrobatics]   # DEX(+2), not proficient
   end
 end
 
@@ -318,23 +314,23 @@ class SkillAbilitiesMappingTest < Minitest::Test
   end
 
   def test_athletics_maps_to_str
-    assert_equal :str, CharacterCreatorKata::SKILL_ABILITIES["athletics"]
+    assert_equal :str, CharacterCreatorKata::SKILL_ABILITIES[:athletics]
   end
 
   def test_acrobatics_maps_to_dex
-    assert_equal :dex, CharacterCreatorKata::SKILL_ABILITIES["acrobatics"]
+    assert_equal :dex, CharacterCreatorKata::SKILL_ABILITIES[:acrobatics]
   end
 
   def test_arcana_maps_to_int
-    assert_equal :int, CharacterCreatorKata::SKILL_ABILITIES["arcana"]
+    assert_equal :int, CharacterCreatorKata::SKILL_ABILITIES[:arcana]
   end
 
   def test_perception_maps_to_wis
-    assert_equal :wis, CharacterCreatorKata::SKILL_ABILITIES["perception"]
+    assert_equal :wis, CharacterCreatorKata::SKILL_ABILITIES[:perception]
   end
 
   def test_persuasion_maps_to_cha
-    assert_equal :cha, CharacterCreatorKata::SKILL_ABILITIES["persuasion"]
+    assert_equal :cha, CharacterCreatorKata::SKILL_ABILITIES[:persuasion]
   end
 end
 
@@ -446,14 +442,14 @@ class CharacterCreationIntegrationTest < Minitest::Test
 
     # Proficient skills: insight, religion (Acolyte bg) + animal handling, athletics (Barbarian class picks)
     # Prof bonus = 2
-    assert_equal 2, character.skills["insight"]         # WIS(+0) + prof(+2)
-    assert_equal 4, character.skills["religion"]         # INT(+2) + prof(+2)
-    assert_equal 2, character.skills["animal handling"]  # WIS(+0) + prof(+2)
-    assert_equal 4, character.skills["athletics"]        # STR(+2) + prof(+2)
+    assert_equal 2, character.skills[:insight]          # WIS(+0) + prof(+2)
+    assert_equal 4, character.skills[:religion]          # INT(+2) + prof(+2)
+    assert_equal 2, character.skills[:animal_handling]   # WIS(+0) + prof(+2)
+    assert_equal 4, character.skills[:athletics]         # STR(+2) + prof(+2)
 
     # Non-proficient skills get only ability mod
-    assert_equal 2, character.skills["acrobatics"]  # DEX(+2), not proficient
-    assert_equal(-1, character.skills["deception"])  # CHA(-1), not proficient
+    assert_equal 2, character.skills[:acrobatics]   # DEX(+2), not proficient
+    assert_equal(-1, character.skills[:deception])   # CHA(-1), not proficient
   end
 
   def test_main_output_includes_key_elements
@@ -464,7 +460,7 @@ class CharacterCreationIntegrationTest < Minitest::Test
     assert_includes output, "Barbarian"
     assert_includes output, "Dragonborn"
     assert_includes output, "Adventurer"
-    assert_includes output, "Skill Proficiencies"
+    assert_includes output, "Background skills:"
     assert_includes output, "Level 1 Barbarian"
   end
 end
