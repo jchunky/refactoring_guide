@@ -43,19 +43,7 @@ module CharacterCreatorKata
 
   # --- Value Objects ---
 
-  class AbilityScores
-
-    attr_reader :str, :dex, :con, :int, :wis, :cha
-
-    def initialize(str:, dex:, con:, int:, wis:, cha:)
-      @str = str
-      @dex = dex
-      @con = con
-      @int = int
-      @wis = wis
-      @cha = cha
-    end
-
+  AbilityScores = Data.define(:str, :dex, :con, :int, :wis, :cha) do
     ABILITY_NAMES.each do |name|
       define_method(:"#{name}_mod") { CharacterCreatorKata.ability_modifier(send(name)) }
     end
@@ -68,7 +56,7 @@ module CharacterCreatorKata
       args = ABILITY_NAMES.each_with_object({}) do |name, h|
         h[name] = send(name) + (bonuses[name] || 0)
       end
-      AbilityScores.new(**args)
+      self.class.new(**args)
     end
 
     def to_h
@@ -79,10 +67,9 @@ module CharacterCreatorKata
     end
   end
 
-  Character = Struct.new(
+  Character = Data.define(
     :name, :level, :species, :char_class, :background,
-    :ability_scores, :ac, :proficiency_bonus, :hit_points, :skills,
-    keyword_init: true
+    :ability_scores, :ac, :proficiency_bonus, :hit_points, :skills
   ) do
     def to_h
       super.merge(**ability_scores.to_h).tap { |h| h.delete(:ability_scores) }
