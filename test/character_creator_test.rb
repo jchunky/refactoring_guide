@@ -166,6 +166,14 @@ class BackgroundBonusesTest < Minitest::Test
     assert_includes bonuses[:skill_proficiencies], :intimidation
   end
 
+  def test_all_16_backgrounds_have_required_keys
+    assert_equal 16, CharacterCreatorKata::BACKGROUNDS.size
+    CharacterCreatorKata::BACKGROUNDS.each do |name, data|
+      assert_equal 3, data[:ability_bonuses].size, "#{name} should have 3 ability bonus candidates"
+      assert_equal 2, data[:skill_proficiencies].size, "#{name} should have 2 skill proficiencies"
+    end
+  end
+
   def test_unknown_background_returns_empty
     bonuses = CharacterCreatorKata.background_bonuses("Unknown")
     assert_empty bonuses[:ability_bonuses]
@@ -351,12 +359,19 @@ class CharacterTest < Minitest::Test
     @ability_scores = CharacterCreatorKata::AbilityScores.new(
       str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8
     )
+    @skills = CharacterCreatorKata.initialize_skills
     @character = CharacterCreatorKata::Character.new(
       name: "Adventurer", level: 1, species: "Dragonborn",
       char_class: "Barbarian", background: "Acolyte",
-      ability_scores: @ability_scores, ac: 12,
+      ability_scores: @ability_scores, ac: 12, speed: 30,
       proficiency_bonus: 2, hit_points: 21,
-      skills: CharacterCreatorKata.initialize_skills
+      initiative: 2,
+      passive_perception: 10 + @skills[:perception],
+      passive_insight: 10 + @skills[:insight],
+      passive_investigation: 10 + @skills[:investigation],
+      saving_throws: CharacterCreatorKata.calculate_saving_throws(@ability_scores, 2, "Barbarian"),
+      languages: ["Common", "Draconic", "Dwarvish"],
+      skills: @skills
     )
   end
 
@@ -393,6 +408,28 @@ class CharacterTest < Minitest::Test
 
 end
 
+class SavingThrowsTest < Minitest::Test
+  def setup
+    @scores = CharacterCreatorKata::AbilityScores.new(str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8)
+    @prof = 2
+  end
+
+  def test_barbarian_saving_throws
+    saves = CharacterCreatorKata.calculate_saving_throws(@scores, @prof, "Barbarian")
+    assert_equal 4, saves[:str]  # STR(+2) + prof(+2)
+    assert_equal 3, saves[:con]  # CON(+1) + prof(+2)
+    assert_equal 2, saves[:dex]  # DEX(+2), not proficient
+    assert_equal 1, saves[:int]  # INT(+1), not proficient
+  end
+
+  def test_each_class_has_saving_throws
+    CharacterCreatorKata::CLASSES.each_key do |char_class|
+      saves = CharacterCreatorKata.saving_throws_for_class(char_class)
+      assert_equal 2, saves.size, "#{char_class} should have 2 saving throw proficiencies"
+    end
+  end
+end
+
 class CharacterCreationIntegrationTest < Minitest::Test
   include CharacterCreatorKata
 
@@ -424,9 +461,16 @@ class CharacterCreationIntegrationTest < Minitest::Test
     assert_equal 8,  character.ability_scores.cha
 
     assert_equal 12, character.ac   # 10 + DEX mod(+2)
+    assert_equal 30, character.speed  # Dragonborn speed
     assert_equal 2,  character.proficiency_bonus
     assert_equal 21, character.hit_points
+    assert_equal 2,  character.initiative  # DEX mod
+    assert_equal 10, character.passive_perception   # 10 + perception(+0)
+    assert_equal 12, character.passive_insight       # 10 + insight(+2, proficient)
+    assert_equal 12, character.passive_investigation # 10 + investigation(+2)
     assert_equal 18, character.skills.size
+    assert_equal 3, character.languages.size
+    assert_includes character.languages, "Common"
   end
 
   def test_main_applies_background_ability_bonuses
