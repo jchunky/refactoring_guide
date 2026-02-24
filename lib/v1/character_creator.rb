@@ -83,7 +83,7 @@ module CharacterCreatorKata
   }.freeze
 
   STAT_NAMES = %w[Strength Dexterity Constitution Intelligence Wisdom Charisma].freeze
-  STAT_ABBREVS = %w[STR DEX CON INT WIS CHA].freeze
+  STAT_ABBREVS = STAT_NAMES.map { |n| n[0..2].upcase }.freeze
 
   STANDARD_ARRAY = [15, 14, 13, 12, 10, 8].freeze
 
@@ -134,43 +134,26 @@ module CharacterCreatorKata
       @cha = cha
     end
 
-    def str_mod = modifier(str)
-    def dex_mod = modifier(dex)
-    def con_mod = modifier(con)
-    def int_mod = modifier(int)
-    def wis_mod = modifier(wis)
-    def cha_mod = modifier(cha)
+    ABILITY_NAMES.each do |name|
+      define_method(:"#{name}_mod") { CharacterCreatorKata.ability_modifier(send(name)) }
+    end
 
     def mod_for(ability_key)
-      modifier(send(ability_key))
+      CharacterCreatorKata.ability_modifier(send(ability_key))
     end
 
     def with_bonuses(bonuses = {})
-      AbilityScores.new(
-        str: str + (bonuses[:str] || 0),
-        dex: dex + (bonuses[:dex] || 0),
-        con: con + (bonuses[:con] || 0),
-        int: int + (bonuses[:int] || 0),
-        wis: wis + (bonuses[:wis] || 0),
-        cha: cha + (bonuses[:cha] || 0)
-      )
+      args = ABILITY_NAMES.each_with_object({}) do |name, h|
+        h[name] = send(name) + (bonuses[name] || 0)
+      end
+      AbilityScores.new(**args)
     end
 
     def to_h
-      {
-        str: str, str_mod: str_mod,
-        dex: dex, dex_mod: dex_mod,
-        con: con, con_mod: con_mod,
-        int: int, int_mod: int_mod,
-        wis: wis, wis_mod: wis_mod,
-        cha: cha, cha_mod: cha_mod
-      }
-    end
-
-    private
-
-    def modifier(score)
-      (score - 10) / 2
+      ABILITY_NAMES.each_with_object({}) do |name, h|
+        h[name] = send(name)
+        h[:"#{name}_mod"] = send(:"#{name}_mod")
+      end
     end
   end
 
@@ -396,8 +379,9 @@ module CharacterCreatorKata
   def pick_background_bonuses(background, ability_scores)
     bonuses = CharacterCreatorKata.background_bonuses(background)
     candidates = bonuses[:ability_bonuses]
+    bg_skills = bonuses[:skill_proficiencies]
 
-    return ability_scores if candidates.empty?
+    return [ability_scores, bg_skills] if candidates.empty?
 
     print_step_header(5, "Background Ability Bonuses")
     puts "\n  #{background} lets you add +2 to one and +1 to another:"
@@ -409,7 +393,7 @@ module CharacterCreatorKata
       plus2_name.downcase[0..2].to_sym => 2,
       plus1_name.downcase[0..2].to_sym => 1
     }
-    ability_scores.with_bonuses(bonus_hash)
+    [ability_scores.with_bonuses(bonus_hash), bg_skills]
   end
 
   def pick_class_skills(char_class, background_skills)
@@ -484,11 +468,9 @@ module CharacterCreatorKata
     base_scores = AbilityScores.new(str: str, dex: dex, con: con, int: int, wis: wis, cha: cha)
 
     # Step 5: Apply background ability bonuses (+2/+1)
-    ability_scores = pick_background_bonuses(background, base_scores)
+    ability_scores, background_skills = pick_background_bonuses(background, base_scores)
 
     # Step 6: Pick class skill proficiencies
-    bg_bonuses = CharacterCreatorKata.background_bonuses(background)
-    background_skills = bg_bonuses[:skill_proficiencies]
     class_skills = pick_class_skills(char_class, background_skills)
     all_proficient_skills = (background_skills + class_skills).uniq
 
