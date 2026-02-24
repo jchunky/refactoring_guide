@@ -1,13 +1,6 @@
 module CharacterCreatorKata
   # --- Constants ---
 
-  ALL_SKILLS = %i[
-    athletics acrobatics sleight_of_hand stealth
-    arcana history investigation nature religion
-    animal_handling insight medicine perception survival
-    deception intimidation performance persuasion
-  ].freeze
-
   SKILL_ABILITIES = {
     athletics: :str,
     acrobatics: :dex, sleight_of_hand: :dex, stealth: :dex,
@@ -15,6 +8,8 @@ module CharacterCreatorKata
     animal_handling: :wis, insight: :wis, medicine: :wis, perception: :wis, survival: :wis,
     deception: :cha, intimidation: :cha, performance: :cha, persuasion: :cha
   }.freeze
+
+  ALL_SKILLS = SKILL_ABILITIES.keys.freeze
 
   ABILITY_NAMES = %i[str dex con int wis cha].freeze
 
