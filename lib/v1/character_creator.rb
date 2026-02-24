@@ -85,11 +85,6 @@ module CharacterCreatorKata
   STAT_NAMES = %w[Strength Dexterity Constitution Intelligence Wisdom Charisma].freeze
   STAT_ABBREVS = %w[STR DEX CON INT WIS CHA].freeze
 
-  STAT_NAME_TO_KEY = {
-    "Strength" => :str, "Dexterity" => :dex, "Constitution" => :con,
-    "Intelligence" => :int, "Wisdom" => :wis, "Charisma" => :cha
-  }.freeze
-
   STANDARD_ARRAY = [15, 14, 13, 12, 10, 8].freeze
 
   # D&D 2024: Each skill maps to a governing ability
@@ -406,55 +401,15 @@ module CharacterCreatorKata
 
     print_step_header(5, "Background Ability Bonuses")
     puts "\n  #{background} lets you add +2 to one and +1 to another:"
-    puts "  Choices: #{candidates.join(", ")}"
 
-    # Pick +2
-    puts "\n  Which ability gets +2?"
-    print_numbered_grid(candidates, columns: 3)
-    plus2_choice = nil
-    until plus2_choice
-      input = get_input("1").to_s.strip
-      index = input.to_i - 1
-      if input.match?(/^\d+$/) && index >= 0 && index < candidates.length
-        plus2_choice = candidates[index]
-      else
-        puts "  Please enter a number (1-#{candidates.length})"
-      end
-    end
-    puts "  → +2 to #{plus2_choice}"
-
-    # Pick +1 from remaining
-    remaining = candidates - [plus2_choice]
-    puts "\n  Which ability gets +1?"
-    print_numbered_grid(remaining, columns: 3)
-    plus1_choice = nil
-    until plus1_choice
-      input = get_input("1").to_s.strip
-      index = input.to_i - 1
-      if input.match?(/^\d+$/) && index >= 0 && index < remaining.length
-        plus1_choice = remaining[index]
-      else
-        puts "  Please enter a number (1-#{remaining.length})"
-      end
-    end
-    puts "  → +1 to #{plus1_choice}"
+    plus2_name = pick_from_list(candidates, "Which ability gets +2?", columns: 3)
+    plus1_name = pick_from_list(candidates - [plus2_name], "Which ability gets +1?", columns: 3)
 
     bonus_hash = {
-      STAT_NAME_TO_KEY[plus2_choice] => 2,
-      STAT_NAME_TO_KEY[plus1_choice] => 1
+      plus2_name.downcase[0..2].to_sym => 2,
+      plus1_name.downcase[0..2].to_sym => 1
     }
-
-    new_scores = ability_scores.with_bonuses(bonus_hash)
-    puts "\n  Updated ability scores:"
-    STAT_NAMES.each do |name|
-      key = STAT_NAME_TO_KEY[name]
-      score = new_scores.send(key)
-      mod = new_scores.mod_for(key)
-      sign = mod >= 0 ? "+" : ""
-      puts "    #{name}: #{score} (#{sign}#{mod})"
-    end
-
-    new_scores
+    ability_scores.with_bonuses(bonus_hash)
   end
 
   def pick_class_skills(char_class, background_skills)
@@ -467,22 +422,7 @@ module CharacterCreatorKata
     puts "  (Background already grants: #{background_skills.join(", ")})" unless background_skills.empty?
 
     count.times do |i|
-      remaining = available - chosen
-      puts "\n  Pick skill #{i + 1}/#{count}:"
-      print_numbered_grid(remaining, columns: 2)
-
-      pick = nil
-      until pick
-        input = get_input("1").to_s.strip
-        index = input.to_i - 1
-        if input.match?(/^\d+$/) && index >= 0 && index < remaining.length
-          pick = remaining[index]
-        else
-          puts "  Please enter a number (1-#{remaining.length})"
-        end
-      end
-      chosen << pick
-      puts "  → #{pick}"
+      chosen << pick_from_list(available - chosen, "Pick skill #{i + 1}/#{count}", columns: 2)
     end
 
     puts "\n  Class skill proficiencies: #{chosen.join(", ")}"
