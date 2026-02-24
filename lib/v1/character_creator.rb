@@ -1,5 +1,5 @@
 module CharacterCreatorKata
-  module Constants
+  module World
     SKILL_ABILITIES = {
       athletics: :str,
       acrobatics: :dex, sleight_of_hand: :dex, stealth: :dex,
@@ -37,11 +37,6 @@ module CharacterCreatorKata
       "Sage"     => { ability_bonuses: %i[con int wis], skill_proficiencies: %i[arcana history] },
       "Soldier"  => { ability_bonuses: %i[str dex con], skill_proficiencies: %i[athletics intimidation] }
     }.freeze
-  end
-  include Constants
-
-  module Calculations
-    include Constants
 
     def ability_modifier(score)
       (score - 10) / 2
@@ -85,7 +80,8 @@ module CharacterCreatorKata
       end
     end
   end
-  extend Calculations
+  include World
+  extend World
 
   module DisplayHelpers
     def display_name(sym)
@@ -146,7 +142,7 @@ module CharacterCreatorKata
   include ValueObjects
 
   module InputHelpers
-    include Constants
+    include World
 
     def get_input(default)
       puts default
@@ -216,11 +212,12 @@ module CharacterCreatorKata
   end
   include InputHelpers
 
-  module Orchestration
-    include Constants
+  class CharacterBuilder
+    include World
     include ValueObjects
+    include InputHelpers
 
-    def main
+    def build
       puts "D&D Character Creator"
       puts "=" * 30
 
@@ -254,6 +251,12 @@ module CharacterCreatorKata
 
       puts "\n#{character}"
       character
+    end
+  end
+
+  module Orchestration
+    def main
+      CharacterBuilder.new.build
     end
   end
   include Orchestration
