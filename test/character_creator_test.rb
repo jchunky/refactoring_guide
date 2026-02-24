@@ -270,6 +270,28 @@ class CharacterTest < Minitest::Test
     assert_equal 21, h[:hit_points]
     assert_equal 18, h[:skills].size
   end
+
+  def test_to_sheet_contains_character_info
+    sheet = @character.to_sheet
+    assert_includes sheet, "CHARACTER SHEET"
+    assert_includes sheet, "Adventurer"
+    assert_includes sheet, "Barbarian"
+    assert_includes sheet, "Dragonborn"
+    assert_includes sheet, "Acolyte"
+    assert_includes sheet, "STR:"
+    assert_includes sheet, "HP: 21"
+    assert_includes sheet, "AC: 12"
+    assert_includes sheet, "Prof Bonus: +2"
+    assert_includes sheet, "┌"
+    assert_includes sheet, "└"
+  end
+
+  def test_to_sheet_formats_modifiers_with_signs
+    sheet = @character.to_sheet
+    assert_includes sheet, "+2"   # STR mod
+    assert_includes sheet, "-1"   # CHA mod
+    assert_includes sheet, "+0"   # WIS mod
+  end
 end
 
 class CharacterCreationIntegrationTest < Minitest::Test
@@ -308,10 +330,12 @@ class CharacterCreationIntegrationTest < Minitest::Test
   def test_main_output_includes_key_elements
     _character, output = capture_stdout { main }
 
-    assert_includes output, "Welcome to the D&D Character Creator!"
-    assert_includes output, "Character Created!"
+    assert_includes output, "D&D Character Creator"
+    assert_includes output, "CHARACTER SHEET"
     assert_includes output, "Adventurer"
     assert_includes output, "Barbarian"
     assert_includes output, "Dragonborn"
+    assert_includes output, "Step 1/5"
+    assert_includes output, "Step 5/5"
   end
 end

@@ -83,8 +83,11 @@ module CharacterCreatorKata
   }.freeze
 
   STAT_NAMES = %w[Strength Dexterity Constitution Intelligence Wisdom Charisma].freeze
+  STAT_ABBREVS = %w[STR DEX CON INT WIS CHA].freeze
 
   STANDARD_ARRAY = [15, 14, 13, 12, 10, 8].freeze
+
+  TOTAL_STEPS = 5
 
   # --- Value Objects ---
 
@@ -159,6 +162,43 @@ module CharacterCreatorKata
         skills: skills
       }
     end
+
+    def to_sheet
+      s = ability_scores
+      w = 40
+
+      lines = []
+      lines << "┌#{"─" * w}┐"
+      lines << "│#{center("CHARACTER SHEET", w)}│"
+      lines << "├#{"─" * w}┤"
+      lines << "│#{pad("Name: #{name}", w)}│"
+      lines << "│#{pad("Level: #{level}  Class: #{char_class}", w)}│"
+      lines << "│#{pad("Species: #{species}", w)}│"
+      lines << "│#{pad("Background: #{background}", w)}│"
+      lines << "├#{"─" * w}┤"
+      lines << "│#{pad("  STR: #{fmt_score(s.str, s.str_mod)}    DEX: #{fmt_score(s.dex, s.dex_mod)}", w)}│"
+      lines << "│#{pad("  CON: #{fmt_score(s.con, s.con_mod)}    INT: #{fmt_score(s.int, s.int_mod)}", w)}│"
+      lines << "│#{pad("  WIS: #{fmt_score(s.wis, s.wis_mod)}    CHA: #{fmt_score(s.cha, s.cha_mod)}", w)}│"
+      lines << "├#{"─" * w}┤"
+      lines << "│#{pad("  AC: #{ac}    HP: #{hit_points}    Prof Bonus: +#{proficiency_bonus}", w)}│"
+      lines << "└#{"─" * w}┘"
+      lines.join("\n")
+    end
+
+    private
+
+    def fmt_score(score, mod)
+      sign = mod >= 0 ? "+" : ""
+      format("%2d (%s%d)", score, sign, mod)
+    end
+
+    def pad(text, width)
+      text.ljust(width)
+    end
+
+    def center(text, width)
+      text.center(width)
+    end
   end
 
   # --- Calculations ---
@@ -192,6 +232,31 @@ module CharacterCreatorKata
     STANDARD_ARRAY.dup
   end
 
+  # --- Display Helpers ---
+
+  def print_banner(title)
+    w = 40
+    puts "┌#{"─" * w}┐"
+    puts "│#{title.center(w)}│"
+    puts "└#{"─" * w}┘"
+  end
+
+  def print_step_header(step, title)
+    label = "Step #{step}/#{TOTAL_STEPS}: #{title}"
+    puts "\n── #{label} #{"─" * [0, 36 - label.length].max}"
+  end
+
+  def print_numbered_grid(options, columns: 3)
+    col_width = 22
+    options.each_slice(columns).each do |row|
+      line = row.each_with_index.map do |opt, col_i|
+        idx = options.index(opt) + 1
+        format("  %2d) %-#{col_width - 6}s", idx, opt)
+      end
+      puts line.join
+    end
+  end
+
   # --- Input Helpers ---
 
   def get_input(default)
@@ -200,39 +265,67 @@ module CharacterCreatorKata
     # gets
   end
 
-  def pick_from_list(options, prompt)
-    puts options
-    puts prompt
-    choice = ""
-    until options.include?(choice)
-      choice = get_input(options.first).split(/ |\_|\-/).map(&:capitalize).join(" ").chomp
-      puts "please select an option from the list" unless options.include?(choice)
+  def pick_from_list(options, prompt, step: nil, columns: 3)
+    print_step_header(step, prompt) if step
+    puts
+    print_numbered_grid(options, columns: columns)
+    puts
+
+    choice = nil
+    until choice
+      input = get_input("1").to_s.strip
+      index = input.to_i - 1
+      if input.match?(/^\d+$/) && index >= 0 && index < options.length
+        choice = options[index]
+      elsif options.map(&:downcase).include?(input.downcase)
+        choice = options[options.map(&:downcase).index(input.downcase)]
+      else
+        puts "  Please enter a number (1-#{options.length})"
+      end
     end
+
+    puts "  → #{choice}"
     choice
   end
 
   def pick_class
-    pick_from_list(CLASSES, "What class is your character? ")
+    pick_from_list(CLASSES, "Choose Your Class", step: 1)
   end
 
   def pick_species
-    pick_from_list(SPECIES, "What species is your character? ")
+    pick_from_list(SPECIES, "Choose Your Species", step: 2)
   end
 
   def pick_background
-    pick_from_list(BACKGROUNDS, "What background is your character? ")
+    pick_from_list(BACKGROUNDS, "Choose Your Background", step: 3, columns: 2)
+  end
+
+  def print_stat_progress(finalstats, available)
+    parts = STAT_ABBREVS.each_with_index.map do |abbrev, i|
+      if finalstats[i]
+        "#{abbrev}: #{format("%2d", finalstats[i])}"
+      elsif i == 5
+        "#{abbrev}: (auto)"
+      else
+        "#{abbrev}: __"
+      end
+    end
+    puts "  #{parts[0..2].join("  │  ")}"
+    puts "  #{parts[3..5].join("  │  ")}"
+    puts "  Available: #{available.compact.inspect}" unless available.compact.empty?
   end
 
   def pick_one_stat(available, finalstats, index, stat_name)
-    puts "Which number would you like to be your #{stat_name} stat? "
+    puts "\n  Choose your #{stat_name} score from: #{available.compact.inspect}"
 
     while finalstats[index].nil?
       value = get_input(available.compact.first).to_i
       if available.include?(value)
         finalstats[index] = value
         available[available.index(value)] = nil
+        puts "  → #{stat_name}: #{value}"
       else
-        puts "Please select one of the available numbers"
+        puts "  Please select one of: #{available.compact.inspect}"
       end
     end
   end
@@ -242,36 +335,31 @@ module CharacterCreatorKata
 
     loop do
       finalstats = []
-      puts "These are your stats: "
-      stats.each { |s| puts s }
+
+      print_step_header(4, "Assign Ability Scores")
+      puts "\n  Standard Array: #{stats.inspect}\n"
 
       pickable.each_with_index do |name, index|
         pick_one_stat(stats, finalstats, index, name)
-
-        if index < pickable.length - 1
-          puts "These are your remaining stats: "
-          stats.compact!
-          puts stats
-        end
       end
 
       finalstats[5] = stats.compact.first
+      puts "  → Charisma: #{finalstats[5]} (auto-assigned)"
 
-      puts "Your stats are: Strength: #{finalstats[0]}, Dexterity: #{finalstats[1]}, " \
-           "Constitution: #{finalstats[2]}, Intelligence: #{finalstats[3]}, " \
-           "Wisdom: #{finalstats[4]}, Charisma: #{finalstats[5]}"
+      puts "\n  Your ability scores:"
+      print_stat_progress(finalstats, [])
 
-      puts "Are you satisfied with this? (y/n)"
+      puts "\n  Are you satisfied? (y/n)"
       finish = ""
       until finish == "y" || finish == "n"
-        finish = get_input("y").chomp
+        finish = get_input("y").to_s.strip.downcase
         if finish == "n"
           6.times do |n|
             stats[n] = finalstats[n]
             finalstats[n] = nil
           end
         elsif finish != "y"
-          puts "Please select y to complete this process or n to start over"
+          puts "  Please enter y or n"
         end
       end
 
@@ -282,15 +370,14 @@ module CharacterCreatorKata
   # --- Main Orchestration ---
 
   def main
-    puts "Welcome to the D&D Character Creator!"
-    puts "=" * 40
+    print_banner("D&D Character Creator")
+    puts
 
     char_class = pick_class
     species = pick_species
     background = pick_background
 
     stats = CharacterCreatorKata.stat_roll
-    puts "You rolled: #{stats.inspect}"
     finalstats = assign_stats(stats)
 
     level = 1
@@ -301,8 +388,11 @@ module CharacterCreatorKata
     hit_points = CharacterCreatorKata.calculate_hit_points(char_class, level, ability_scores.con_mod)
     skills = CharacterCreatorKata.initialize_skills
 
-    puts "\nWhat is your character's name?"
-    name = get_input("Adventurer")
+    print_step_header(5, "Name Your Character")
+    puts
+    name = get_input("Adventurer").to_s.strip
+    name = "Adventurer" if name.empty?
+    puts "  → #{name}"
 
     character = Character.new(
       name: name, level: level, species: species, char_class: char_class, background: background,
@@ -310,10 +400,8 @@ module CharacterCreatorKata
       proficiency_bonus: prof, hit_points: hit_points, skills: skills
     )
 
-    puts "\n" + "=" * 40
-    puts "Character Created!"
-    puts "=" * 40
-    character.to_h.each { |key, value| puts "  #{key}: #{value}" }
+    puts
+    puts character.to_sheet
 
     character
   end
