@@ -85,9 +85,43 @@ module CharacterCreatorKata
   STAT_NAMES = %w[Strength Dexterity Constitution Intelligence Wisdom Charisma].freeze
   STAT_ABBREVS = %w[STR DEX CON INT WIS CHA].freeze
 
+  STAT_NAME_TO_KEY = {
+    "Strength" => :str, "Dexterity" => :dex, "Constitution" => :con,
+    "Intelligence" => :int, "Wisdom" => :wis, "Charisma" => :cha
+  }.freeze
+
   STANDARD_ARRAY = [15, 14, 13, 12, 10, 8].freeze
 
-  TOTAL_STEPS = 5
+  # D&D 2024: Each skill maps to a governing ability
+  SKILL_ABILITIES = {
+    Proficiencies::ATHLETICS      => :str,
+    Proficiencies::ACROBATICS     => :dex,
+    Proficiencies::SLEIGHT_OF_HAND => :dex,
+    Proficiencies::STEALTH        => :dex,
+    Proficiencies::ARCANA         => :int,
+    Proficiencies::HISTORY        => :int,
+    Proficiencies::INVESTIGATION  => :int,
+    Proficiencies::NATURE         => :int,
+    Proficiencies::RELIGION       => :int,
+    Proficiencies::ANIMAL_HANDLING => :wis,
+    Proficiencies::INSIGHT        => :wis,
+    Proficiencies::MEDICINE       => :wis,
+    Proficiencies::PERCEPTION     => :wis,
+    Proficiencies::SURVIVAL       => :wis,
+    Proficiencies::DECEPTION      => :cha,
+    Proficiencies::INTIMIDATION   => :cha,
+    Proficiencies::PERFORMANCE    => :cha,
+    Proficiencies::PERSUASION     => :cha
+  }.freeze
+
+  # D&D 2024: Number of skill proficiencies each class grants
+  CLASS_SKILL_COUNTS = {
+    "Barbarian" => 2, "Bard" => 3, "Cleric" => 2, "Druid" => 2,
+    "Fighter" => 2, "Monk" => 2, "Paladin" => 2, "Ranger" => 3,
+    "Rogue" => 4, "Sorcerer" => 2, "Warlock" => 2, "Wizard" => 2
+  }.freeze
+
+  TOTAL_STEPS = 7
 
   # --- Value Objects ---
 
@@ -111,6 +145,21 @@ module CharacterCreatorKata
     def int_mod = modifier(int)
     def wis_mod = modifier(wis)
     def cha_mod = modifier(cha)
+
+    def mod_for(ability_key)
+      modifier(send(ability_key))
+    end
+
+    def with_bonuses(bonuses = {})
+      AbilityScores.new(
+        str: str + (bonuses[:str] || 0),
+        dex: dex + (bonuses[:dex] || 0),
+        con: con + (bonuses[:con] || 0),
+        int: int + (bonuses[:int] || 0),
+        wis: wis + (bonuses[:wis] || 0),
+        cha: cha + (bonuses[:cha] || 0)
+      )
+    end
 
     def to_h
       {
@@ -181,6 +230,12 @@ module CharacterCreatorKata
       lines << "│#{pad("  WIS: #{fmt_score(s.wis, s.wis_mod)}    CHA: #{fmt_score(s.cha, s.cha_mod)}", w)}│"
       lines << "├#{"─" * w}┤"
       lines << "│#{pad("  AC: #{ac}    HP: #{hit_points}    Prof Bonus: +#{proficiency_bonus}", w)}│"
+      lines << "├#{"─" * w}┤"
+      lines << "│#{center("SKILLS", w)}│"
+      skills.each do |skill, value|
+        sign = value >= 0 ? "+" : ""
+        lines << "│#{pad("  #{skill.ljust(16)} #{sign}#{value}", w)}│"
+      end
       lines << "└#{"─" * w}┘"
       lines.join("\n")
     end
@@ -230,6 +285,19 @@ module CharacterCreatorKata
 
   def self.stat_roll
     STANDARD_ARRAY.dup
+  end
+
+  def self.class_skill_count(char_class)
+    CLASS_SKILL_COUNTS.fetch(char_class, 2)
+  end
+
+  def self.calculate_skills(ability_scores, proficiency_bonus, proficient_skills)
+    ALL_SKILLS.each_with_object({}) do |skill, hash|
+      ability_key = SKILL_ABILITIES[skill]
+      base_mod = ability_scores.mod_for(ability_key)
+      bonus = proficient_skills.include?(skill) ? proficiency_bonus : 0
+      hash[skill] = base_mod + bonus
+    end
   end
 
   # --- Display Helpers ---
@@ -330,6 +398,97 @@ module CharacterCreatorKata
     end
   end
 
+  def pick_background_bonuses(background, ability_scores)
+    bonuses = CharacterCreatorKata.background_bonuses(background)
+    candidates = bonuses[:ability_bonuses]
+
+    return ability_scores if candidates.empty?
+
+    print_step_header(5, "Background Ability Bonuses")
+    puts "\n  #{background} lets you add +2 to one and +1 to another:"
+    puts "  Choices: #{candidates.join(", ")}"
+
+    # Pick +2
+    puts "\n  Which ability gets +2?"
+    print_numbered_grid(candidates, columns: 3)
+    plus2_choice = nil
+    until plus2_choice
+      input = get_input("1").to_s.strip
+      index = input.to_i - 1
+      if input.match?(/^\d+$/) && index >= 0 && index < candidates.length
+        plus2_choice = candidates[index]
+      else
+        puts "  Please enter a number (1-#{candidates.length})"
+      end
+    end
+    puts "  → +2 to #{plus2_choice}"
+
+    # Pick +1 from remaining
+    remaining = candidates - [plus2_choice]
+    puts "\n  Which ability gets +1?"
+    print_numbered_grid(remaining, columns: 3)
+    plus1_choice = nil
+    until plus1_choice
+      input = get_input("1").to_s.strip
+      index = input.to_i - 1
+      if input.match?(/^\d+$/) && index >= 0 && index < remaining.length
+        plus1_choice = remaining[index]
+      else
+        puts "  Please enter a number (1-#{remaining.length})"
+      end
+    end
+    puts "  → +1 to #{plus1_choice}"
+
+    bonus_hash = {
+      STAT_NAME_TO_KEY[plus2_choice] => 2,
+      STAT_NAME_TO_KEY[plus1_choice] => 1
+    }
+
+    new_scores = ability_scores.with_bonuses(bonus_hash)
+    puts "\n  Updated ability scores:"
+    STAT_NAMES.each do |name|
+      key = STAT_NAME_TO_KEY[name]
+      score = new_scores.send(key)
+      mod = new_scores.mod_for(key)
+      sign = mod >= 0 ? "+" : ""
+      puts "    #{name}: #{score} (#{sign}#{mod})"
+    end
+
+    new_scores
+  end
+
+  def pick_class_skills(char_class, background_skills)
+    available = CharacterCreatorKata.proficiency_by_class(char_class) - background_skills
+    count = CharacterCreatorKata.class_skill_count(char_class)
+    chosen = []
+
+    print_step_header(6, "Choose Skill Proficiencies")
+    puts "\n  #{char_class} can choose #{count} from their class skills."
+    puts "  (Background already grants: #{background_skills.join(", ")})" unless background_skills.empty?
+
+    count.times do |i|
+      remaining = available - chosen
+      puts "\n  Pick skill #{i + 1}/#{count}:"
+      print_numbered_grid(remaining, columns: 2)
+
+      pick = nil
+      until pick
+        input = get_input("1").to_s.strip
+        index = input.to_i - 1
+        if input.match?(/^\d+$/) && index >= 0 && index < remaining.length
+          pick = remaining[index]
+        else
+          puts "  Please enter a number (1-#{remaining.length})"
+        end
+      end
+      chosen << pick
+      puts "  → #{pick}"
+    end
+
+    puts "\n  Class skill proficiencies: #{chosen.join(", ")}"
+    chosen
+  end
+
   def assign_stats(stats)
     pickable = STAT_NAMES[0...-1] # All except Charisma (auto-assigned)
 
@@ -382,13 +541,23 @@ module CharacterCreatorKata
 
     level = 1
     str, dex, con, int, wis, cha = finalstats
-    ability_scores = AbilityScores.new(str: str, dex: dex, con: con, int: int, wis: wis, cha: cha)
+    base_scores = AbilityScores.new(str: str, dex: dex, con: con, int: int, wis: wis, cha: cha)
+
+    # Step 5: Apply background ability bonuses (+2/+1)
+    ability_scores = pick_background_bonuses(background, base_scores)
+
+    # Step 6: Pick class skill proficiencies
+    bg_bonuses = CharacterCreatorKata.background_bonuses(background)
+    background_skills = bg_bonuses[:skill_proficiencies]
+    class_skills = pick_class_skills(char_class, background_skills)
+    all_proficient_skills = (background_skills + class_skills).uniq
 
     prof = CharacterCreatorKata.proficiency_bonus(level)
     hit_points = CharacterCreatorKata.calculate_hit_points(char_class, level, ability_scores.con_mod)
-    skills = CharacterCreatorKata.initialize_skills
+    skills = CharacterCreatorKata.calculate_skills(ability_scores, prof, all_proficient_skills)
 
-    print_step_header(5, "Name Your Character")
+    # Step 7: Name character
+    print_step_header(7, "Name Your Character")
     puts
     name = get_input("Adventurer").to_s.strip
     name = "Adventurer" if name.empty?
