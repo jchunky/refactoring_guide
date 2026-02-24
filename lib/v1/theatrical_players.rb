@@ -1,47 +1,54 @@
 module TheatricalPlayersKata
   def statement(invoice, plays)
-    total_amount = 0
-    volume_credits = 0
-    result = "Statement for #{invoice['customer']}\n"
+    performances = invoice['performances'].map { |perf| enrich(perf, plays) }
+    total_amount = performances.sum { |p| p[:amount] }
+    total_credits = performances.sum { |p| p[:credits] }
 
-    format = lambda { |amount|
-      "$#{'%.2f' % (amount / 100.0)}"
-    }
-
-    invoice['performances'].each do |perf|
-      play = plays[perf['playID']]
-      this_amount = 0
-
-      case play['type']
-      when 'tragedy'
-        this_amount = 40000
-        if perf['audience'] > 30
-          this_amount += 1000 * (perf['audience'] - 30)
-        end
-      when 'comedy'
-        this_amount = 30000
-        if perf['audience'] > 20
-          this_amount += 10000 + 500 * (perf['audience'] - 20)
-        end
-        this_amount += 300 * perf['audience']
-      else
-        raise "unknown type: #{play['type']}"
-      end
-
-      # add volume credits
-      volume_credits += [perf['audience'] - 30, 0].max
-      # add extra credit for every ten comedy attendees
-      if play['type'] == 'comedy'
-        volume_credits += (perf['audience'] / 5).floor
-      end
-
-      # print line for this order
-      result += " #{play['name']}: #{format.call(this_amount)} (#{perf['audience']} seats)\n"
-      total_amount += this_amount
+    lines = ["Statement for #{invoice['customer']}"]
+    performances.each do |perf|
+      lines << " #{perf[:name]}: #{format_currency(perf[:amount])} (#{perf[:audience]} seats)"
     end
+    lines << "Amount owed is #{format_currency(total_amount)}"
+    lines << "You earned #{total_credits} credits"
+    lines.join("\n") + "\n"
+  end
 
-    result += "Amount owed is #{format.call(total_amount)}\n"
-    result += "You earned #{volume_credits} credits\n"
-    result
+  private
+
+  def enrich(performance, plays)
+    play = plays[performance['playID']]
+    audience = performance['audience']
+
+    {
+      name: play['name'],
+      audience: audience,
+      amount: amount_for(play['type'], audience),
+      credits: credits_for(play['type'], audience)
+    }
+  end
+
+  def amount_for(type, audience)
+    case type
+    when 'tragedy'
+      base = 40_000
+      base += 1_000 * (audience - 30) if audience > 30
+      base
+    when 'comedy'
+      base = 30_000
+      base += 10_000 + 500 * (audience - 20) if audience > 20
+      base + 300 * audience
+    else
+      raise "unknown type: #{type}"
+    end
+  end
+
+  def credits_for(type, audience)
+    credits = [audience - 30, 0].max
+    credits += (audience / 5).floor if type == 'comedy'
+    credits
+  end
+
+  def format_currency(amount_in_cents)
+    "$#{'%.2f' % (amount_in_cents / 100.0)}"
   end
 end

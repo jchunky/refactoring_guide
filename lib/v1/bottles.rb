@@ -1,39 +1,40 @@
 module BottlesKata
   class Bottles
     def verse(number)
-      if number == 0
-        "No more bottles of beer on the wall, " +
-        "no more bottles of beer.\n" +
-        "Go to the store and buy some more, " +
-        "99 bottles of beer on the wall.\n"
-      elsif number == 1
-        "1 bottle of beer on the wall, " +
-        "1 bottle of beer.\n" +
-        "Take it down and pass it around, " +
-        "no more bottles of beer on the wall.\n"
-      elsif number == 2
-        "2 bottles of beer on the wall, " +
-        "2 bottles of beer.\n" +
-        "Take one down and pass it around, " +
-        "1 bottle of beer on the wall.\n"
-      else
-        "#{number} bottles of beer on the wall, " +
-        "#{number} bottles of beer.\n" +
-        "Take one down and pass it around, " +
-        "#{number - 1} bottles of beer on the wall.\n"
-      end
+      "#{bottle_count(number).capitalize} of beer on the wall, " \
+        "#{bottle_count(number)} of beer.\n" \
+        "#{action(number)}, " \
+        "#{bottle_count(next_number(number))} of beer on the wall.\n"
     end
 
     def verses(start, finish)
-      result = []
-      start.downto(finish) do |num|
-        result << verse(num)
-      end
-      result.join("\n")
+      start.downto(finish).map { |n| verse(n) }.join("\n")
     end
 
     def song
       verses(99, 0)
+    end
+
+    private
+
+    def bottle_count(number)
+      case number
+      when 0 then "no more bottles"
+      when 1 then "1 bottle"
+      else "#{number} bottles"
+      end
+    end
+
+    def action(number)
+      case number
+      when 0 then "Go to the store and buy some more"
+      when 1 then "Take it down and pass it around"
+      else "Take one down and pass it around"
+      end
+    end
+
+    def next_number(number)
+      number.zero? ? 99 : number - 1
     end
   end
 end
