@@ -13,7 +13,6 @@ module CharacterCreatorKata
 
   ABILITY_NAMES = %i[str dex con int wis cha].freeze
 
-  STAT_NAMES = %w[Strength Dexterity Constitution Intelligence Wisdom Charisma].freeze
 
   STANDARD_ARRAY = [15, 14, 13, 12, 10, 8].freeze
 
@@ -170,19 +169,23 @@ module CharacterCreatorKata
     choice
   end
 
+  def ability_abbrev(sym)
+    sym.to_s.upcase
+  end
+
   def assign_stats(stats)
     available = stats.dup
     finalstats = []
 
     puts "\nAssign Ability Scores (Standard Array: #{stats.inspect})"
-    STAT_NAMES[0...-1].each_with_index do |name, i|
-      puts "  #{name} from #{available.compact.inspect}:"
+    ABILITY_NAMES[0...-1].each_with_index do |name, i|
+      puts "  #{ability_abbrev(name)} from #{available.compact.inspect}:"
       value = get_input(available.compact.first).to_i
       finalstats[i] = value
       available[available.index(value)] = nil
     end
     finalstats[5] = available.compact.first
-    puts "  Charisma: #{finalstats[5]} (auto-assigned)"
+    puts "  CHA: #{finalstats[5]} (auto-assigned)"
     finalstats
   end
 
@@ -193,7 +196,7 @@ module CharacterCreatorKata
 
     return [ability_scores, bg_skills] if candidates.empty?
 
-    dn = method(:display_name)
+    dn = method(:ability_abbrev)
     plus2 = pick_from_list(candidates, "#{background}: Which ability gets +2?", display: dn)
     plus1 = pick_from_list(candidates - [plus2], "#{background}: Which ability gets +1?", display: dn)
 
