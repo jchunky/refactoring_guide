@@ -83,7 +83,7 @@ module CharacterCreatorKata
     end
   end
 
-  module DisplayHelpers
+  module Display
     module_function
 
     def display_name(sym)
@@ -140,7 +140,7 @@ module CharacterCreatorKata
         lines << "AC: #{ac}  HP: #{hit_points}  Prof Bonus: +#{proficiency_bonus}"
         lines << "Skills:"
         skills.sort_by { |name, _| name }.each do |skill, val|
-          lines << "  %-20s %+d" % [DisplayHelpers.display_name(skill), val]
+          lines << "  %-20s %+d" % [Display.display_name(skill), val]
         end
         lines.join("\n")
       end
@@ -203,7 +203,7 @@ module CharacterCreatorKata
       chosen = []
 
       dn = method(:display_name)
-      bg_names = background_skills.map { |s| DisplayHelpers.display_name(s) }.join(", ")
+      bg_names = background_skills.map { |s| Display.display_name(s) }.join(", ")
       puts "\n  Background skills: #{bg_names}" unless background_skills.empty?
 
       count.times do |i|
@@ -213,7 +213,7 @@ module CharacterCreatorKata
     end
 
     def display_name(sym)
-      DisplayHelpers.display_name(sym)
+      Display.display_name(sym)
     end
   end
 
