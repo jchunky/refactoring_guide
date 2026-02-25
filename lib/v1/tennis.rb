@@ -1,109 +1,41 @@
 # frozen_string_literal: true
 
 module TennisKata
-  SCORE_NAMES = { 0 => "Love", 1 => "Fifteen", 2 => "Thirty", 3 => "Forty" }.freeze
+  SCORE_NAMES = %w[Love Fifteen Thirty Forty].freeze
 
-  class TennisGame1
-    def initialize(player1_name, player2_name)
-      @player1_name = player1_name
-      @player2_name = player2_name
-      @p1_points = 0
-      @p2_points = 0
-    end
+  class Player < Struct.new(:name, :points)
+    def initialize(name) = super(name, 0)
 
-    def won_point(player_name)
-      if player_name == @player1_name
-        @p1_points += 1
-      else
-        @p2_points += 1
-      end
-    end
+    def to_s = name
+    def score = SCORE_NAMES[points]
+  end
+
+  class TennisGame < Struct.new(:player1, :player2)
+    def initialize(name1, name2) = super(Player.new(name1), Player.new(name2))
+
+    def won_point(name) = find_player(name).points += 1
 
     def score
-      if @p1_points == @p2_points
-        return tied_score
+      if player1.points == player2.points
+        return player1.points >= 3 ? "Deuce" : "#{leader.score}-All"
       end
 
-      if @p1_points >= 4 || @p2_points >= 4
-        return advantage_or_win_score
+      if player1.points >= 4 || player2.points >= 4
+        difference = player1.points - player2.points
+        return difference.abs >= 2 ? "Win for #{leader}" : "Advantage #{leader}"
       end
 
-      "#{SCORE_NAMES[@p1_points]}-#{SCORE_NAMES[@p2_points]}"
+      "#{player1.score}-#{player2.score}"
     end
 
     private
 
-    def tied_score
-      @p1_points >= 3 ? "Deuce" : "#{SCORE_NAMES[@p1_points]}-All"
-    end
-
-    def advantage_or_win_score
-      difference = @p1_points - @p2_points
-      leader = difference > 0 ? @player1_name : @player2_name
-
-      difference.abs >= 2 ? "Win for #{leader}" : "Advantage #{leader}"
-    end
+    def leader = players.max_by(&:points)
+    def find_player(name) = players.find { it.name == name }
+    def players = [player1, player2]
   end
 
-  class TennisGame2
-    def initialize(player1_name, player2_name)
-      @player1_name = player1_name
-      @player2_name = player2_name
-      @p1_points = 0
-      @p2_points = 0
-    end
-
-    def won_point(player_name)
-      if player_name == @player1_name
-        @p1_points += 1
-      else
-        @p2_points += 1
-      end
-    end
-
-    def score
-      if @p1_points == @p2_points
-        return @p1_points >= 3 ? "Deuce" : "#{SCORE_NAMES[@p1_points]}-All"
-      end
-
-      if @p1_points >= 4 || @p2_points >= 4
-        difference = @p1_points - @p2_points
-        leader = difference > 0 ? @player1_name : @player2_name
-        return difference.abs >= 2 ? "Win for #{leader}" : "Advantage #{leader}"
-      end
-
-      "#{SCORE_NAMES[@p1_points]}-#{SCORE_NAMES[@p2_points]}"
-    end
-  end
-
-  class TennisGame3
-    def initialize(player1_name, player2_name)
-      @player1_name = player1_name
-      @player2_name = player2_name
-      @p1_points = 0
-      @p2_points = 0
-    end
-
-    def won_point(player_name)
-      if player_name == @player1_name
-        @p1_points += 1
-      else
-        @p2_points += 1
-      end
-    end
-
-    def score
-      if @p1_points < 4 && @p2_points < 4 && @p1_points + @p2_points < 6
-        score = SCORE_NAMES[@p1_points]
-        return @p1_points == @p2_points ? "#{score}-All" : "#{score}-#{SCORE_NAMES[@p2_points]}"
-      end
-
-      return "Deuce" if @p1_points == @p2_points
-
-      leader = @p1_points > @p2_points ? @player1_name : @player2_name
-      difference = (@p1_points - @p2_points).abs
-
-      difference == 1 ? "Advantage #{leader}" : "Win for #{leader}"
-    end
-  end
+  class TennisGame1 < TennisGame; end
+  class TennisGame2 < TennisGame; end
+  class TennisGame3 < TennisGame; end
 end
