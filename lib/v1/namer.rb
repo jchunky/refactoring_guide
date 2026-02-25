@@ -1,51 +1,28 @@
 # frozen_string_literal: true
 
+require "securerandom"
+
 module NamerKata
   require "digest"
 
   module XYZ
-    module Namer
+    class Namer < Data.define(:file)
       MAX_TITLE_LENGTH = 10
 
-      def self.xyz_filename(target)
-        [
-          formatted_day(target),
-          target.xyz_category_prefix,
-          formatted_kind(target),
-          formatted_age(target),
-          "_#{target.id}",
-          "_#{random_hash}",
-          "_#{sanitized_title(target)}",
-          ".jpg",
-        ].compact.join
-      end
+      def self.xyz_filename(file) = new(file).filename
 
-      class << self
-        private
+      def filename = [prefix, age, file.id, noise, title].compact.join("_").concat(".jpg")
 
-        def formatted_day(target)
-          target.publish_on.strftime("%d")
-        end
+      private
 
-        def formatted_kind(target)
-          target.kind.delete("_")
-        end
-
-        def formatted_age(target)
-          return unless target.personal?
-
-          format("_%03d", target.age || 0)
-        end
-
-        def random_hash
-          Digest::SHA1.hexdigest(rand(10000).to_s)[0, 8]
-        end
-
-        def sanitized_title(target)
-          cleaned = target.title.gsub(/[^\[a-z\]]/i, "").downcase
-          cleaned[0, MAX_TITLE_LENGTH]
-        end
-      end
+      def prefix = [publication_day, catgory, kind].join
+      def publication_day = file.publish_on.strftime("%d")
+      def catgory = file.xyz_category_prefix
+      def kind = file.kind.delete("_")
+      def age = (format("%03d", file.age.to_i) if file.personal?)
+      def noise = SecureRandom.hex(4)
+      def title = sanitized_title[0, MAX_TITLE_LENGTH]
+      def sanitized_title = file.title.downcase.gsub(/[^\[a-z\]]/, "")
     end
   end
 end
