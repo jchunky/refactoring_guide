@@ -3,8 +3,6 @@
 require "securerandom"
 
 module NamerKata
-  require "digest"
-
   module XYZ
     class Namer < Data.define(:file)
       MAX_TITLE_LENGTH = 10
