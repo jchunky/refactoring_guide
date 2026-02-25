@@ -50,7 +50,7 @@ module CharacterCreatorKata
 
     def calculate_hit_points(char_class, level, con_mod)
       die = CLASSES.dig(char_class, :hit_die)
-      die + con_mod + ((level - 1) * (die / 2 + 1 + con_mod))
+      die + con_mod + (level * (die / 2 + 1 + con_mod))
     end
 
     def background_bonuses(background)
@@ -118,7 +118,7 @@ module CharacterCreatorKata
 
     Character = Data.define(
       :name, :level, :species, :char_class, :background,
-      :ability_scores, :ac, :proficiency_bonus, :hit_points, :skills
+      :ability_scores, :ac, :proficiency_bonus, :hit_points, :skills, :proficient_skills
     ) do
       def self.create
         character = Services::CreateCharacter.new.build
@@ -140,7 +140,8 @@ module CharacterCreatorKata
         lines << "AC: #{ac}  HP: #{hit_points}  Prof Bonus: +#{proficiency_bonus}"
         lines << "Skills:"
         skills.sort_by { |name, _| name }.each do |skill, val|
-          lines << "  %-20s %+d" % [Display.display_name(skill), val]
+          marker = proficient_skills.include?(skill) ? " *" : "  "
+          lines << "  %s %-20s %+d" % [marker, Display.display_name(skill), val]
         end
         lines.join("\n")
       end
@@ -248,7 +249,8 @@ module CharacterCreatorKata
         Models::Character.new(
           name: name, level: level, species: species, char_class: char_class, background: background,
           ability_scores: ability_scores, ac: 10 + ability_scores.dex_mod,
-          proficiency_bonus: prof, hit_points: hit_points, skills: skills
+          proficiency_bonus: prof, hit_points: hit_points, skills: skills,
+          proficient_skills: all_proficient_skills
         )
       end
     end

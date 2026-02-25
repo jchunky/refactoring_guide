@@ -358,7 +358,8 @@ class CharacterTest < Minitest::Test
       char_class: "Barbarian", background: "Acolyte",
       ability_scores: @ability_scores, ac: 12,
       proficiency_bonus: 2, hit_points: 21,
-      skills: World.initialize_skills
+      skills: World.initialize_skills,
+      proficient_skills: []
     )
   end
 
