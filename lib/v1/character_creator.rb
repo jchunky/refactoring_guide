@@ -38,6 +38,8 @@ module CharacterCreatorKata
       "Soldier"  => { ability_bonuses: %i[str dex con], skill_proficiencies: %i[athletics intimidation] }
     }.freeze
 
+    module_function
+
     def ability_modifier(score)
       (score - 10) / 2
     end
@@ -80,35 +82,34 @@ module CharacterCreatorKata
       end
     end
   end
-  include World
-  extend World
 
   module DisplayHelpers
+    module_function
+
     def display_name(sym)
       sym.to_s.split("_").map(&:capitalize).join(" ")
     end
   end
-  extend DisplayHelpers
 
-  module ValueObjects
+  module Models
     AbilityScores = Data.define(:str, :dex, :con, :int, :wis, :cha) do
-      CharacterCreatorKata::ABILITY_NAMES.each do |name|
-        define_method(:"#{name}_mod") { CharacterCreatorKata.ability_modifier(send(name)) }
+      World::ABILITY_NAMES.each do |name|
+        define_method(:"#{name}_mod") { World.ability_modifier(send(name)) }
       end
 
       def mod_for(ability_key)
-        CharacterCreatorKata.ability_modifier(send(ability_key))
+        World.ability_modifier(send(ability_key))
       end
 
       def with_bonuses(bonuses = {})
-        args = CharacterCreatorKata::ABILITY_NAMES.each_with_object({}) do |name, h|
+        args = World::ABILITY_NAMES.each_with_object({}) do |name, h|
           h[name] = send(name) + (bonuses[name] || 0)
         end
         self.class.new(**args)
       end
 
       def to_h
-        CharacterCreatorKata::ABILITY_NAMES.each_with_object({}) do |name, h|
+        World::ABILITY_NAMES.each_with_object({}) do |name, h|
           h[name] = send(name)
           h[:"#{name}_mod"] = send(:"#{name}_mod")
         end
@@ -119,6 +120,12 @@ module CharacterCreatorKata
       :name, :level, :species, :char_class, :background,
       :ability_scores, :ac, :proficiency_bonus, :hit_points, :skills
     ) do
+      def self.create
+        character = Services::CreateCharacter.new.build
+        puts "\n#{character}"
+        character
+      end
+
       def to_h
         super.merge(**ability_scores.to_h).tap { |h| h.delete(:ability_scores) }
       end
@@ -133,16 +140,15 @@ module CharacterCreatorKata
         lines << "AC: #{ac}  HP: #{hit_points}  Prof Bonus: +#{proficiency_bonus}"
         lines << "Skills:"
         skills.sort_by { |name, _| name }.each do |skill, val|
-          lines << "  %-20s %+d" % [CharacterCreatorKata.display_name(skill), val]
+          lines << "  %-20s %+d" % [DisplayHelpers.display_name(skill), val]
         end
         lines.join("\n")
       end
     end
   end
-  include ValueObjects
 
-  module InputHelpers
-    include World
+  module Input
+    module_function
 
     def get_input(default)
       puts default
@@ -166,7 +172,7 @@ module CharacterCreatorKata
       finalstats = []
 
       puts "\nAssign Ability Scores (Standard Array: #{stats.inspect})"
-      ABILITY_NAMES[0...-1].each_with_index do |name, i|
+      World::ABILITY_NAMES[0...-1].each_with_index do |name, i|
         puts "  #{ability_abbrev(name)} from #{available.compact.inspect}:"
         value = get_input(available.compact.first).to_i
         finalstats[i] = value
@@ -178,7 +184,7 @@ module CharacterCreatorKata
     end
 
     def apply_background_bonuses(background, ability_scores)
-      bonuses = CharacterCreatorKata.background_bonuses(background)
+      bonuses = World.background_bonuses(background)
       candidates = bonuses[:ability_bonuses]
       bg_skills = bonuses[:skill_proficiencies]
 
@@ -192,12 +198,12 @@ module CharacterCreatorKata
     end
 
     def pick_class_skills(char_class, background_skills)
-      available = CharacterCreatorKata.proficiency_by_class(char_class) - background_skills
-      count = CharacterCreatorKata.class_skill_count(char_class)
+      available = World.proficiency_by_class(char_class) - background_skills
+      count = World.class_skill_count(char_class)
       chosen = []
 
       dn = method(:display_name)
-      bg_names = background_skills.map { |s| CharacterCreatorKata.display_name(s) }.join(", ")
+      bg_names = background_skills.map { |s| DisplayHelpers.display_name(s) }.join(", ")
       puts "\n  Background skills: #{bg_names}" unless background_skills.empty?
 
       count.times do |i|
@@ -207,63 +213,49 @@ module CharacterCreatorKata
     end
 
     def display_name(sym)
-      CharacterCreatorKata.display_name(sym)
-    end
-  end
-  include InputHelpers
-
-  class CharacterBuilder
-    include World
-    include ValueObjects
-    include InputHelpers
-
-    def build
-      puts "D&D Character Creator"
-      puts "=" * 30
-
-      char_class = pick_from_list(CLASSES.keys, "Choose your class:")
-      species    = pick_from_list(SPECIES, "Choose your species:")
-      background = pick_from_list(BACKGROUNDS.keys, "Choose your background:")
-
-      finalstats = assign_stats(CharacterCreatorKata.stat_roll)
-
-      level = 1
-      str, dex, con, int, wis, cha = finalstats
-      base_scores = AbilityScores.new(str: str, dex: dex, con: con, int: int, wis: wis, cha: cha)
-
-      ability_scores, background_skills = apply_background_bonuses(background, base_scores)
-      class_skills = pick_class_skills(char_class, background_skills)
-      all_proficient_skills = (background_skills + class_skills).uniq
-
-      prof = CharacterCreatorKata.proficiency_bonus(level)
-      hit_points = CharacterCreatorKata.calculate_hit_points(char_class, level, ability_scores.con_mod)
-      skills = CharacterCreatorKata.calculate_skills(ability_scores, prof, all_proficient_skills)
-
-      puts "\nWhat is your character's name?"
-      name = get_input("Adventurer").to_s.strip
-      name = "Adventurer" if name.empty?
-
-      character = Character.new(
-        name: name, level: level, species: species, char_class: char_class, background: background,
-        ability_scores: ability_scores, ac: 10 + ability_scores.dex_mod,
-        proficiency_bonus: prof, hit_points: hit_points, skills: skills
-      )
-
-      puts "\n#{character}"
-      character
+      DisplayHelpers.display_name(sym)
     end
   end
 
-  module Orchestration
-    def main
-      CharacterBuilder.new.build
+  module Services
+    class CreateCharacter
+      def build
+        puts "D&D Character Creator"
+        puts "=" * 30
+
+        char_class = Input.pick_from_list(World::CLASSES.keys, "Choose your class:")
+        species    = Input.pick_from_list(World::SPECIES, "Choose your species:")
+        background = Input.pick_from_list(World::BACKGROUNDS.keys, "Choose your background:")
+
+        finalstats = Input.assign_stats(World.stat_roll)
+
+        level = 1
+        str, dex, con, int, wis, cha = finalstats
+        base_scores = Models::AbilityScores.new(str: str, dex: dex, con: con, int: int, wis: wis, cha: cha)
+
+        ability_scores, background_skills = Input.apply_background_bonuses(background, base_scores)
+        class_skills = Input.pick_class_skills(char_class, background_skills)
+        all_proficient_skills = (background_skills + class_skills).uniq
+
+        prof = World.proficiency_bonus(level)
+        hit_points = World.calculate_hit_points(char_class, level, ability_scores.con_mod)
+        skills = World.calculate_skills(ability_scores, prof, all_proficient_skills)
+
+        puts "\nWhat is your character's name?"
+        name = Input.get_input("Adventurer").to_s.strip
+        name = "Adventurer" if name.empty?
+
+        Models::Character.new(
+          name: name, level: level, species: species, char_class: char_class, background: background,
+          ability_scores: ability_scores, ac: 10 + ability_scores.dex_mod,
+          proficiency_bonus: prof, hit_points: hit_points, skills: skills
+        )
+      end
     end
   end
-  include Orchestration
 end
 
 # Allow running this file directly for manual testing
 if __FILE__ == $0
-  include CharacterCreatorKata
-  main
+  CharacterCreatorKata::Models::Character.create
 end
