@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TennisKata
   SCORE_NAMES = { 0 => "Love", 1 => "Fifteen", 2 => "Thirty", 3 => "Forty" }.freeze
 

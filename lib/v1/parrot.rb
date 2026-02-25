@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ParrotKata
   class Parrot
     BASE_SPEED = 12.0
@@ -34,7 +36,7 @@ module ParrotKata
     end
 
     def speed
-      [0, BASE_SPEED - LOAD_FACTOR * @number_of_coconuts].max
+      [0, BASE_SPEED - (LOAD_FACTOR * @number_of_coconuts)].max
     end
   end
 

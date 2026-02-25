@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module CharacterCreatorKata
   module Proficiencies
     ATHLETICS = "athletics"
@@ -29,67 +31,160 @@ module CharacterCreatorKata
 
   HIT_DICE = {
     "Barbarian" => 12,
-    "Fighter" => 10, "Paladin" => 10, "Ranger" => 10,
-    "Bard" => 8, "Cleric" => 8, "Druid" => 8, "Monk" => 8, "Rogue" => 8, "Warlock" => 8,
-    "Sorcerer" => 6, "Wizard" => 6
+    "Fighter" => 10,
+    "Paladin" => 10,
+    "Ranger" => 10,
+    "Bard" => 8,
+    "Cleric" => 8,
+    "Druid" => 8,
+    "Monk" => 8,
+    "Rogue" => 8,
+    "Warlock" => 8,
+    "Sorcerer" => 6,
+    "Wizard" => 6,
   }.freeze
 
   BACKGROUND_DATA = {
     "Acolyte" => {
       ability_bonuses: %w[Intelligence Wisdom Charisma],
-      skill_proficiencies: [Proficiencies::INSIGHT, Proficiencies::RELIGION]
+      skill_proficiencies: [Proficiencies::INSIGHT, Proficiencies::RELIGION],
     },
     "Criminal" => {
       ability_bonuses: %w[Dexterity Constitution Intelligence],
-      skill_proficiencies: [Proficiencies::SLEIGHT_OF_HAND, Proficiencies::STEALTH]
+      skill_proficiencies: [Proficiencies::SLEIGHT_OF_HAND, Proficiencies::STEALTH],
     },
     "Sage" => {
       ability_bonuses: %w[Constitution Intelligence Wisdom],
-      skill_proficiencies: [Proficiencies::ARCANA, Proficiencies::HISTORY]
+      skill_proficiencies: [Proficiencies::ARCANA, Proficiencies::HISTORY],
     },
     "Soldier" => {
       ability_bonuses: %w[Strength Dexterity Constitution],
-      skill_proficiencies: [Proficiencies::ATHLETICS, Proficiencies::INTIMIDATION]
-    }
+      skill_proficiencies: [Proficiencies::ATHLETICS, Proficiencies::INTIMIDATION],
+    },
   }.freeze
 
   CLASS_PROFICIENCIES = {
-    "Barbarian" => [Proficiencies::ANIMAL_HANDLING, Proficiencies::ATHLETICS, Proficiencies::INTIMIDATION,
-                    Proficiencies::NATURE, Proficiencies::PERCEPTION, Proficiencies::SURVIVAL],
-    "Bard" => [Proficiencies::ATHLETICS, Proficiencies::ACROBATICS, Proficiencies::SLEIGHT_OF_HAND,
-               Proficiencies::STEALTH, Proficiencies::ARCANA, Proficiencies::HISTORY,
-               Proficiencies::INVESTIGATION, Proficiencies::NATURE, Proficiencies::RELIGION,
-               Proficiencies::RELIGION, Proficiencies::ANIMAL_HANDLING, Proficiencies::INSIGHT,
-               Proficiencies::MEDICINE, Proficiencies::PERCEPTION, Proficiencies::SURVIVAL,
-               Proficiencies::DECEPTION, Proficiencies::INTIMIDATION, Proficiencies::PERFORMANCE,
-               Proficiencies::PERSUASION],
-    "Cleric" => [Proficiencies::HISTORY, Proficiencies::INSIGHT, Proficiencies::MEDICINE,
-                 Proficiencies::PERSUASION, Proficiencies::RELIGION],
-    "Druid" => [Proficiencies::ARCANA, Proficiencies::ANIMAL_HANDLING, Proficiencies::INSIGHT,
-                Proficiencies::MEDICINE, Proficiencies::NATURE, Proficiencies::PERCEPTION,
-                Proficiencies::RELIGION, Proficiencies::SURVIVAL],
-    "Fighter" => [Proficiencies::ACROBATICS, Proficiencies::ANIMAL_HANDLING, Proficiencies::ATHLETICS,
-                  Proficiencies::HISTORY, Proficiencies::INSIGHT, Proficiencies::INTIMIDATION,
-                  Proficiencies::PERCEPTION, Proficiencies::PERSUASION, Proficiencies::SURVIVAL],
-    "Monk" => [Proficiencies::ACROBATICS, Proficiencies::ATHLETICS, Proficiencies::HISTORY,
-               Proficiencies::INSIGHT, Proficiencies::RELIGION, Proficiencies::STEALTH],
-    "Paladin" => [Proficiencies::ATHLETICS, Proficiencies::INSIGHT, Proficiencies::INTIMIDATION,
-                  Proficiencies::MEDICINE, Proficiencies::PERSUASION, Proficiencies::RELIGION],
-    "Ranger" => [Proficiencies::ANIMAL_HANDLING, Proficiencies::ATHLETICS, Proficiencies::INSIGHT,
-                 Proficiencies::INVESTIGATION, Proficiencies::NATURE, Proficiencies::PERCEPTION,
-                 Proficiencies::STEALTH, Proficiencies::SURVIVAL],
-    "Rogue" => [Proficiencies::ACROBATICS, Proficiencies::ATHLETICS, Proficiencies::DECEPTION,
-                Proficiencies::INSIGHT, Proficiencies::INTIMIDATION, Proficiencies::INVESTIGATION,
-                Proficiencies::PERCEPTION, Proficiencies::PERSUASION, Proficiencies::SLEIGHT_OF_HAND,
-                Proficiencies::STEALTH],
-    "Sorcerer" => [Proficiencies::ARCANA, Proficiencies::DECEPTION, Proficiencies::INSIGHT,
-                   Proficiencies::INTIMIDATION, Proficiencies::PERSUASION, Proficiencies::RELIGION],
-    "Warlock" => [Proficiencies::ARCANA, Proficiencies::DECEPTION, Proficiencies::HISTORY,
-                  Proficiencies::INTIMIDATION, Proficiencies::INVESTIGATION, Proficiencies::NATURE,
-                  Proficiencies::RELIGION],
-    "Wizard" => [Proficiencies::ARCANA, Proficiencies::HISTORY, Proficiencies::INSIGHT,
-                 Proficiencies::INVESTIGATION, Proficiencies::MEDICINE, Proficiencies::NATURE,
-                 Proficiencies::RELIGION]
+    "Barbarian" => [
+      Proficiencies::ANIMAL_HANDLING,
+      Proficiencies::ATHLETICS,
+      Proficiencies::INTIMIDATION,
+      Proficiencies::NATURE,
+      Proficiencies::PERCEPTION,
+      Proficiencies::SURVIVAL,
+    ],
+    "Bard" => [
+      Proficiencies::ATHLETICS,
+      Proficiencies::ACROBATICS,
+      Proficiencies::SLEIGHT_OF_HAND,
+      Proficiencies::STEALTH,
+      Proficiencies::ARCANA,
+      Proficiencies::HISTORY,
+      Proficiencies::INVESTIGATION,
+      Proficiencies::NATURE,
+      Proficiencies::RELIGION,
+      Proficiencies::RELIGION,
+      Proficiencies::ANIMAL_HANDLING,
+      Proficiencies::INSIGHT,
+      Proficiencies::MEDICINE,
+      Proficiencies::PERCEPTION,
+      Proficiencies::SURVIVAL,
+      Proficiencies::DECEPTION,
+      Proficiencies::INTIMIDATION,
+      Proficiencies::PERFORMANCE,
+      Proficiencies::PERSUASION,
+    ],
+    "Cleric" => [
+      Proficiencies::HISTORY,
+      Proficiencies::INSIGHT,
+      Proficiencies::MEDICINE,
+      Proficiencies::PERSUASION,
+      Proficiencies::RELIGION,
+    ],
+    "Druid" => [
+      Proficiencies::ARCANA,
+      Proficiencies::ANIMAL_HANDLING,
+      Proficiencies::INSIGHT,
+      Proficiencies::MEDICINE,
+      Proficiencies::NATURE,
+      Proficiencies::PERCEPTION,
+      Proficiencies::RELIGION,
+      Proficiencies::SURVIVAL,
+    ],
+    "Fighter" => [
+      Proficiencies::ACROBATICS,
+      Proficiencies::ANIMAL_HANDLING,
+      Proficiencies::ATHLETICS,
+      Proficiencies::HISTORY,
+      Proficiencies::INSIGHT,
+      Proficiencies::INTIMIDATION,
+      Proficiencies::PERCEPTION,
+      Proficiencies::PERSUASION,
+      Proficiencies::SURVIVAL,
+    ],
+    "Monk" => [
+      Proficiencies::ACROBATICS,
+      Proficiencies::ATHLETICS,
+      Proficiencies::HISTORY,
+      Proficiencies::INSIGHT,
+      Proficiencies::RELIGION,
+      Proficiencies::STEALTH,
+    ],
+    "Paladin" => [
+      Proficiencies::ATHLETICS,
+      Proficiencies::INSIGHT,
+      Proficiencies::INTIMIDATION,
+      Proficiencies::MEDICINE,
+      Proficiencies::PERSUASION,
+      Proficiencies::RELIGION,
+    ],
+    "Ranger" => [
+      Proficiencies::ANIMAL_HANDLING,
+      Proficiencies::ATHLETICS,
+      Proficiencies::INSIGHT,
+      Proficiencies::INVESTIGATION,
+      Proficiencies::NATURE,
+      Proficiencies::PERCEPTION,
+      Proficiencies::STEALTH,
+      Proficiencies::SURVIVAL,
+    ],
+    "Rogue" => [
+      Proficiencies::ACROBATICS,
+      Proficiencies::ATHLETICS,
+      Proficiencies::DECEPTION,
+      Proficiencies::INSIGHT,
+      Proficiencies::INTIMIDATION,
+      Proficiencies::INVESTIGATION,
+      Proficiencies::PERCEPTION,
+      Proficiencies::PERSUASION,
+      Proficiencies::SLEIGHT_OF_HAND,
+      Proficiencies::STEALTH,
+    ],
+    "Sorcerer" => [
+      Proficiencies::ARCANA,
+      Proficiencies::DECEPTION,
+      Proficiencies::INSIGHT,
+      Proficiencies::INTIMIDATION,
+      Proficiencies::PERSUASION,
+      Proficiencies::RELIGION,
+    ],
+    "Warlock" => [
+      Proficiencies::ARCANA,
+      Proficiencies::DECEPTION,
+      Proficiencies::HISTORY,
+      Proficiencies::INTIMIDATION,
+      Proficiencies::INVESTIGATION,
+      Proficiencies::NATURE,
+      Proficiencies::RELIGION,
+    ],
+    "Wizard" => [
+      Proficiencies::ARCANA,
+      Proficiencies::HISTORY,
+      Proficiencies::INSIGHT,
+      Proficiencies::INVESTIGATION,
+      Proficiencies::MEDICINE,
+      Proficiencies::NATURE,
+      Proficiencies::RELIGION,
+    ],
   }.freeze
 
   STAT_NAMES = %w[Strength Dexterity Constitution Intelligence Wisdom Charisma].freeze
@@ -103,7 +198,7 @@ module CharacterCreatorKata
     hit_die = HIT_DICE[char_class.chomp]
     return nil unless hit_die
 
-    hit_die + con + (level * (hit_die / 2 + 1 + con))
+    hit_die + con + (level * ((hit_die / 2) + 1 + con))
   end
 
   def armorcalc
@@ -117,7 +212,7 @@ module CharacterCreatorKata
     puts "What species is your character? "
     background_choice = ""
     until BACKGROUNDS.include?(background_choice)
-      background_choice = get_input(BACKGROUNDS.first).split(/ |\_|\-/).map(&:capitalize).join(" ").chomp
+      background_choice = get_input(BACKGROUNDS.first).split(/ |_|-/).map(&:capitalize).join(" ").chomp
       puts "please select an option from the list" unless BACKGROUNDS.include?(background_choice)
     end
     background_choice
@@ -128,14 +223,51 @@ module CharacterCreatorKata
   end
 
   class DnDchars
-    attr_accessor :charname, :level, :species, :class_of_char, :background,
-                  :str, :strmod, :dex, :dexmod, :con, :conmod,
-                  :int, :intmod, :wis, :wismod, :cha, :chamod,
-                  :ac, :prof, :hitpoints, :skills
+    attr_accessor :charname,
+                  :level,
+                  :species,
+                  :class_of_char,
+                  :background,
+                  :str,
+                  :strmod,
+                  :dex,
+                  :dexmod,
+                  :con,
+                  :conmod,
+                  :int,
+                  :intmod,
+                  :wis,
+                  :wismod,
+                  :cha,
+                  :chamod,
+                  :ac,
+                  :prof,
+                  :hitpoints,
+                  :skills
 
-    def initialize(charname, level, species, class_of_char, background,
-                   str, strmod, dex, dexmod, con, conmod, int, intmod,
-                   wis, wismod, cha, chamod, ac, prof, hitpoints, skills)
+    def initialize(
+      charname,
+      level,
+      species,
+      class_of_char,
+      background,
+      str,
+      strmod,
+      dex,
+      dexmod,
+      con,
+      conmod,
+      int,
+      intmod,
+      wis,
+      wismod,
+      cha,
+      chamod,
+      ac,
+      prof,
+      hitpoints,
+      skills
+    )
       @charname = charname
       @level = level
       @species = species
@@ -203,16 +335,37 @@ module CharacterCreatorKata
   end
 
   def profpicker
-    tempprof = %w[athletics acrobatics sleight_of_hand stealth arcana history investigation nature religion
-                  animal_handling insight medicine perception survival deception intimidation performance
-                  persuasion]
+    tempprof = %w[
+      athletics
+      acrobatics
+      sleight_of_hand
+      stealth
+      arcana
+      history
+      investigation
+      nature
+      religion
+      animal_handling
+      insight
+      medicine
+      perception
+      survival
+      deception
+      intimidation
+      performance
+      persuasion
+    ]
 
     puts "These are your stats: "
     (0...19).each { |n| puts $prof[n] }
 
     3.times do |pick|
       slot = 19 + pick
-      label = pick == 0 ? "first" : (pick == 1 ? "second" : "second")
+      label = if pick == 0
+                "first"
+              else
+                (pick == 1 ? "second" : "second")
+              end
       puts "Which skill would you like to choose as your #{label} proficiency (case sensitive)"
 
       while $prof[slot].nil?
@@ -242,7 +395,7 @@ module CharacterCreatorKata
     puts "What species is your character? "
     species_choice = ""
     until SPECIES.include?(species_choice)
-      species_choice = get_input(SPECIES.first).split(/ |\_|\-/).map(&:capitalize).join(" ").chomp
+      species_choice = get_input(SPECIES.first).split(/ |_|-/).map(&:capitalize).join(" ").chomp
       puts "please select an option from the list" unless SPECIES.include?(species_choice)
     end
     species_choice
@@ -250,10 +403,24 @@ module CharacterCreatorKata
 
   def skillpopulator
     {
-      "athletics" => 0, "acrobatics" => 0, "sleight of hand" => 0, "stealth" => 0,
-      "arcana" => 0, "history" => 0, "investigation" => 0, "nature" => 0, "religion" => 0,
-      "animal handling" => 0, "insight" => 0, "medicine" => 0, "perception" => 0, "survival" => 0,
-      "deception" => 0, "intimidation" => 0, "performance" => 0, "persuasion" => 0
+      "athletics" => 0,
+      "acrobatics" => 0,
+      "sleight of hand" => 0,
+      "stealth" => 0,
+      "arcana" => 0,
+      "history" => 0,
+      "investigation" => 0,
+      "nature" => 0,
+      "religion" => 0,
+      "animal handling" => 0,
+      "insight" => 0,
+      "medicine" => 0,
+      "perception" => 0,
+      "survival" => 0,
+      "deception" => 0,
+      "intimidation" => 0,
+      "performance" => 0,
+      "persuasion" => 0,
     }
   end
 
@@ -288,7 +455,7 @@ module CharacterCreatorKata
 
       puts "Are you satisfied with this? (y/n)"
       finish = ""
-      until finish == "y" || finish == "n"
+      until %w[y n].include?(finish)
         finish = get_input("y").chomp
         if finish == "n"
           (0...6).each do |n|
@@ -337,19 +504,38 @@ module CharacterCreatorKata
     charname = get_input("Adventurer")
 
     $charstats = DnDchars.new(
-      charname, level, species, charclass, background,
-      str, strmod, dex, dexmod, con, conmod, int, intmod, wis, wismod, cha, chamod,
-      10 + dexmod, prof, hitpoints, skills
+      charname,
+      level,
+      species,
+      charclass,
+      background,
+      str,
+      strmod,
+      dex,
+      dexmod,
+      con,
+      conmod,
+      int,
+      intmod,
+      wis,
+      wismod,
+      cha,
+      chamod,
+      10 + dexmod,
+      prof,
+      hitpoints,
+      skills,
     )
 
-    puts "\n" + "=" * 40
+    puts "\n#{"=" * 40}"
     puts "Character Created!"
     puts "=" * 40
     puts $charstats.context
   end
 end
 
-if __FILE__ == $0
+if __FILE__ == $PROGRAM_NAME
   include CharacterCreatorKata
+
   main
 end

@@ -1,4 +1,6 @@
-require 'date'
+# frozen_string_literal: true
+
+require "date"
 
 class Integer
   def day = days
@@ -25,6 +27,7 @@ module MedicineClashKata
     def <=>(other)
       return -1 if dispense_date.nil?
       return 1 if other.dispense_date.nil?
+
       dispense_date <=> other.dispense_date
     end
 

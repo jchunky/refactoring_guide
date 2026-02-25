@@ -1,11 +1,7 @@
+# frozen_string_literal: true
+
 module YatzyKata
   class Yatzy
-    def initialize(d1, d2, d3, d4, d5)
-      @dice = [d1, d2, d3, d4, d5]
-    end
-
-    # Scoring methods that operate on individual dice args
-
     def self.chance(d1, d2, d3, d4, d5)
       d1 + d2 + d3 + d4 + d5
     end
@@ -61,8 +57,32 @@ module YatzyKata
       has_two = (1..6).find { |i| tallies[i - 1] == 2 }
       has_three = (1..6).find { |i| tallies[i - 1] == 3 }
 
-      has_two && has_three ? has_two * 2 + has_three * 3 : 0
+      has_two && has_three ? (has_two * 2) + (has_three * 3) : 0
     end
+
+    def self.count_value(dice, target)
+      dice.count(target) * target
+    end
+
+    def self.tally(dice)
+      tallies = [0] * 6
+      dice.each { |d| tallies[d - 1] += 1 }
+      tallies
+    end
+
+    def self.n_of_a_kind(dice, n)
+      tallies = tally(dice)
+      (1..6).each do |i|
+        return i * n if tallies[i - 1] >= n
+      end
+      0
+    end
+
+    def initialize(d1, d2, d3, d4, d5)
+      @dice = [d1, d2, d3, d4, d5]
+    end
+
+    # Scoring methods that operate on individual dice args
 
     # Instance methods for fours, fives, sixes
 
@@ -82,24 +102,6 @@ module YatzyKata
 
     def count_value(target)
       @dice.count(target) * target
-    end
-
-    def self.count_value(dice, target)
-      dice.count(target) * target
-    end
-
-    def self.tally(dice)
-      tallies = [0] * 6
-      dice.each { |d| tallies[d - 1] += 1 }
-      tallies
-    end
-
-    def self.n_of_a_kind(dice, n)
-      tallies = tally(dice)
-      (1..6).each do |i|
-        return i * n if tallies[i - 1] >= n
-      end
-      0
     end
   end
 end

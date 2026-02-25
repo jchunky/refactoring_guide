@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TriviaKata
   module UglyTrivia
     class Game
@@ -74,7 +76,7 @@ module TriviaKata
       end
 
       def wrong_answer
-        puts 'Question was incorrectly answered'
+        puts "Question was incorrectly answered"
         puts "#{current_player_name} was sent to the penalty box"
         @in_penalty_box[@current_player] = true
 

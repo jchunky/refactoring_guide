@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module EnglishNumberKata
   ONES = %w[one two three four five six seven eight nine].freeze
   TEENS = %w[eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen].freeze

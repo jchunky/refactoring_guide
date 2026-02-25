@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SupermarketReceiptKata
   module ProductUnit
     EACH = Object.new
@@ -124,7 +126,7 @@ module SupermarketReceiptKata
 
         groups = quantity_as_int / 3
         remainder = quantity_as_int % 3
-        discount_amount = quantity * unit_price - (groups * 2 * unit_price + remainder * unit_price)
+        discount_amount = (quantity * unit_price) - ((groups * 2 * unit_price) + (remainder * unit_price))
         Discount.new(product, "3 for 2", discount_amount)
 
       when SpecialOfferType::TWO_FOR_AMOUNT
@@ -132,15 +134,15 @@ module SupermarketReceiptKata
 
         groups = quantity_as_int / 2
         remainder = quantity_as_int % 2
-        total = offer.argument * groups + remainder * unit_price
-        Discount.new(product, "2 for #{offer.argument}", unit_price * quantity - total)
+        total = (offer.argument * groups) + (remainder * unit_price)
+        Discount.new(product, "2 for #{offer.argument}", (unit_price * quantity) - total)
 
       when SpecialOfferType::FIVE_FOR_AMOUNT
         return nil unless quantity_as_int >= 5
 
         groups = quantity_as_int / 5
         remainder = quantity_as_int % 5
-        discount_amount = unit_price * quantity - (offer.argument * groups + remainder * unit_price)
+        discount_amount = (unit_price * quantity) - ((offer.argument * groups) + (remainder * unit_price))
         Discount.new(product, "5 for #{offer.argument}", discount_amount)
       end
     end
@@ -212,14 +214,14 @@ module SupermarketReceiptKata
     end
 
     def format_total(total)
-      price = "%.2f" % total.to_f
+      price = format("%.2f", total.to_f)
       label = "Total: "
       "#{label}#{padding(label.size, price.size)}#{price}"
     end
 
     def format_quantity(item)
       if item.product.unit == ProductUnit::EACH
-        "%x" % item.quantity.to_i
+        format("%x", item.quantity.to_i)
       else
         "%.3f" % item.quantity
       end

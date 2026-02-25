@@ -1,40 +1,32 @@
+# frozen_string_literal: true
+
 module BottlesKata
+  class BottleNumber < Data.define(:number)
+    def self.for(n) = (Object.const_get("BottleNumber#{n}") rescue BottleNumber).new(n)
+
+    def to_s = "#{number} bottles"
+    def action = "Take one down and pass it around"
+    def successor = BottleNumber.for(number - 1)
+  end
+
+  class BottleNumber0 < BottleNumber
+    def to_s = "no more bottles"
+    def action = "Go to the store and buy some more"
+    def successor = BottleNumber.for(99)
+  end
+
+  class BottleNumber1 < BottleNumber
+    def to_s = "1 bottle"
+    def action = "Take it down and pass it around"
+  end
+
   class Bottles
+    def song = verses(99, 0)
+    def verses(start, finish) = start.downto(finish).map { |n| verse(n) }.join("\n")
+
     def verse(number)
-      "#{bottle_count(number).capitalize} of beer on the wall, " \
-        "#{bottle_count(number)} of beer.\n" \
-        "#{action(number)}, " \
-        "#{bottle_count(next_number(number))} of beer on the wall.\n"
-    end
-
-    def verses(start, finish)
-      start.downto(finish).map { |n| verse(n) }.join("\n")
-    end
-
-    def song
-      verses(99, 0)
-    end
-
-    private
-
-    def bottle_count(number)
-      case number
-      when 0 then "no more bottles"
-      when 1 then "1 bottle"
-      else "#{number} bottles"
-      end
-    end
-
-    def action(number)
-      case number
-      when 0 then "Go to the store and buy some more"
-      when 1 then "Take it down and pass it around"
-      else "Take one down and pass it around"
-      end
-    end
-
-    def next_number(number)
-      number.zero? ? 99 : number - 1
+      n = BottleNumber.for(number)
+      "#{n.to_s.capitalize} of beer on the wall, #{n} of beer.\n#{n.action}, #{n.successor} of beer on the wall.\n"
     end
   end
 end

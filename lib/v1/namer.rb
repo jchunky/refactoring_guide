@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 module NamerKata
-  require 'digest'
+  require "digest"
 
   module XYZ
     module Namer
@@ -14,7 +16,7 @@ module NamerKata
           "_#{target.id}",
           "_#{random_hash}",
           "_#{sanitized_title(target)}",
-          ".jpg"
+          ".jpg",
         ].compact.join
       end
 
@@ -32,7 +34,7 @@ module NamerKata
         def formatted_age(target)
           return unless target.personal?
 
-          "_%03d" % (target.age || 0)
+          format("_%03d", target.age || 0)
         end
 
         def random_hash
@@ -40,7 +42,7 @@ module NamerKata
         end
 
         def sanitized_title(target)
-          cleaned = target.title.gsub(/[^\[a-z\]]/i, '').downcase
+          cleaned = target.title.gsub(/[^\[a-z\]]/i, "").downcase
           cleaned[0, MAX_TITLE_LENGTH]
         end
       end
