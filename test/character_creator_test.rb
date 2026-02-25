@@ -107,28 +107,28 @@ end
 
 class HitPointCalculationTest < Minitest::Test
   def test_barbarian_level_1_con_mod_1
-    # d12: 12 + 1 + (1 * (7 + 1)) = 21
-    assert_equal 21, World.calculate_hit_points("Barbarian", 1, 1)
+    # d12: 12 + 1 + (0 * (7 + 1)) = 13
+    assert_equal 13, World.calculate_hit_points("Barbarian", 1, 1)
   end
 
   def test_fighter_level_1_con_mod_2
-    # d10: 10 + 2 + (1 * (6 + 2)) = 20
-    assert_equal 20, World.calculate_hit_points("Fighter", 1, 2)
+    # d10: 10 + 2 + (0 * (6 + 2)) = 12
+    assert_equal 12, World.calculate_hit_points("Fighter", 1, 2)
   end
 
   def test_wizard_level_1_con_mod_0
-    # d6: 6 + 0 + (1 * (4 + 0)) = 10
-    assert_equal 10, World.calculate_hit_points("Wizard", 1, 0)
+    # d6: 6 + 0 + (0 * (4 + 0)) = 6
+    assert_equal 6, World.calculate_hit_points("Wizard", 1, 0)
   end
 
   def test_rogue_level_5_con_mod_1
-    # d8: 8 + 1 + (5 * (5 + 1)) = 39
-    assert_equal 39, World.calculate_hit_points("Rogue", 5, 1)
+    # d8: 8 + 1 + (4 * (5 + 1)) = 33
+    assert_equal 33, World.calculate_hit_points("Rogue", 5, 1)
   end
 
   def test_barbarian_level_10_con_mod_3
-    # d12: 12 + 3 + (10 * (7 + 3)) = 115
-    assert_equal 115, World.calculate_hit_points("Barbarian", 10, 3)
+    # d12: 12 + 3 + (9 * (7 + 3)) = 105
+    assert_equal 105, World.calculate_hit_points("Barbarian", 10, 3)
   end
 
   def test_all_classes_have_hit_dice
@@ -426,7 +426,7 @@ class CharacterCreationIntegrationTest < Minitest::Test
 
     assert_equal 12, character.ac   # 10 + DEX mod(+2)
     assert_equal 2,  character.proficiency_bonus
-    assert_equal 21, character.hit_points
+    assert_equal 13, character.hit_points
     assert_equal 18, character.skills.size
   end
 

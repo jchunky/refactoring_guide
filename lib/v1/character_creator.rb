@@ -50,7 +50,7 @@ module CharacterCreatorKata
 
     def calculate_hit_points(char_class, level, con_mod)
       die = CLASSES.dig(char_class, :hit_die)
-      die + con_mod + (level * (die / 2 + 1 + con_mod))
+      die + con_mod + ((level - 1) * (die / 2 + 1 + con_mod))
     end
 
     def background_bonuses(background)
