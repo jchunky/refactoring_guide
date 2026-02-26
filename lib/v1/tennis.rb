@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module TennisKata
-  SCORE_NAMES = %w[Love Fifteen Thirty Forty].freeze
-
   class Player < Struct.new(:name, :points)
+    SCORE_NAMES = %w[Love Fifteen Thirty Forty].freeze
+
     def initialize(name) = super(name, 0)
 
     def win_point = self.points += 1
