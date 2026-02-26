@@ -1,71 +1,32 @@
 # frozen_string_literal: true
 
 module SupermarketReceiptKata
-  class Product < Struct.new(:name, :unit)
+  class Product < Struct.new(:name, :unit, :unit_price, :discount)
+    def initialize(name, unit, unit_price, discount: nil) = super(name, unit, unit_price, discount)
   end
 
-  class ReceiptItem < Struct.new(:product, :quantity, :price, :total_price)
+  class ReceiptItem < Struct.new(:product, :quantity)
+    def total_price
+      quantity * unit_price
+    end
+
+    def unit_price
+      product.unit_price
+    end
   end
 
   class Discount < Struct.new(:product, :description, :discount_amount)
-  end
+    def self.build(product, quantity)
+      return unless product.discount
 
-  class Offer < Struct.new(:offer_type, :product, :argument)
-  end
-
-  class ProductQuantity < Struct.new(:product, :quantity)
-  end
-
-  class Receipt < Struct.new(:items, :discounts)
-    def initialize = super([], [])
-
-    def total_price
-      items_total = items.sum(&:total_price)
-      discounts_total = discounts.sum(&:discount_amount)
-      items_total - discounts_total
-    end
-
-    def add_product(product, quantity, price, total_price)
-      items << ReceiptItem.new(product, quantity, price, total_price)
-    end
-
-    def add_discount(discount)
-      discounts << discount
-    end
-  end
-
-  class ShoppingCart < Struct.new(:items, :product_quantities)
-    def initialize = super([], {})
-
-    def add_item(product)
-      add_item_quantity(product, 1.0)
-    end
-
-    def add_item_quantity(product, quantity)
-      items << ProductQuantity.new(product, quantity)
-      product_quantities[product] = product_quantities.fetch(product, 0) + quantity
-    end
-
-    def handle_offers(receipt, offers, catalog)
-      product_quantities.each do |product, quantity|
-        next unless offers.key?(product)
-
-        offer = offers[product]
-        unit_price = catalog.unit_price(product)
-        discount = calculate_discount(offer, product, quantity, unit_price)
-        receipt.add_discount(discount) if discount
-      end
-    end
-
-    private
-
-    def calculate_discount(offer, product, quantity, unit_price)
       quantity_as_int = quantity.to_i
+      unit_price = product.unit_price
 
-      case offer.offer_type
+      case product.discount[:type]
       when :ten_percent_discount
-        discount_amount = quantity * unit_price * offer.argument / 100.0
-        Discount.new(product, "#{offer.argument}% off", discount_amount)
+        percent = product.discount[:percent]
+        discount_amount = quantity * unit_price * percent / 100.0
+        Discount.new(product, "#{percent}% off", discount_amount)
 
       when :three_for_two
         return nil unless quantity_as_int > 2
@@ -78,59 +39,56 @@ module SupermarketReceiptKata
       when :two_for_amount
         return nil unless quantity_as_int >= 2
 
+        amount = product.discount[:amount]
         groups = quantity_as_int / 2
         remainder = quantity_as_int % 2
-        total = (offer.argument * groups) + (remainder * unit_price)
-        Discount.new(product, "2 for #{offer.argument}", (unit_price * quantity) - total)
+        total = (amount * groups) + (remainder * unit_price)
+        Discount.new(product, "2 for #{amount}", (unit_price * quantity) - total)
 
       when :five_for_amount
         return nil unless quantity_as_int >= 5
 
+        amount = product.discount[:amount]
         groups = quantity_as_int / 5
         remainder = quantity_as_int % 5
-        discount_amount = (unit_price * quantity) - ((offer.argument * groups) + (remainder * unit_price))
-        Discount.new(product, "5 for #{offer.argument}", discount_amount)
+        discount_amount = (unit_price * quantity) - ((amount * groups) + (remainder * unit_price))
+        Discount.new(product, "5 for #{amount}", discount_amount)
       else
-        raise "Unexpected offer type: #{offer.offer_type}"
+        raise "Unexpected offer type: #{product.discount[:type]}"
       end
     end
   end
 
-  class SupermarketCatalog
-    def add_product(product, price)
-      raise NotImplementedError
+  class Receipt < Struct.new(:items)
+    def initialize = super([])
+
+    def add_receipt_item(product, quantity)
+      items << ReceiptItem.new(product, quantity)
     end
 
-    def unit_price(product)
-      raise NotImplementedError
-    end
-  end
-
-  class Teller < Struct.new(:catalog, :offers)
-    def initialize(catalog) = super(catalog, {})
-
-    def add_special_offer(offer_type, product, argument)
-      offers[product] = Offer.new(offer_type, product, argument)
+    def to_s
+      PrintReceipt.new.run(self)
     end
 
-    def checks_out_articles_from(cart)
-      receipt = Receipt.new
+    def total_price
+      items_total = items.sum(&:total_price)
+      discounts_total = discounts.sum(&:discount_amount)
+      items_total - discounts_total
+    end
 
-      cart.items.each do |pq|
-        unit_price = catalog.unit_price(pq.product)
-        total = pq.quantity * unit_price
-        receipt.add_product(pq.product, pq.quantity, unit_price, total)
-      end
-
-      cart.handle_offers(receipt, offers, catalog)
-      receipt
+    def discounts
+      items
+        .group_by(&:product)
+        .transform_values { |items| items.sum(&:quantity) }
+        .map { |product, quantity| Discount.build(product, quantity) }
+        .compact
     end
   end
 
-  class ReceiptPrinter < Struct.new(:width)
+  class PrintReceipt < Struct.new(:width)
     def initialize(width = 40) = super
 
-    def print_receipt(receipt)
+    def run(receipt)
       [
         receipt.items.map(&method(:format_item)),
         receipt.discounts.map(&method(:format_discount)),
@@ -145,7 +103,7 @@ module SupermarketReceiptKata
       price = format_price(item.total_price)
       [
         format_columns(item.product.name, price),
-        ("  #{format_price(item.price)} * #{format_quantity(item)}" if item.quantity != 1),
+        ("  #{format_price(item.unit_price)} * #{format_quantity(item)}" if item.quantity != 1),
       ]
     end
 
