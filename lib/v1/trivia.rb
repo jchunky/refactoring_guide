@@ -2,18 +2,20 @@
 
 module TriviaKata
   module UglyTrivia
-    class Game
+    class Player < Struct.new(:name, :location, :purse, :in_penalty_box)
+      def initialize(name) = super(name, 0, 0, false)
+
+      def to_s = name
+    end
+
+    class Game < Struct.new(:players)
       BOARD_SIZE = 12
       WINNING_SCORE = 6
       CATEGORIES = %w[Pop Science Sports Rock].freeze
       QUESTIONS_PER_CATEGORY = 50
 
       def initialize
-        @players = []
-        @places = Array.new(6, 0)
-        @purses = Array.new(6, 0)
-        @in_penalty_box = Array.new(6, false)
-        @current_player = 0
+        super([])
         @is_getting_out_of_penalty_box = false
 
         @questions = CATEGORIES.each_with_object({}) do |category, hash|
@@ -26,32 +28,24 @@ module TriviaKata
       end
 
       def add(player_name)
-        @players << player_name
-        @places[how_many_players] = 0
-        @purses[how_many_players] = 0
-        @in_penalty_box[how_many_players] = false
+        players << Player.new(player_name)
 
         puts "#{player_name} was added"
-        puts "They are player number #{@players.length}"
-        true
-      end
-
-      def how_many_players
-        @players.length
+        puts "They are player number #{players.count}"
       end
 
       def roll(roll)
-        puts "#{current_player_name} is the current player"
+        puts "#{current_player} is the current player"
         puts "They have rolled a #{roll}"
 
-        if @in_penalty_box[@current_player]
+        if current_player.in_penalty_box
           if roll.odd?
             @is_getting_out_of_penalty_box = true
-            puts "#{current_player_name} is getting out of the penalty box"
+            puts "#{current_player} is getting out of the penalty box"
             move_player(roll)
             ask_question
           else
-            puts "#{current_player_name} is not getting out of the penalty box"
+            puts "#{current_player} is not getting out of the penalty box"
             @is_getting_out_of_penalty_box = false
           end
         else
@@ -61,40 +55,36 @@ module TriviaKata
       end
 
       def was_correctly_answered
-        if @in_penalty_box[@current_player] && !@is_getting_out_of_penalty_box
-          advance_player
-          return true
+        unless current_player.in_penalty_box && !@is_getting_out_of_penalty_box
+          puts "Answer was correct!!!!"
+          current_player.purse += 1
+          puts "#{current_player} now has #{current_player.purse} Gold Coins."
         end
 
-        puts "Answer was correct!!!!"
-        @purses[@current_player] += 1
-        puts "#{current_player_name} now has #{@purses[@current_player]} Gold Coins."
-
-        winner = !player_won?
         advance_player
-        winner
+        !winner?
       end
 
       def wrong_answer
         puts "Question was incorrectly answered"
-        puts "#{current_player_name} was sent to the penalty box"
-        @in_penalty_box[@current_player] = true
+        puts "#{current_player} was sent to the penalty box"
+        current_player.in_penalty_box = true
 
         advance_player
-        true
+        !winner?
       end
 
       private
 
-      def current_player_name
-        @players[@current_player]
+      def current_player
+        players.first
       end
 
       def move_player(roll)
-        @places[@current_player] += roll
-        @places[@current_player] -= BOARD_SIZE if @places[@current_player] > (BOARD_SIZE - 1)
+        current_player.location += roll
+        current_player.location -= BOARD_SIZE if current_player.location > (BOARD_SIZE - 1)
 
-        puts "#{current_player_name}'s new location is #{@places[@current_player]}"
+        puts "#{current_player}'s new location is #{current_player.location}"
         puts "The category is #{current_category}"
       end
 
@@ -103,15 +93,15 @@ module TriviaKata
       end
 
       def current_category
-        CATEGORIES[@places[@current_player] % CATEGORIES.size]
+        CATEGORIES[current_player.location % CATEGORIES.size]
       end
 
       def advance_player
-        @current_player = (@current_player + 1) % @players.length
+        players.rotate!
       end
 
-      def player_won?
-        @purses[@current_player] == WINNING_SCORE
+      def winner?
+        current_player.purse == WINNING_SCORE
       end
     end
   end
