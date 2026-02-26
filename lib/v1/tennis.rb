@@ -16,20 +16,19 @@ module TennisKata
     def won_point(name) = find_player(name).points += 1
 
     def score
-      if player1.points == player2.points
-        return player1.points >= 3 ? "Deuce" : "#{leader.score}-All"
+      case [point_diff, max_points]
+      in [0, 3..] then "Deuce"
+      in [0, ..2] then "#{leader.score}-All"
+      in [2.., 4..] then "Win for #{leader}"
+      in [1, 4..] then "Advantage #{leader}"
+      in [1.., ..3] then "#{player1.score}-#{player2.score}"
       end
-
-      if player1.points >= 4 || player2.points >= 4
-        difference = player1.points - player2.points
-        return difference.abs >= 2 ? "Win for #{leader}" : "Advantage #{leader}"
-      end
-
-      "#{player1.score}-#{player2.score}"
     end
 
     private
 
+    def max_points = players.map(&:points).max
+    def point_diff = players.map(&:points).reduce(&:-).abs
     def leader = players.max_by(&:points)
     def find_player(name) = players.find { it.name == name }
     def players = [player1, player2]
