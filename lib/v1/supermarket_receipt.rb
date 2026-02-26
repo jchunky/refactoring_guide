@@ -6,53 +6,39 @@ module SupermarketReceiptKata
   end
 
   class ReceiptItem < Struct.new(:product, :quantity)
-    def total_price
-      quantity * unit_price
-    end
-
-    def unit_price
-      product.unit_price
-    end
+    def total_price = quantity * unit_price
+    def unit_price = product.unit_price
   end
 
   class Discount < Struct.new(:product, :description, :discount_amount)
     def self.build(product, quantity)
       return unless product.discount
 
-      quantity_as_int = quantity.to_i
       unit_price = product.unit_price
 
       case product.discount[:type]
-      when :ten_percent_discount
+      when :percent_discount
         percent = product.discount[:percent]
         discount_amount = quantity * unit_price * percent / 100.0
         Discount.new(product, "#{percent}% off", discount_amount)
+      when :x_for_y
+        x = product.discount[:x]
+        y = product.discount[:y]
+        return nil unless quantity > y
 
-      when :three_for_two
-        return nil unless quantity_as_int > 2
-
-        groups = quantity_as_int / 3
-        remainder = quantity_as_int % 3
-        discount_amount = (quantity * unit_price) - ((groups * 2 * unit_price) + (remainder * unit_price))
-        Discount.new(product, "3 for 2", discount_amount)
-
-      when :two_for_amount
-        return nil unless quantity_as_int >= 2
+        groups = quantity / x
+        remainder = quantity % x
+        discount_amount = (quantity * unit_price) - ((groups * y * unit_price) + (remainder * unit_price))
+        Discount.new(product, "#{x} for #{y}", discount_amount)
+      when :x_for_amount
+        x = product.discount[:x]
+        return nil unless quantity >= x
 
         amount = product.discount[:amount]
-        groups = quantity_as_int / 2
-        remainder = quantity_as_int % 2
+        groups = quantity / x
+        remainder = quantity % x
         total = (amount * groups) + (remainder * unit_price)
-        Discount.new(product, "2 for #{amount}", (unit_price * quantity) - total)
-
-      when :five_for_amount
-        return nil unless quantity_as_int >= 5
-
-        amount = product.discount[:amount]
-        groups = quantity_as_int / 5
-        remainder = quantity_as_int % 5
-        discount_amount = (unit_price * quantity) - ((amount * groups) + (remainder * unit_price))
-        Discount.new(product, "5 for #{amount}", discount_amount)
+        Discount.new(product, "#{x} for #{amount}", (unit_price * quantity) - total)
       else
         raise "Unexpected offer type: #{product.discount[:type]}"
       end
@@ -62,19 +48,10 @@ module SupermarketReceiptKata
   class Receipt < Struct.new(:items)
     def initialize = super([])
 
-    def add_receipt_item(product, quantity)
-      items << ReceiptItem.new(product, quantity)
-    end
+    def add_receipt_item(product, quantity) = items << ReceiptItem.new(product, quantity)
 
-    def to_s
-      PrintReceipt.new.run(self)
-    end
-
-    def total_price
-      items_total = items.sum(&:total_price)
-      discounts_total = discounts.sum(&:discount_amount)
-      items_total - discounts_total
-    end
+    def to_s = PrintReceipt.new.run(self)
+    def total_price = items.sum(&:total_price) - discounts.sum(&:discount_amount)
 
     def discounts
       items
