@@ -37,7 +37,6 @@ module TriviaKata
 
     class QuestionBank < Struct.new(:questions)
       CATEGORIES = %w[Pop Science Sports Rock].freeze
-      QUESTIONS_PER_CATEGORY = 50
 
       def initialize = super(CATEGORIES.to_h { [it, QuestionDeck.new(it)] })
 
@@ -47,9 +46,7 @@ module TriviaKata
     end
 
     class Game < Struct.new(:players, :questions)
-      def initialize
-        super(PlayerQueue.new, QuestionBank.new)
-      end
+      def initialize = super(PlayerQueue.new, QuestionBank.new)
 
       def add(player_name)
         players << player_name
