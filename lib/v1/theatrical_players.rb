@@ -7,7 +7,7 @@ module TheatricalPlayersKata
     def +(other) = self.class.new(cents + other.cents)
   end
 
-  class Performance < Struct.new(:play_name, :seat_count)
+  class Performance < Data.define(:play_name, :seat_count)
     def self.build(play_type, play_name, seat_count)
       Object.const_get(play_type.capitalize).new(play_name, seat_count)
     rescue NameError
@@ -39,7 +39,7 @@ module TheatricalPlayersKata
     end
   end
 
-  class Statement < Struct.new(:customer, :performances)
+  class Statement < Data.define(:customer, :performances)
     def self.build(invoice, plays)
       performances =
         invoice["performances"].map do |perf|
