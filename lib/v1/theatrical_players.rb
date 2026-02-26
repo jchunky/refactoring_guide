@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 module TheatricalPlayersKata
+  class Price < Data.define(:cents)
+    def self.zero = new(0)
+    def to_s = format("$%.2f", cents / 100.0)
+    def +(other) = self.class.new(cents + other.cents)
+  end
+
   class Performance < Struct.new(:play_name, :seat_count)
     def self.build(play_type, play_name, seat_count)
       Object.const_get(play_type.capitalize).new(play_name, seat_count)
@@ -13,7 +19,7 @@ module TheatricalPlayersKata
     def price
       result = 40_000
       result += 1_000 * (seat_count - 30) if seat_count > 30
-      result
+      Price.new(result)
     end
 
     def credits = (seat_count - 30).clamp(0..)
@@ -23,7 +29,7 @@ module TheatricalPlayersKata
     def price
       result = 30_000 + (300 * seat_count)
       result += 10_000 + (500 * (seat_count - 20)) if seat_count > 20
-      result
+      Price.new(result)
     end
 
     def credits
@@ -46,19 +52,17 @@ module TheatricalPlayersKata
     def to_s
       [
         "Statement for #{customer}",
-        performances.map do |perf|
-          format(" %s: %s (%s seats)", perf.play_name, usd(perf.price), perf.seat_count)
-        end,
-        "Amount owed is #{usd(total_price)}",
+        performances.map(&method(:formatted_performance)),
+        "Amount owed is #{total_price}",
         "You earned #{total_credits} credits",
       ].join("\n").concat("\n")
     end
 
     private
 
-    def total_price = performances.sum(&:price)
+    def formatted_performance(p) = format(" %s: %s (%s seats)", p.play_name, p.price, p.seat_count)
+    def total_price = performances.sum(Price.zero, &:price)
     def total_credits = performances.sum(&:credits)
-    def usd(cents) = format("$%.2f", cents / 100.0)
   end
 
   def statement(invoice, plays) = Statement.build(invoice, plays).to_s
