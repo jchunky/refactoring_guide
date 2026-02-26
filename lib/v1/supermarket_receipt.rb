@@ -1,107 +1,53 @@
 # frozen_string_literal: true
 
 module SupermarketReceiptKata
-  module ProductUnit
-    EACH = Object.new
-    KILO = Object.new
+  class Product < Struct.new(:name, :unit)
   end
 
-  module SpecialOfferType
-    THREE_FOR_TWO = Object.new
-    TEN_PERCENT_DISCOUNT = Object.new
-    TWO_FOR_AMOUNT = Object.new
-    FIVE_FOR_AMOUNT = Object.new
+  class ReceiptItem < Struct.new(:product, :quantity, :price, :total_price)
   end
 
-  Product = Struct.new(:name, :unit) do
-    undef :name=, :unit=
+  class Discount < Struct.new(:product, :description, :discount_amount)
   end
 
-  ReceiptItem = Struct.new(:product, :quantity, :price, :total_price) do
-    undef :product=, :quantity=, :price=, :total_price=
+  class Offer < Struct.new(:offer_type, :product, :argument)
   end
 
-  class Discount
-    attr_reader :product, :description, :discount_amount
-
-    def initialize(product, description, discount_amount)
-      @product = product
-      @description = description
-      @discount_amount = discount_amount
-    end
+  class ProductQuantity < Struct.new(:product, :quantity)
   end
 
-  class Offer
-    attr_reader :product, :offer_type, :argument
-
-    def initialize(offer_type, product, argument)
-      @offer_type = offer_type
-      @argument = argument
-      @product = product
-    end
-  end
-
-  class ProductQuantity
-    attr_reader :product, :quantity
-
-    def initialize(product, quantity)
-      @product = product
-      @quantity = quantity
-    end
-  end
-
-  class Receipt
-    def initialize
-      @items = []
-      @discounts = []
-    end
+  class Receipt < Struct.new(:items, :discounts)
+    def initialize = super([], [])
 
     def total_price
-      items_total = @items.sum(&:total_price)
-      discounts_total = @discounts.sum(&:discount_amount)
+      items_total = items.sum(&:total_price)
+      discounts_total = discounts.sum(&:discount_amount)
       items_total - discounts_total
     end
 
     def add_product(product, quantity, price, total_price)
-      @items << ReceiptItem.new(product, quantity, price, total_price)
-    end
-
-    def items
-      @items.dup
+      items << ReceiptItem.new(product, quantity, price, total_price)
     end
 
     def add_discount(discount)
-      @discounts << discount
-    end
-
-    def discounts
-      @discounts.dup
+      discounts << discount
     end
   end
 
-  class ShoppingCart
-    attr_reader :product_quantities
-
-    def initialize
-      @items = []
-      @product_quantities = {}
-    end
-
-    def items
-      @items.dup
-    end
+  class ShoppingCart < Struct.new(:items, :product_quantities)
+    def initialize = super([], {})
 
     def add_item(product)
       add_item_quantity(product, 1.0)
     end
 
     def add_item_quantity(product, quantity)
-      @items << ProductQuantity.new(product, quantity)
-      @product_quantities[product] = @product_quantities.fetch(product, 0) + quantity
+      items << ProductQuantity.new(product, quantity)
+      product_quantities[product] = product_quantities.fetch(product, 0) + quantity
     end
 
     def handle_offers(receipt, offers, catalog)
-      @product_quantities.each do |product, quantity|
+      product_quantities.each do |product, quantity|
         next unless offers.key?(product)
 
         offer = offers[product]
@@ -117,11 +63,11 @@ module SupermarketReceiptKata
       quantity_as_int = quantity.to_i
 
       case offer.offer_type
-      when SpecialOfferType::TEN_PERCENT_DISCOUNT
+      when :ten_percent_discount
         discount_amount = quantity * unit_price * offer.argument / 100.0
         Discount.new(product, "#{offer.argument}% off", discount_amount)
 
-      when SpecialOfferType::THREE_FOR_TWO
+      when :three_for_two
         return nil unless quantity_as_int > 2
 
         groups = quantity_as_int / 3
@@ -129,7 +75,7 @@ module SupermarketReceiptKata
         discount_amount = (quantity * unit_price) - ((groups * 2 * unit_price) + (remainder * unit_price))
         Discount.new(product, "3 for 2", discount_amount)
 
-      when SpecialOfferType::TWO_FOR_AMOUNT
+      when :two_for_amount
         return nil unless quantity_as_int >= 2
 
         groups = quantity_as_int / 2
@@ -137,13 +83,15 @@ module SupermarketReceiptKata
         total = (offer.argument * groups) + (remainder * unit_price)
         Discount.new(product, "2 for #{offer.argument}", (unit_price * quantity) - total)
 
-      when SpecialOfferType::FIVE_FOR_AMOUNT
+      when :five_for_amount
         return nil unless quantity_as_int >= 5
 
         groups = quantity_as_int / 5
         remainder = quantity_as_int % 5
         discount_amount = (unit_price * quantity) - ((offer.argument * groups) + (remainder * unit_price))
         Discount.new(product, "5 for #{offer.argument}", discount_amount)
+      else
+        raise "Unexpected offer type: #{offer.offer_type}"
       end
     end
   end
@@ -158,77 +106,75 @@ module SupermarketReceiptKata
     end
   end
 
-  class Teller
-    def initialize(catalog)
-      @catalog = catalog
-      @offers = {}
-    end
+  class Teller < Struct.new(:catalog, :offers)
+    def initialize(catalog) = super(catalog, {})
 
     def add_special_offer(offer_type, product, argument)
-      @offers[product] = Offer.new(offer_type, product, argument)
+      offers[product] = Offer.new(offer_type, product, argument)
     end
 
     def checks_out_articles_from(cart)
       receipt = Receipt.new
 
       cart.items.each do |pq|
-        unit_price = @catalog.unit_price(pq.product)
+        unit_price = catalog.unit_price(pq.product)
         total = pq.quantity * unit_price
         receipt.add_product(pq.product, pq.quantity, unit_price, total)
       end
 
-      cart.handle_offers(receipt, @offers, @catalog)
+      cart.handle_offers(receipt, offers, catalog)
       receipt
     end
   end
 
-  class ReceiptPrinter
-    def initialize(columns = 40)
-      @columns = columns
-    end
+  class ReceiptPrinter < Struct.new(:width)
+    def initialize(width = 40) = super
 
     def print_receipt(receipt)
-      result = ""
-      result += receipt.items.map { |item| format_item(item) }.join
-      result += receipt.discounts.map { |discount| format_discount(discount) }.join
-      result += "\n"
-      result += format_total(receipt.total_price)
-      result
+      [
+        receipt.items.map(&method(:format_item)),
+        receipt.discounts.map(&method(:format_discount)),
+        "",
+        format_total(receipt.total_price),
+      ].flatten.compact.join("\n")
     end
 
     private
 
     def format_item(item)
-      price = "%.2f" % item.total_price
-      line = "#{item.product.name}#{padding(item.product.name.size, price.size)}#{price}\n"
-      line += "  #{"%.2f" % item.price} * #{format_quantity(item)}\n" if item.quantity != 1
-      line
+      price = format_price(item.total_price)
+      [
+        format_columns(item.product.name, price),
+        ("  #{format_price(item.price)} * #{format_quantity(item)}" if item.quantity != 1),
+      ]
     end
 
     def format_discount(discount)
       description = discount.description
       product_name = discount.product.name
-      price = "%.2f" % discount.discount_amount
+      price = format_price(-1 * discount.discount_amount)
       label = "#{description}(#{product_name})"
-      "#{label}#{padding(label.size + 1, price.size)}-#{price}\n"
+      format_columns(label, price)
     end
 
     def format_total(total)
-      price = format("%.2f", total.to_f)
+      price = format_price(total.to_f)
       label = "Total: "
-      "#{label}#{padding(label.size, price.size)}#{price}"
+      format_columns(label, price)
     end
 
     def format_quantity(item)
-      if item.product.unit == ProductUnit::EACH
-        format("%x", item.quantity.to_i)
+      case item.product.unit
+      when :each
+        format("%i", item.quantity.to_i)
+      when :kilo
+        format("%.3f", item.quantity)
       else
-        "%.3f" % item.quantity
+        raise "Unexpected unit: #{item.product.unit}"
       end
     end
 
-    def padding(left_size, right_size)
-      " " * [@columns - left_size - right_size, 0].max
-    end
+    def format_columns(left, right) = format("%s%s", left, right.rjust(width - left.size))
+    def format_price(price) = format("%.2f", price)
   end
 end
