@@ -52,7 +52,7 @@ module TheatricalPlayersKata
     def to_s
       [
         "Statement for #{customer}",
-        performances.map(&method(:formatted_performance)),
+        performances.map(&method(:format_performance)),
         "Amount owed is #{total_price}",
         "You earned #{total_credits} credits",
       ].join("\n").concat("\n")
@@ -60,7 +60,7 @@ module TheatricalPlayersKata
 
     private
 
-    def formatted_performance(p) = format(" %s: %s (%s seats)", p.play_name, p.price, p.seat_count)
+    def format_performance(p) = format(" %s: %s (%s seats)", p.play_name, p.price, p.seat_count)
     def total_price = performances.sum(Price.zero, &:price)
     def total_credits = performances.sum(&:credits)
   end
