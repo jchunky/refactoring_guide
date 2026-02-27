@@ -111,6 +111,7 @@ module CharacterCreatorKata
       end
 
       def get_input(default)
+        default = default.to_s
         puts default
         default
       end
