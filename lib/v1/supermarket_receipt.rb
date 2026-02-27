@@ -15,30 +15,31 @@ module SupermarketReceiptKata
       return unless product.discount
 
       unit_price = product.unit_price
+      total_price = quantity * unit_price
 
       case product.discount[:type]
       when :percent_discount
         percent = product.discount[:percent]
-        discount_amount = quantity * unit_price * percent / 100.0
+        discount_amount = total_price * percent / 100.0
         Discount.new(product, "#{percent}% off", discount_amount)
       when :x_for_y
         x = product.discount[:x]
         y = product.discount[:y]
         return nil unless quantity > y
 
-        groups = quantity / x
-        remainder = quantity % x
-        discount_amount = (quantity * unit_price) - ((groups * y * unit_price) + (remainder * unit_price))
+        groups, remainder = quantity.divmod(x)
+        discounted_price = ((groups * y) + remainder) * unit_price
+        discount_amount = total_price - discounted_price
         Discount.new(product, "#{x} for #{y}", discount_amount)
       when :x_for_amount
         x = product.discount[:x]
         return nil unless quantity >= x
 
         amount = product.discount[:amount]
-        groups = quantity / x
-        remainder = quantity % x
-        total = (amount * groups) + (remainder * unit_price)
-        Discount.new(product, "#{x} for #{amount}", (unit_price * quantity) - total)
+        groups, remainder = quantity.divmod(x)
+        discounted_price = (groups * amount) + (remainder * unit_price)
+        discount_amount = total_price - discounted_price
+        Discount.new(product, "#{x} for #{amount}", discount_amount)
       else
         raise "Unexpected offer type: #{product.discount[:type]}"
       end
