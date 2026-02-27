@@ -5,12 +5,12 @@ module SupermarketReceiptKata
     def initialize(name, unit, unit_price, discount: nil) = super(name, unit, unit_price, discount)
   end
 
-  class ReceiptItem < Struct.new(:product, :quantity)
+  class ReceiptItem < Data.define(:product, :quantity)
     def total_price = (quantity * unit_price).round(2)
     def unit_price = product.unit_price
   end
 
-  class Discount < Struct.new(:product, :description, :discount_amount)
+  class Discount < Data.define(:product, :description, :discount_amount)
     def self.build(product, quantity)
       return unless product.discount
 

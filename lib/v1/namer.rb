@@ -13,9 +13,9 @@ module NamerKata
 
       private
 
-      def prefix = [publication_day, catgory, kind].join
+      def prefix = [publication_day, category, kind].join
       def publication_day = file.publish_on.strftime("%d")
-      def catgory = file.xyz_category_prefix
+      def category = file.xyz_category_prefix
       def kind = file.kind.delete("_")
       def age = (format("%03d", file.age.to_i) if file.personal?)
       def noise = SecureRandom.hex(4)
