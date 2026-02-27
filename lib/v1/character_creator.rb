@@ -23,7 +23,7 @@ module CharacterCreatorKata
     sleight_of_hand
     stealth
     survival
-  ].freeze
+  ].to_h { [it, it.to_s.split("_").map(&:capitalize).join(" ")] }
 
   BACKGROUNDS = {
     "Acolyte" => { abilities: %i[int wis cha], skills: %i[insight religion] },
@@ -34,7 +34,7 @@ module CharacterCreatorKata
 
   CLASSES = {
     "Barbarian" => { hd: 12, skill_count: 2, skills: %i[animal_handling athletics intimidation nature perception survival] },
-    "Bard" => { hd: 8, skill_count: 3, skills: %i[athletics acrobatics sleight_of_hand stealth arcana history investigation nature religion religion animal_handling insight medicine perception survival deception intimidation performance persuasion] },
+    "Bard" => { hd: 8, skill_count: 3, skills: SKILLS.keys },
     "Cleric" => { hd: 8, skill_count: 2, skills: %i[history insight medicine persuasion religion] },
     "Druid" => { hd: 8, skill_count: 2, skills: %i[arcana animal_handling insight medicine nature perception religion survival] },
     "Fighter" => { hd: 10, skill_count: 2, skills: %i[acrobatics animal_handling athletics history insight intimidation perception persuasion survival] },
@@ -115,9 +115,6 @@ module CharacterCreatorKata
         default
       end
 
-      def format_skill(skill_id) = skill_id.to_s.split("_").map(&:capitalize).join(" ")
-      def to_skill_id(skill) = skill.downcase.gsub(" ", "_")
-
       def stat_roll = [15, 14, 13, 12, 10, 8]
     end
   end
@@ -158,9 +155,8 @@ module CharacterCreatorKata
 
     def pick_background
       result = Input.pick_option(BACKGROUNDS.keys, "Pick background: ")
-      background_skills = BACKGROUNDS[result][:skills]
-      formatted_skills = background_skills.map { Input.format_skill(it) }.join(", ")
-      puts "Background Skills: #{formatted_skills}"
+      background_skills = BACKGROUNDS[result][:skills].map(&SKILLS).join(", ")
+      puts "Background Skills: #{background_skills}"
       result
     end
 
@@ -192,8 +188,8 @@ module CharacterCreatorKata
       class_skills = CLASSES[character_class][:skills]
       skill_count = CLASSES[character_class][:skill_count]
       background_skills = BACKGROUNDS[background][:skills]
-      available_skills = (class_skills - background_skills).map { Input.format_skill(it) }
-      picked_skills = Input.pick_options(available_skills, skill_count, "Pick skill").map { Input.to_skill_id(it) }
+      available_skills = (class_skills - background_skills)
+      picked_skills = Input.pick_options(available_skills.map(&SKILLS), skill_count, "Pick skill").map(&SKILLS.invert)
       background_skills + picked_skills
     end
   end
