@@ -33,9 +33,9 @@ module SupermarketReceiptKata
         Discount.new(product, "#{x} for #{y}", discount_amount)
       when :x_for_amount
         x = product.discount[:x]
+        amount = product.discount[:amount]
         return nil unless quantity >= x
 
-        amount = product.discount[:amount]
         groups, remainder = quantity.divmod(x)
         discounted_price = (groups * amount) + (remainder * unit_price)
         discount_amount = total_price - discounted_price
