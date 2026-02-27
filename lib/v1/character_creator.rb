@@ -205,16 +205,6 @@ module CharacterCreatorKata
   )
     def self.create = CreateCharacter.new.run
 
-    def hp = hd + con_mod + ((level - 1) * ((hd / 2) + 1 + con_mod))
-    def hd = CLASSES[character_class][:hd]
-    def ac = 10 + dex_mod
-    def prof = ((level - 1) / 4) + 2
-
-    ABILITIES.each.with_index do |stat, i|
-      define_method(stat) { stats[i] }
-      define_method("#{stat}_mod") { mod_of(stats[i]) }
-    end
-
     def print
       puts "\n#{"=" * 40}"
       puts "Character Created!"
@@ -229,19 +219,21 @@ module CharacterCreatorKata
       puts format("%20s: %s", "AC", ac)
       puts format("%20s: %+i", "Proficiency Bonus", prof)
       puts
-      puts format("%20s: %s", "Skills", formatted_skills)
+      puts format("%20s: %s", "Skills", skills.map(&SKILLS).sort.join(", "))
       puts
-      ABILITIES.each.with_index do |stat, i|
-        puts format("%20s: %2i (%+i)", stat.to_s.upcase, send(stat), send("#{stat}_mod"))
+      ABILITIES.zip(stats).each do |ability, stat|
+        puts format("%20s: %2i (%+i)", ability.to_s.upcase, stat, mod_of(stat))
       end
     end
 
     private
 
-    def formatted_skills
-      skills.map { it.to_s.split("_").map(&:capitalize).join(" ") }.sort.join(", ")
-    end
-
+    def hp = hd + con_mod + ((level - 1) * ((hd / 2) + 1 + con_mod))
+    def hd = CLASSES[character_class][:hd]
+    def ac = 10 + dex_mod
+    def prof = ((level - 1) / 4) + 2
+    def dex_mod = mod_of(stats[1])
+    def con_mod = mod_of(stats[2])
     def mod_of(stat) = (stat - 10) / 2
   end
 end
