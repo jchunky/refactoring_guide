@@ -1,541 +1,247 @@
 # frozen_string_literal: true
 
 module CharacterCreatorKata
-  module Proficiencies
-    ATHLETICS = "athletics"
-    ACROBATICS = "acrobatics"
-    SLEIGHT_OF_HAND = "sleight of hand"
-    STEALTH = "stealth"
-    ARCANA = "arcana"
-    HISTORY = "history"
-    INVESTIGATION = "investigation"
-    NATURE = "nature"
-    RELIGION = "religion"
-    ANIMAL_HANDLING = "animal handling"
-    INSIGHT = "insight"
-    MEDICINE = "medicine"
-    PERCEPTION = "perception"
-    SURVIVAL = "survival"
-    DECEPTION = "deception"
-    INTIMIDATION = "intimidation"
-    PERFORMANCE = "performance"
-    PERSUASION = "persuasion"
-    NIL = nil
-  end
-
-  CLASSES = %w[Barbarian Bard Cleric Druid Fighter Monk Paladin Ranger Rogue Sorcerer Warlock Wizard].freeze
+  SKILLS = %i[
+    acrobatics
+    animal_handling
+    arcana
+    athletics
+    deception
+    history
+    insight
+    intimidation
+    investigation
+    medicine
+    nature
+    perception
+    performance
+    persuasion
+    religion
+    sleight_of_hand
+    stealth
+    survival
+  ].freeze
 
   SPECIES = %w[Dragonborn Dwarf Elf Gnome Goliath Halfling Human Orc Tiefling].freeze
 
-  BACKGROUNDS = %w[Acolyte Criminal Sage Soldier].freeze
-
-  HIT_DICE = {
-    "Barbarian" => 12,
-    "Fighter" => 10,
-    "Paladin" => 10,
-    "Ranger" => 10,
-    "Bard" => 8,
-    "Cleric" => 8,
-    "Druid" => 8,
-    "Monk" => 8,
-    "Rogue" => 8,
-    "Warlock" => 8,
-    "Sorcerer" => 6,
-    "Wizard" => 6,
+  BACKGROUNDS = {
+    "Acolyte" => { abilities: %i[int wis cha], skills: %i[insight religion] },
+    "Criminal" => { abilities: %i[dex con int], skills: %i[sleight_of_hand stealth] },
+    "Sage" => { abilities: %i[con int wis], skills: %i[arcana history] },
+    "Soldier" => { abilities: %i[str dex con], skills: %i[athletics intimidation] },
   }.freeze
 
-  BACKGROUND_DATA = {
-    "Acolyte" => {
-      ability_bonuses: %w[Intelligence Wisdom Charisma],
-      skill_proficiencies: [Proficiencies::INSIGHT, Proficiencies::RELIGION],
-    },
-    "Criminal" => {
-      ability_bonuses: %w[Dexterity Constitution Intelligence],
-      skill_proficiencies: [Proficiencies::SLEIGHT_OF_HAND, Proficiencies::STEALTH],
-    },
-    "Sage" => {
-      ability_bonuses: %w[Constitution Intelligence Wisdom],
-      skill_proficiencies: [Proficiencies::ARCANA, Proficiencies::HISTORY],
-    },
-    "Soldier" => {
-      ability_bonuses: %w[Strength Dexterity Constitution],
-      skill_proficiencies: [Proficiencies::ATHLETICS, Proficiencies::INTIMIDATION],
-    },
+  CLASSES = {
+    "Barbarian" => { hd: 12, skill_count: 2, skills: %i[animal_handling athletics intimidation nature perception survival] },
+    "Bard" => { hd: 8, skill_count: 3, skills: %i[athletics acrobatics sleight_of_hand stealth arcana history investigation nature religion religion animal_handling insight medicine perception survival deception intimidation performance persuasion] },
+    "Cleric" => { hd: 8, skill_count: 2, skills: %i[history insight medicine persuasion religion] },
+    "Druid" => { hd: 8, skill_count: 2, skills: %i[arcana animal_handling insight medicine nature perception religion survival] },
+    "Fighter" => { hd: 10, skill_count: 2, skills: %i[acrobatics animal_handling athletics history insight intimidation perception persuasion survival] },
+    "Monk" => { hd: 8, skill_count: 2, skills: %i[acrobatics athletics history insight religion stealth] },
+    "Paladin" => { hd: 10, skill_count: 2, skills: %i[athletics insight intimidation medicine persuasion religion] },
+    "Ranger" => { hd: 10, skill_count: 3, skills: %i[animal_handling athletics insight investigation nature perception stealth survival] },
+    "Rogue" => { hd: 8, skill_count: 4, skills: %i[acrobatics athletics deception insight intimidation investigation perception persuasion sleight_of_hand stealth] },
+    "Sorcerer" => { hd: 6, skill_count: 2, skills: %i[arcana deception insight intimidation persuasion religion] },
+    "Warlock" => { hd: 8, skill_count: 2, skills: %i[arcana deception history intimidation investigation nature religion] },
+    "Wizard" => { hd: 6, skill_count: 2, skills: %i[arcana history insight investigation medicine nature religion] },
   }.freeze
 
-  CLASS_PROFICIENCIES = {
-    "Barbarian" => [
-      Proficiencies::ANIMAL_HANDLING,
-      Proficiencies::ATHLETICS,
-      Proficiencies::INTIMIDATION,
-      Proficiencies::NATURE,
-      Proficiencies::PERCEPTION,
-      Proficiencies::SURVIVAL,
-    ],
-    "Bard" => [
-      Proficiencies::ATHLETICS,
-      Proficiencies::ACROBATICS,
-      Proficiencies::SLEIGHT_OF_HAND,
-      Proficiencies::STEALTH,
-      Proficiencies::ARCANA,
-      Proficiencies::HISTORY,
-      Proficiencies::INVESTIGATION,
-      Proficiencies::NATURE,
-      Proficiencies::RELIGION,
-      Proficiencies::RELIGION,
-      Proficiencies::ANIMAL_HANDLING,
-      Proficiencies::INSIGHT,
-      Proficiencies::MEDICINE,
-      Proficiencies::PERCEPTION,
-      Proficiencies::SURVIVAL,
-      Proficiencies::DECEPTION,
-      Proficiencies::INTIMIDATION,
-      Proficiencies::PERFORMANCE,
-      Proficiencies::PERSUASION,
-    ],
-    "Cleric" => [
-      Proficiencies::HISTORY,
-      Proficiencies::INSIGHT,
-      Proficiencies::MEDICINE,
-      Proficiencies::PERSUASION,
-      Proficiencies::RELIGION,
-    ],
-    "Druid" => [
-      Proficiencies::ARCANA,
-      Proficiencies::ANIMAL_HANDLING,
-      Proficiencies::INSIGHT,
-      Proficiencies::MEDICINE,
-      Proficiencies::NATURE,
-      Proficiencies::PERCEPTION,
-      Proficiencies::RELIGION,
-      Proficiencies::SURVIVAL,
-    ],
-    "Fighter" => [
-      Proficiencies::ACROBATICS,
-      Proficiencies::ANIMAL_HANDLING,
-      Proficiencies::ATHLETICS,
-      Proficiencies::HISTORY,
-      Proficiencies::INSIGHT,
-      Proficiencies::INTIMIDATION,
-      Proficiencies::PERCEPTION,
-      Proficiencies::PERSUASION,
-      Proficiencies::SURVIVAL,
-    ],
-    "Monk" => [
-      Proficiencies::ACROBATICS,
-      Proficiencies::ATHLETICS,
-      Proficiencies::HISTORY,
-      Proficiencies::INSIGHT,
-      Proficiencies::RELIGION,
-      Proficiencies::STEALTH,
-    ],
-    "Paladin" => [
-      Proficiencies::ATHLETICS,
-      Proficiencies::INSIGHT,
-      Proficiencies::INTIMIDATION,
-      Proficiencies::MEDICINE,
-      Proficiencies::PERSUASION,
-      Proficiencies::RELIGION,
-    ],
-    "Ranger" => [
-      Proficiencies::ANIMAL_HANDLING,
-      Proficiencies::ATHLETICS,
-      Proficiencies::INSIGHT,
-      Proficiencies::INVESTIGATION,
-      Proficiencies::NATURE,
-      Proficiencies::PERCEPTION,
-      Proficiencies::STEALTH,
-      Proficiencies::SURVIVAL,
-    ],
-    "Rogue" => [
-      Proficiencies::ACROBATICS,
-      Proficiencies::ATHLETICS,
-      Proficiencies::DECEPTION,
-      Proficiencies::INSIGHT,
-      Proficiencies::INTIMIDATION,
-      Proficiencies::INVESTIGATION,
-      Proficiencies::PERCEPTION,
-      Proficiencies::PERSUASION,
-      Proficiencies::SLEIGHT_OF_HAND,
-      Proficiencies::STEALTH,
-    ],
-    "Sorcerer" => [
-      Proficiencies::ARCANA,
-      Proficiencies::DECEPTION,
-      Proficiencies::INSIGHT,
-      Proficiencies::INTIMIDATION,
-      Proficiencies::PERSUASION,
-      Proficiencies::RELIGION,
-    ],
-    "Warlock" => [
-      Proficiencies::ARCANA,
-      Proficiencies::DECEPTION,
-      Proficiencies::HISTORY,
-      Proficiencies::INTIMIDATION,
-      Proficiencies::INVESTIGATION,
-      Proficiencies::NATURE,
-      Proficiencies::RELIGION,
-    ],
-    "Wizard" => [
-      Proficiencies::ARCANA,
-      Proficiencies::HISTORY,
-      Proficiencies::INSIGHT,
-      Proficiencies::INVESTIGATION,
-      Proficiencies::MEDICINE,
-      Proficiencies::NATURE,
-      Proficiencies::RELIGION,
-    ],
-  }.freeze
-
-  STAT_NAMES = %w[Strength Dexterity Constitution Intelligence Wisdom Charisma].freeze
-
-  def get_input(default)
-    puts default
-    default
-  end
-
-  def hitpointcalculator(char_class, level, con)
-    hit_die = HIT_DICE[char_class.chomp]
-    return nil unless hit_die
-
-    hit_die + con + (level * ((hit_die / 2) + 1 + con))
-  end
-
-  def armorcalc
-    if $charstats
-      $charstats.ac = 10 + $charstats.dexmod
-    end
-  end
-
-  def backgroundpick
-    puts BACKGROUNDS
-    puts "What species is your character? "
-    background_choice = ""
-    until BACKGROUNDS.include?(background_choice)
-      background_choice = get_input(BACKGROUNDS.first).split(/ |_|-/).map(&:capitalize).join(" ").chomp
-      puts "please select an option from the list" unless BACKGROUNDS.include?(background_choice)
-    end
-    background_choice
-  end
+  ABILITIES = %i[str dex con int wis cha].freeze
 
   def background_bonuses(background)
     BACKGROUND_DATA.fetch(background, { ability_bonuses: [], skill_proficiencies: [] })
   end
 
-  class DnDchars
-    attr_accessor :charname,
-                  :level,
-                  :species,
-                  :class_of_char,
-                  :background,
-                  :str,
-                  :strmod,
-                  :dex,
-                  :dexmod,
-                  :con,
-                  :conmod,
-                  :int,
-                  :intmod,
-                  :wis,
-                  :wismod,
-                  :cha,
-                  :chamod,
-                  :ac,
-                  :prof,
-                  :hitpoints,
-                  :skills
+  class Input
+    class << self
+      def pick_stats(stats)
+        loop do
+          finalstats = []
+          ABILITIES[0..-2].each_with_index do |stat_name, index|
+            print "\nRemaining stats: "
+            stats.compact!
+            puts stats.join(", ")
+            print "Pick #{stat_name.upcase}: "
 
-    def initialize(
-      charname,
-      level,
-      species,
-      class_of_char,
-      background,
-      str,
-      strmod,
-      dex,
-      dexmod,
-      con,
-      conmod,
-      int,
-      intmod,
-      wis,
-      wismod,
-      cha,
-      chamod,
-      ac,
-      prof,
-      hitpoints,
-      skills
-    )
-      @charname = charname
-      @level = level
-      @species = species
-      @class_of_char = class_of_char
-      @background = background
-      @str = str
-      @strmod = strmod
-      @dex = dex
-      @dexmod = dexmod
-      @con = con
-      @conmod = conmod
-      @int = int
-      @intmod = intmod
-      @wis = wis
-      @wismod = wismod
-      @cha = cha
-      @chamod = chamod
-      @ac = ac
-      @prof = prof
-      @hitpoints = hitpoints
-      @skills = skills
-    end
-
-    def context
-      instance_variables.map do |attribute|
-        { attribute => instance_variable_get(attribute) }
-      end
-    end
-  end
-
-  class Ranger
-    attr_accessor :damage, :chancetohit, :armor, :weapon
-  end
-
-  def classpick
-    puts CLASSES
-    puts "What class is your character? "
-    charclass = ""
-    until CLASSES.include?(charclass)
-      charclass = get_input(CLASSES.first).capitalize.chomp
-      puts "please select an option from the list" unless CLASSES.include?(charclass)
-    end
-    charclass
-  end
-
-  def my_modcalc(stat)
-    if stat < 2 then -5
-    elsif stat < 30 then (stat - 10) / 2
-    else puts "error: str must be between 0 and 30"
-    end
-  end
-
-  def proficiency(level)
-    case level
-    when 1..4 then 2
-    when 5..8 then 3
-    when 9..12 then 4
-    when 13..16 then 5
-    else 6
-    end
-  end
-
-  def proficiency_by_class(character_class)
-    CLASS_PROFICIENCIES.fetch(character_class, [])
-  end
-
-  def profpicker
-    tempprof = %w[
-      athletics
-      acrobatics
-      sleight_of_hand
-      stealth
-      arcana
-      history
-      investigation
-      nature
-      religion
-      animal_handling
-      insight
-      medicine
-      perception
-      survival
-      deception
-      intimidation
-      performance
-      persuasion
-    ]
-
-    puts "These are your stats: "
-    (0...19).each { |n| puts $prof[n] }
-
-    3.times do |pick|
-      slot = 19 + pick
-      label = if pick == 0
-                "first"
+            while finalstats[index].nil?
+              value = get_input(stats.compact.first).to_i
+              if value.nil? || !stats.include?(value)
+                puts "Please select one of the available numbers"
               else
-                (pick == 1 ? "second" : "second")
+                finalstats[index] = value
+                idx = stats.index(value)
+                stats[idx] = nil
               end
-      puts "Which skill would you like to choose as your #{label} proficiency (case sensitive)"
-
-      while $prof[slot].nil?
-        choice = get_input($prof.compact.first).chomp
-        puts choice if pick == 0
-
-        if choice.nil? || !tempprof.include?(choice)
-          puts "please select one of the offered skills (case sensitive)"
-        else
-          $prof[slot] = choice
-          tempprof[tempprof.index(choice)] = nil
-          tempprof.compact!
-        end
-      end
-
-      puts "These are your remaining stats: "
-      puts tempprof
-
-      if pick < 2
-        puts "Which skill would you like to choose as your second proficiency (case sensitive)"
-      end
-    end
-  end
-
-  def speciespick
-    puts SPECIES
-    puts "What species is your character? "
-    species_choice = ""
-    until SPECIES.include?(species_choice)
-      species_choice = get_input(SPECIES.first).split(/ |_|-/).map(&:capitalize).join(" ").chomp
-      puts "please select an option from the list" unless SPECIES.include?(species_choice)
-    end
-    species_choice
-  end
-
-  def skillpopulator
-    {
-      "athletics" => 0,
-      "acrobatics" => 0,
-      "sleight of hand" => 0,
-      "stealth" => 0,
-      "arcana" => 0,
-      "history" => 0,
-      "investigation" => 0,
-      "nature" => 0,
-      "religion" => 0,
-      "animal handling" => 0,
-      "insight" => 0,
-      "medicine" => 0,
-      "perception" => 0,
-      "survival" => 0,
-      "deception" => 0,
-      "intimidation" => 0,
-      "performance" => 0,
-      "persuasion" => 0,
-    }
-  end
-
-  def statpick(stats)
-    loop do
-      finalstats = []
-      puts "These are your stats: "
-      (0...6).each { |n| puts stats[n] }
-
-      STAT_NAMES[0..4].each_with_index do |stat_name, index|
-        puts "These are your remaining stats: " if index > 0
-        stats.compact!
-        puts stats if index > 0
-        puts "Which number would you like to be your #{stat_name} stat? "
-
-        while finalstats[index].nil?
-          value = get_input(stats.compact.first).to_i
-          if value.nil? || !stats.include?(value)
-            puts "Please select one of the available numbers"
-          else
-            finalstats[index] = value
-            idx = stats.index(value)
-            stats[idx] = nil
+            end
           end
+
+          last_stat = stats.compact.first
+          finalstats << last_stat
+          puts "\nCHA (auto): #{last_stat}"
+
+          return finalstats
         end
       end
 
-      finalstats[5] = stats.compact.first
-
-      puts "So your stats are  Strength: #{finalstats[0]}, Dexteriy: #{finalstats[1]}, Constitution: #{finalstats[2]},
-    Intelligence: #{finalstats[3]}, Wisdom: #{finalstats[4]}, and Charisma: #{finalstats[5]}"
-
-      puts "Are you satisfied with this? (y/n)"
-      finish = ""
-      until %w[y n].include?(finish)
-        finish = get_input("y").chomp
-        if finish == "n"
-          (0...6).each do |n|
-            stats[n] = finalstats[n]
-            finalstats[n] = nil
-          end
-        elsif finish != "y"
-          puts "Please select y to complete this process or n to start over"
+      def pick_option(options, prompt)
+        match = nil
+        puts
+        options.each.with_index(1) do |option, i|
+          puts "#{i}. #{option}"
         end
+        print prompt
+        loop do
+          response = get_input("1")
+          match = options[response.to_i - 1] if response.to_i >= 1
+          return match if match
+
+          match = options.find { it.downcase == response.downcase }
+          return match if match
+
+          match = options.find { it.downcase.include?(response.downcase) }
+          return match if match
+
+          puts "Please select an option from the list"
+        end
+      ensure
+        puts "Selected: #{match}"
       end
 
-      return finalstats if finish == "y"
+      def get_input(default)
+        puts default
+        default
+      end
+
+      def stat_roll = [15, 14, 13, 12, 10, 8]
     end
   end
 
-  def statroll
-    [15, 14, 13, 12, 10, 8]
+  class CreateCharacter
+    def run
+      puts "Welcome to the D&D Character Creator!"
+      puts "=" * 40
+
+      character_class = pick_class
+      species = pick_species
+      background = pick_background
+      stats = pick_stats(background)
+      level = pick_level
+      skills = pick_skills(character_class, background)
+      name = pick_name
+
+      Character.new(
+        name:,
+        level:,
+        species:,
+        character_class:,
+        background:,
+        stats:,
+        skills:,
+      )
+    end
+
+    private
+
+    def pick_stats(background)
+      background_abilities = BACKGROUNDS[background][:abilities]
+      picked_stats = Input.pick_stats(roll_stats)
+      ABILITIES.zip(picked_stats).map do |ability, picked_stat|
+        (background_abilities.include?(ability) ? 1 : 0) + picked_stat
+      end
+    end
+
+    def roll_stats
+      stats = Input.stat_roll
+      puts "\nYou rolled: #{stats.join(", ")}"
+      stats
+    end
+
+    def pick_level
+      print "\nPick level (1-20): "
+      Input.get_input("1").to_i.clamp(1..20)
+    end
+
+    def pick_name
+      print "\nPick name: "
+      Input.get_input("Adventurer")
+    end
+
+    def pick_skills(character_class, background)
+      class_skills = CLASSES[character_class][:skills]
+      skill_count = CLASSES[character_class][:skill_count]
+      background_skills = BACKGROUNDS[background][:skills]
+      available_skills = class_skills - background_skills
+      picked_skills = available_skills.first(skill_count)
+      (background_skills + picked_skills).sort
+    end
+
+    def pick_class
+      Input.pick_option(CLASSES.keys, "Pick class: ")
+    end
+
+    def pick_background
+      Input.pick_option(BACKGROUNDS.keys, "Pick background: ")
+    end
+
+    def pick_species
+      Input.pick_option(SPECIES, "Pick species: ")
+    end
   end
 
-  def main
-    puts "Welcome to the D&D Character Creator!"
-    puts "=" * 40
+  class Character < Struct.new(
+    :name,
+    :level,
+    :species,
+    :character_class,
+    :background,
+    :stats,
+    :skills,
+  )
+    def self.create = CreateCharacter.new.run
 
-    charclass = classpick
-    species = speciespick
-    background = backgroundpick
+    def hp = hd + con_mod + ((level - 1) * ((hd / 2) + 1 + con_mod))
+    def hd = CLASSES[character_class][:hd]
+    def ac = 10 + dex_mod
+    def prof = ((level - 1) / 4) + 2
 
-    stats = statroll
-    puts "You rolled: #{stats.inspect}"
-    finalstats = statpick(stats)
+    ABILITIES.each.with_index do |stat, i|
+      define_method(stat) { stats[i] }
+      define_method("#{stat}_mod") { mod_of(stats[i]) }
+    end
 
-    level = 1
-    str, dex, con, int, wis, cha = finalstats
-    strmod = my_modcalc(str)
-    dexmod = my_modcalc(dex)
-    conmod = my_modcalc(con)
-    intmod = my_modcalc(int)
-    wismod = my_modcalc(wis)
-    chamod = my_modcalc(cha)
+    def print
+      puts "\n#{"=" * 40}"
+      puts "Character Created!"
+      puts "=" * 40
+      puts format("%20s: %s", "Name", name)
+      puts format("%20s: %s", "Level", level)
+      puts format("%20s: %s", "Species", species)
+      puts format("%20s: %s", "Class", character_class)
+      puts format("%20s: %s", "Background", background)
+      puts
+      puts format("%20s: %s", "HP", hp)
+      puts format("%20s: %s", "AC", ac)
+      puts format("%20s: %+i", "Proficiency Bonus", prof)
+      puts
+      puts format("%20s: %s", "Skills", formatted_skills)
+      puts
+      ABILITIES.each.with_index do |stat, i|
+        puts format("%20s: %2i (%+i)", stat.to_s.upcase, send(stat), send("#{stat}_mod"))
+      end
+    end
 
-    prof = proficiency(level)
-    hitpoints = hitpointcalculator(charclass, level, conmod)
-    skills = skillpopulator
+    private
 
-    puts "\nWhat is your character's name?"
-    charname = get_input("Adventurer")
+    def formatted_skills
+      skills.map { it.to_s.split("_").map(&:capitalize).join(" ") }.join(", ")
+    end
 
-    $charstats = DnDchars.new(
-      charname,
-      level,
-      species,
-      charclass,
-      background,
-      str,
-      strmod,
-      dex,
-      dexmod,
-      con,
-      conmod,
-      int,
-      intmod,
-      wis,
-      wismod,
-      cha,
-      chamod,
-      10 + dexmod,
-      prof,
-      hitpoints,
-      skills,
-    )
-
-    puts "\n#{"=" * 40}"
-    puts "Character Created!"
-    puts "=" * 40
-    puts $charstats.context
+    def mod_of(stat) = (stat - 10) / 2
   end
 end
 
 if __FILE__ == $PROGRAM_NAME
   include CharacterCreatorKata
 
-  main
+  Character.create.print
 end
