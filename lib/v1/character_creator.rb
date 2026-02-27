@@ -237,10 +237,12 @@ module CharacterCreatorKata
     def con_mod = mod_of(stats[2])
     def mod_of(stat) = (stat - 10) / 2
   end
+
+  def main = Character.create.print
 end
 
 if __FILE__ == $PROGRAM_NAME
   include CharacterCreatorKata
 
-  Character.create.print
+  main
 end
