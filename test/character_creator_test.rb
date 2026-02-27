@@ -8,10 +8,6 @@ include CharacterCreatorKata
 Minitest::Reporters.use!
 
 class CharacterCreatorTest < Minitest::Test
-  def run_character_creation
-    main
-  end
-
   def capture_stdout
     old_stdout = $stdout
     $stdout = StringIO.new
@@ -22,7 +18,7 @@ class CharacterCreatorTest < Minitest::Test
   end
 
   def test_character_creation_output_matches_expectation
-    output = capture_stdout { run_character_creation }
+    output = capture_stdout { main }
 
     expected_output = <<~OUTPUT
       Welcome to the D&D Character Creator!

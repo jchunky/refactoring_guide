@@ -51,10 +51,10 @@ module CharacterCreatorKata
     class << self
       def pick_stats(stats)
         result =
-          ABILITIES[0..-2].map.with_index { |stat_name, index|
+          ABILITIES[0..-2].map { |ability|
             print "\nRemaining stats: "
             puts stats.join(", ")
-            stat = pick_stat(stats, "Pick #{stat_name.upcase}: ")
+            stat = pick_stat(stats, "Pick #{ability.upcase}: ")
             stats.delete_at(stats.index(stat))
             stat
           } + stats
@@ -223,7 +223,7 @@ module CharacterCreatorKata
       puts format("%20s: %s", "Skills", skills.map(&SKILLS).sort.join(", "))
       puts
       ABILITIES.zip(stats).each do |ability, stat|
-        puts format("%20s: %2i (%+i)", ability.to_s.upcase, stat, mod_of(stat))
+        puts format("%20s: %2i (%+i)", ability.upcase, stat, mod_of(stat))
       end
     end
 
