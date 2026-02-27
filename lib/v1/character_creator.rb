@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 module CharacterCreatorKata
+  ABILITIES = %i[str dex con int wis cha].freeze
+  SPECIES = %w[Dragonborn Dwarf Elf Gnome Goliath Halfling Human Orc Tiefling].freeze
+
   SKILLS = %i[
     acrobatics
     animal_handling
@@ -21,8 +24,6 @@ module CharacterCreatorKata
     stealth
     survival
   ].freeze
-
-  SPECIES = %w[Dragonborn Dwarf Elf Gnome Goliath Halfling Human Orc Tiefling].freeze
 
   BACKGROUNDS = {
     "Acolyte" => { abilities: %i[int wis cha], skills: %i[insight religion] },
@@ -46,40 +47,42 @@ module CharacterCreatorKata
     "Wizard" => { hd: 6, skill_count: 2, skills: %i[arcana history insight investigation medicine nature religion] },
   }.freeze
 
-  ABILITIES = %i[str dex con int wis cha].freeze
-
-  def background_bonuses(background)
-    BACKGROUND_DATA.fetch(background, { ability_bonuses: [], skill_proficiencies: [] })
-  end
-
   class Input
     class << self
       def pick_stats(stats)
-        loop do
-          finalstats = []
-          ABILITIES[0..-2].each_with_index do |stat_name, index|
+        result =
+          ABILITIES[0..-2].map.with_index { |stat_name, index|
             print "\nRemaining stats: "
-            stats.compact!
             puts stats.join(", ")
-            print "Pick #{stat_name.upcase}: "
+            stat = pick_stat(stats, "Pick #{stat_name.upcase}: ")
+            stats.delete_at(stats.index(stat))
+            stat
+          } + stats
 
-            while finalstats[index].nil?
-              value = get_input(stats.compact.first).to_i
-              if value.nil? || !stats.include?(value)
-                puts "Please select one of the available numbers"
-              else
-                finalstats[index] = value
-                idx = stats.index(value)
-                stats[idx] = nil
-              end
-            end
-          end
+        puts "\nCHA (auto): #{stats.last}"
 
-          last_stat = stats.compact.first
-          finalstats << last_stat
-          puts "\nCHA (auto): #{last_stat}"
+        result
+      end
 
-          return finalstats
+      def pick_stat(stats, prompt)
+        print prompt
+
+        loop do
+          response = get_input(stats.first)
+          match = stats.find { it == response.to_i }
+          return match if match
+
+          puts "Please select one of the available numbers"
+        end
+      end
+
+      def pick_options(options, count, base_prompt)
+        options = options.dup
+        count.times.map do |i|
+          prompt = "#{base_prompt} (#{i + 1}/#{count}): "
+          option = pick_option(options, prompt)
+          options.delete_at(options.index(option))
+          option
         end
       end
 
@@ -112,6 +115,9 @@ module CharacterCreatorKata
         default
       end
 
+      def format_skill(skill_id) = skill_id.to_s.split("_").map(&:capitalize).join(" ")
+      def to_skill_id(skill) = skill.downcase.gsub(" ", "_")
+
       def stat_roll = [15, 14, 13, 12, 10, 8]
     end
   end
@@ -124,10 +130,10 @@ module CharacterCreatorKata
       character_class = pick_class
       species = pick_species
       background = pick_background
-      stats = pick_stats(background)
       level = pick_level
-      skills = pick_skills(character_class, background)
       name = pick_name
+      stats = pick_stats(background)
+      skills = pick_skills(character_class, background)
 
       Character.new(
         name:,
@@ -142,18 +148,20 @@ module CharacterCreatorKata
 
     private
 
-    def pick_stats(background)
-      background_abilities = BACKGROUNDS[background][:abilities]
-      picked_stats = Input.pick_stats(roll_stats)
-      ABILITIES.zip(picked_stats).map do |ability, picked_stat|
-        (background_abilities.include?(ability) ? 1 : 0) + picked_stat
-      end
+    def pick_class
+      Input.pick_option(CLASSES.keys, "Pick class: ")
     end
 
-    def roll_stats
-      stats = Input.stat_roll
-      puts "\nYou rolled: #{stats.join(", ")}"
-      stats
+    def pick_species
+      Input.pick_option(SPECIES, "Pick species: ")
+    end
+
+    def pick_background
+      result = Input.pick_option(BACKGROUNDS.keys, "Pick background: ")
+      background_skills = BACKGROUNDS[result][:skills]
+      formatted_skills = background_skills.map { Input.format_skill(it) }.join(", ")
+      puts "Background Skills: #{formatted_skills}"
+      result
     end
 
     def pick_level
@@ -166,25 +174,27 @@ module CharacterCreatorKata
       Input.get_input("Adventurer")
     end
 
+    def roll_stats
+      stats = Input.stat_roll
+      puts "\nYou rolled: #{stats.join(", ")}"
+      stats
+    end
+
+    def pick_stats(background)
+      background_abilities = BACKGROUNDS[background][:abilities]
+      picked_stats = Input.pick_stats(roll_stats)
+      ABILITIES.zip(picked_stats).map do |ability, picked_stat|
+        (background_abilities.include?(ability) ? 1 : 0) + picked_stat
+      end
+    end
+
     def pick_skills(character_class, background)
       class_skills = CLASSES[character_class][:skills]
       skill_count = CLASSES[character_class][:skill_count]
       background_skills = BACKGROUNDS[background][:skills]
-      available_skills = class_skills - background_skills
-      picked_skills = available_skills.first(skill_count)
-      (background_skills + picked_skills).sort
-    end
-
-    def pick_class
-      Input.pick_option(CLASSES.keys, "Pick class: ")
-    end
-
-    def pick_background
-      Input.pick_option(BACKGROUNDS.keys, "Pick background: ")
-    end
-
-    def pick_species
-      Input.pick_option(SPECIES, "Pick species: ")
+      available_skills = (class_skills - background_skills).map { Input.format_skill(it) }
+      picked_skills = Input.pick_options(available_skills, skill_count, "Pick skill").map { Input.to_skill_id(it) }
+      background_skills + picked_skills
     end
   end
 
@@ -233,7 +243,7 @@ module CharacterCreatorKata
     private
 
     def formatted_skills
-      skills.map { it.to_s.split("_").map(&:capitalize).join(" ") }.join(", ")
+      skills.map { it.to_s.split("_").map(&:capitalize).join(" ") }.sort.join(", ")
     end
 
     def mod_of(stat) = (stat - 10) / 2
