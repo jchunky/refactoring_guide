@@ -45,7 +45,7 @@ module SupermarketReceiptKata
       end
     end
 
-    def initialize(product, description, discount_amount) = super(product, description, discount_amount.round(2))
+    def discount_amount = super.round(2)
   end
 
   class Receipt < Struct.new(:items)
