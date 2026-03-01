@@ -8,10 +8,6 @@ include CharacterCreatorKata
 Minitest::Reporters.use!
 
 class CharacterCreatorTest < Minitest::Test
-  def run_character_creation
-    main
-  end
-
   def capture_stdout
     old_stdout = $stdout
     $stdout = StringIO.new
@@ -22,110 +18,108 @@ class CharacterCreatorTest < Minitest::Test
   end
 
   def test_character_creation_output_matches_expectation
-    output = capture_stdout { run_character_creation }
+    output = capture_stdout { main }
 
     expected_output = <<~OUTPUT
       Welcome to the D&D Character Creator!
       ========================================
-      Barbarian
-      Bard
-      Cleric
-      Druid
-      Fighter
-      Monk
-      Paladin
-      Ranger
-      Rogue
-      Sorcerer
-      Warlock
-      Wizard
-      What class is your character?
-      Barbarian
-      Dragonborn
-      Dwarf
-      Elf
-      Gnome
-      Goliath
-      Halfling
-      Human
-      Orc
-      Tiefling
-      What species is your character?
-      Dragonborn
-      Acolyte
-      Criminal
-      Sage
-      Soldier
-      What species is your character?
-      Acolyte
-      You rolled: [15, 14, 13, 12, 10, 8]
-      These are your stats:
-      15
-      14
-      13
-      12
-      10
-      8
-      Which number would you like to be your Strength stat?
-      15
-      These are your remaining stats:
-      14
-      13
-      12
-      10
-      8
-      Which number would you like to be your Dexterity stat?
-      14
-      These are your remaining stats:
-      13
-      12
-      10
-      8
-      Which number would you like to be your Constitution stat?
-      13
-      These are your remaining stats:
-      12
-      10
-      8
-      Which number would you like to be your Intelligence stat?
-      12
-      These are your remaining stats:
-      10
-      8
-      Which number would you like to be your Wisdom stat?
-      10
-      So your stats are  Strength: 15, Dexteriy: 14, Constitution: 13,
-          Intelligence: 12, Wisdom: 10, and Charisma: 8
-      Are you satisfied with this? (y/n)
-      y
-      
-      What is your character's name?
-      Adventurer
-      
+
+      1. Barbarian
+      2. Bard
+      3. Cleric
+      4. Druid
+      5. Fighter
+      6. Monk
+      7. Paladin
+      8. Ranger
+      9. Rogue
+      10. Sorcerer
+      11. Warlock
+      12. Wizard
+      Pick class: 1
+      Selected: Barbarian
+
+      1. Dragonborn
+      2. Dwarf
+      3. Elf
+      4. Gnome
+      5. Goliath
+      6. Halfling
+      7. Human
+      8. Orc
+      9. Tiefling
+      Pick species: 1
+      Selected: Dragonborn
+
+      1. Acolyte
+      2. Criminal
+      3. Sage
+      4. Soldier
+      Pick background: 1
+      Selected: Acolyte
+      Background Skills: Insight, Religion
+
+      Pick level (1-20): 1
+
+      Pick name: Adventurer
+
+      You rolled: 15, 14, 13, 12, 10, 8
+
+      Remaining stats: 15, 14, 13, 12, 10, 8
+      Pick STR: 15
+
+      Remaining stats: 14, 13, 12, 10, 8
+      Pick DEX: 14
+
+      Remaining stats: 13, 12, 10, 8
+      Pick CON: 13
+
+      Remaining stats: 12, 10, 8
+      Pick INT: 12
+
+      Remaining stats: 10, 8
+      Pick WIS: 10
+
+      CHA (auto): 8
+
+      1. Animal Handling
+      2. Athletics
+      3. Intimidation
+      4. Nature
+      5. Perception
+      6. Survival
+      Pick skill (1/2): 1
+      Selected: Animal Handling
+
+      1. Athletics
+      2. Intimidation
+      3. Nature
+      4. Perception
+      5. Survival
+      Pick skill (2/2): 1
+      Selected: Athletics
+
       ========================================
       Character Created!
       ========================================
-      {"@charname": "Adventurer"}
-      {"@level": 1}
-      {"@species": "Dragonborn"}
-      {"@class_of_char": "Barbarian"}
-      {"@background": "Acolyte"}
-      {"@str": 15}
-      {"@strmod": 2}
-      {"@dex": 14}
-      {"@dexmod": 2}
-      {"@con": 13}
-      {"@conmod": 1}
-      {"@int": 12}
-      {"@intmod": 1}
-      {"@wis": 10}
-      {"@wismod": 0}
-      {"@cha": 8}
-      {"@chamod": -1}
-      {"@ac": 12}
-      {"@prof": 2}
-      {"@hitpoints": 21}
-      {"@skills": {"athletics" => 0, "acrobatics" => 0, "sleight of hand" => 0, "stealth" => 0, "arcana" => 0, "history" => 0, "investigation" => 0, "nature" => 0, "religion" => 0, "animal handling" => 0, "insight" => 0, "medicine" => 0, "perception" => 0, "survival" => 0, "deception" => 0, "intimidation" => 0, "performance" => 0, "persuasion" => 0}}
+                      Name: Adventurer
+                     Level: 1
+                   Species: Dragonborn
+                     Class: Barbarian
+                Background: Acolyte
+
+                        HP: 13
+                        AC: 12
+         Proficiency Bonus: +2
+
+                    Skills: Animal Handling, Athletics, Insight, Religion
+
+                       STR: 15 (+2)
+                       DEX: 14 (+2)
+                       CON: 13 (+1)
+                       INT: 13 (+1)
+                       WIS: 11 (+0)
+                       CHA:  9 (-1)
     OUTPUT
 
     assert_equal normalize(expected_output), normalize(output)
