@@ -101,8 +101,7 @@ module CharacterCreatorKata
     end
 
     puts
-    print "CHA (auto): "
-    get_input(remaining.first)
+    puts "CHA (auto): #{remaining.first}"
     assigned["CHA"] = remaining.first
 
     bg_data[:ability_bonuses].each do |ability|
