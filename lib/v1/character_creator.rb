@@ -44,6 +44,7 @@ module CharacterCreatorKata
   }.freeze
 
   def get_input(default)
+    puts default
     default.to_s
   end
 
@@ -53,8 +54,8 @@ module CharacterCreatorKata
 
   def pick_from_list(items, prompt)
     items.each_with_index { |item, i| puts "#{i + 1}. #{item}" }
+    print "Pick #{prompt}: "
     choice = get_input(1).to_i
-    puts "Pick #{prompt}: #{choice}"
     selected = items[choice - 1]
     puts "Selected: #{selected}"
     selected
@@ -77,12 +78,12 @@ module CharacterCreatorKata
     puts "Background Skills: #{bg_skills.join(', ')}"
 
     puts
+    print "Pick level (1-20): "
     level = get_input(1).to_i
-    puts "Pick level (1-20): #{level}"
 
     puts
+    print "Pick name: "
     name = get_input("Adventurer")
-    puts "Pick name: #{name}"
 
     puts
     stats = [15, 14, 13, 12, 10, 8]
@@ -93,14 +94,15 @@ module CharacterCreatorKata
     %w[STR DEX CON INT WIS].each do |stat_name|
       puts
       puts "Remaining stats: #{remaining.join(', ')}"
+      print "Pick #{stat_name}: "
       choice = get_input(remaining.first).to_i
-      puts "Pick #{stat_name}: #{choice}"
       remaining.delete_at(remaining.index(choice))
       assigned[stat_name] = choice
     end
 
     puts
-    puts "CHA (auto): #{remaining.first}"
+    print "CHA (auto): "
+    get_input(remaining.first)
     assigned["CHA"] = remaining.first
 
     bg_data[:ability_bonuses].each do |ability|
@@ -128,8 +130,8 @@ module CharacterCreatorKata
     num_skills.times do |i|
       puts
       available_skills.each_with_index { |s, j| puts "#{j + 1}. #{s}" }
+      print "Pick skill (#{i + 1}/#{num_skills}): "
       choice = get_input(1).to_i
-      puts "Pick skill (#{i + 1}/#{num_skills}): #{choice}"
       selected = available_skills[choice - 1]
       puts "Selected: #{selected}"
       chosen_skills << selected
