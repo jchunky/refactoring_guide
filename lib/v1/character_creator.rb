@@ -151,7 +151,7 @@ module CharacterCreatorKata
     puts
     puts "%20s: %s" % ["HP", hp]
     puts "%20s: %s" % ["AC", ac]
-    puts "%20s: +%s" % ["Proficiency Bonus", prof]
+    puts "%20s: %+d" % ["Proficiency Bonus", prof]
     puts
     puts "%20s: %s" % ["Skills", all_skills.join(', ')]
     puts
