@@ -44,14 +44,9 @@ module SupermarketReceiptKata
     end
 
     def total_price
-      total = 0.0
-      @items.each do |item|
-        total += item.total_price
-      end
-      @discounts.each do |discount|
-        total -= discount.discount_amount
-      end
-      total
+      item_total = @items.sum(&:total_price)
+      discount_total = @discounts.sum(&:discount_amount)
+      item_total - discount_total
     end
 
     def add_product(product, quantity, price, total_price)
@@ -60,7 +55,7 @@ module SupermarketReceiptKata
     end
 
     def items
-      Array.new @items
+      Array.new(@items)
     end
 
     def add_discount(discount)
@@ -69,7 +64,7 @@ module SupermarketReceiptKata
     end
 
     def discounts
-      Array.new @discounts
+      Array.new(@discounts)
     end
   end
 
@@ -79,13 +74,14 @@ module SupermarketReceiptKata
 
   class ShoppingCart
     attr_reader :product_quantities
+
     def initialize
       @items = []
       @product_quantities = {}
     end
 
     def items
-      Array.new @items
+      Array.new(@items)
     end
 
     def add_item(product)
@@ -95,59 +91,47 @@ module SupermarketReceiptKata
 
     def add_item_quantity(product, quantity)
       @items << ProductQuantity.new(product, quantity)
-      product_quantities[product] = if @product_quantities.key?(product)
-                                      product_quantities[product] + quantity
-                                    else
-                                      quantity
-                                    end
+      @product_quantities[product] = (@product_quantities[product] || 0) + quantity
     end
 
     def handle_offers(receipt, offers, catalog)
-      @product_quantities.each_key do |p|
-        quantity = @product_quantities[p]
-        next unless offers.key?(p)
+      @product_quantities.each do |product, quantity|
+        next unless offers.key?(product)
 
-        offer = offers[p]
-        unit_price = catalog.unit_price(p)
+        offer = offers[product]
+        unit_price = catalog.unit_price(product)
         quantity_as_int = quantity.to_i
         discount = nil
         x = 1
-        if offer.offer_type == SpecialOfferType::THREE_FOR_TWO
-          x = 3
 
-        elsif offer.offer_type == SpecialOfferType::TWO_FOR_AMOUNT
+        case offer.offer_type
+        when SpecialOfferType::THREE_FOR_TWO
+          x = 3
+        when SpecialOfferType::TWO_FOR_AMOUNT
           x = 2
           if quantity_as_int >= 2
             total = offer.argument * (quantity_as_int / x) + quantity_as_int % 2 * unit_price
             discount_n = unit_price * quantity - total
-            discount = Discount.new(
-              p,
-              "2 for " + offer.argument.to_s,
-              discount_n
-            )
+            discount = Discount.new(product, "2 for #{offer.argument}", discount_n)
           end
-
-        end
-        x = 5 if offer.offer_type == SpecialOfferType::FIVE_FOR_AMOUNT
-        number_of_x = quantity_as_int / x
-        if offer.offer_type == SpecialOfferType::THREE_FOR_TWO && quantity_as_int > 2
-          discount_amount = quantity * unit_price - ((number_of_x * 2 * unit_price) + quantity_as_int % 3 * unit_price)
-          discount = Discount.new(p, "3 for 2", discount_amount)
-        end
-        if offer.offer_type == SpecialOfferType::TEN_PERCENT_DISCOUNT
+        when SpecialOfferType::FIVE_FOR_AMOUNT
+          x = 5
+        when SpecialOfferType::TEN_PERCENT_DISCOUNT
           discount = Discount.new(
-            p,
-            offer.argument.to_s + "% off",
+            product,
+            "#{offer.argument}% off",
             quantity * unit_price * offer.argument / 100.0
           )
         end
+
+        number_of_x = quantity_as_int / x
+        if offer.offer_type == SpecialOfferType::THREE_FOR_TWO && quantity_as_int > 2
+          discount_amount = quantity * unit_price - ((number_of_x * 2 * unit_price) + quantity_as_int % 3 * unit_price)
+          discount = Discount.new(product, "3 for 2", discount_amount)
+        end
         if offer.offer_type == SpecialOfferType::FIVE_FOR_AMOUNT && quantity_as_int >= 5
           discount_total = unit_price * quantity - (offer.argument * number_of_x + quantity_as_int % 5 * unit_price)
-          discount = Discount.new(
-            p,
-            x.to_s + " for " + offer.argument.to_s,
-            discount_total
-          )
+          discount = Discount.new(product, "#{x} for #{offer.argument}", discount_total)
         end
 
         receipt.add_discount(discount) if discount
@@ -184,16 +168,12 @@ module SupermarketReceiptKata
 
     def checks_out_articles_from(the_cart)
       receipt = Receipt.new
-      product_quantities = the_cart.items
-      product_quantities.each do |pq|
-        p = pq.product
-        quantity = pq.quantity
-        unit_price = @catalog.unit_price(p)
-        price = quantity * unit_price
-        receipt.add_product(p, quantity, unit_price, price)
+      the_cart.items.each do |pq|
+        unit_price = @catalog.unit_price(pq.product)
+        price = pq.quantity * unit_price
+        receipt.add_product(pq.product, pq.quantity, unit_price, price)
       end
       the_cart.handle_offers(receipt, @offers, @catalog)
-
       receipt
     end
   end
@@ -207,48 +187,36 @@ module SupermarketReceiptKata
       result = ""
       receipt.items.each do |item|
         price = "%.2f" % item.total_price
-        quantity = self.class.present_quantity(item)
         name = item.product.name
-        unit_price = "%.2f" % item.price
 
         whitespace_size = @columns - name.size - price.size
-        line = name + self.class.whitespace(whitespace_size) + price + "\n"
+        result += name + (" " * whitespace_size) + price + "\n"
 
-        line += "  " + unit_price + " * " + quantity + "\n" if item.quantity != 1
-
-        result += line
+        if item.quantity != 1
+          quantity = self.class.present_quantity(item)
+          unit_price = "%.2f" % item.price
+          result += "  #{unit_price} * #{quantity}\n"
+        end
       end
+
       receipt.discounts.each do |discount|
-        product_presentation = discount.product.name
+        product_name = discount.product.name
         price_presentation = "%.2f" % discount.discount_amount
         description = discount.description
-        result += description
-        result += "("
-        result += product_presentation
-        result += ")"
-        result += self.class.whitespace(@columns - 3 - product_presentation.size - description.size - price_presentation.size)
-        result += "-"
-        result += price_presentation
-        result += "\n"
+        padding = @columns - 3 - product_name.size - description.size - price_presentation.size
+        result += "#{description}(#{product_name})#{' ' * padding}-#{price_presentation}\n"
       end
+
       result += "\n"
       price_presentation = "%.2f" % receipt.total_price.to_f
       total = "Total: "
-      whitespace = self.class.whitespace(@columns - total.size - price_presentation.size)
+      whitespace = " " * (@columns - total.size - price_presentation.size)
       result += total + whitespace + price_presentation
-      result.to_s
+      result
     end
 
     def self.present_quantity(item)
       ProductUnit::EACH == item.product.unit ? "%x" % item.quantity.to_i : "%.3f" % item.quantity
-    end
-
-    def self.whitespace(whitespace_size)
-      whitespace = ""
-      whitespace_size.times do
-        whitespace += " "
-      end
-      whitespace
     end
   end
 end

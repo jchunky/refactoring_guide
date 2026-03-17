@@ -6,25 +6,28 @@ module CharacterCreatorKata
   end
 
   def hitpointcalculator(char_class, level, con)
-    return 12 + con + (level * (7 + con)) if ["Barbarian"].include?(char_class.chomp)
-    return 10 + con + (level * (6 + con)) if ["Fighter", "Paladin", "Ranger"].include?(char_class.chomp)
-    return 8 + con + (level * (5 + con)) if ["Bard", "Cleric", "Druid", "Monk", "Rogue", "Warlock"].include?(char_class.chomp)
-    return 6 + con + (level * (4 + con)) if ["Sorcerer", "Wizard"].include?(char_class.chomp)
+    hit_die = case char_class.chomp
+              when "Barbarian" then 12
+              when "Fighter", "Paladin", "Ranger" then 10
+              when "Bard", "Cleric", "Druid", "Monk", "Rogue", "Warlock" then 8
+              when "Sorcerer", "Wizard" then 6
+              end
+    return nil unless hit_die
+
+    avg_roll = hit_die / 2 + 1
+    hit_die + con + (level * (avg_roll + con))
   end
 
   # Artificer = d8
 
   def armorcalc
     armor = nil
-    #no armor
     if armor == nil
       $charstats.ac = 10 + $charstats.dexmod
     elsif armor != nil
 
     end
   end
-
-
 
   def backgroundpick
     backgrounds = ["Acolyte", "Criminal", "Sage", "Soldier"]
@@ -33,9 +36,9 @@ module CharacterCreatorKata
     background_choice = ""
     while backgrounds.include?(background_choice) == false
       background_choice = get_input(backgrounds.first).split(/ |\_|\-/).map(&:capitalize).join(" ").chomp
-      puts "please select an option from the list" unless backgrounds.include?(background_choice) == true
+      puts "please select an option from the list" unless backgrounds.include?(background_choice)
     end
-    return background_choice
+    background_choice
   end
 
   def background_bonuses(background)
@@ -69,32 +72,13 @@ module CharacterCreatorKata
   end
 
   class DnDchars
-
-    attr_accessor :charname
-    attr_accessor :level
-    attr_accessor :species
-    attr_accessor :class_of_char
-    attr_accessor :background
-    attr_accessor :str
-    attr_accessor :strmod
-    attr_accessor :dex
-    attr_accessor :dexmod
-    attr_accessor :con
-    attr_accessor :conmod
-    attr_accessor :int
-    attr_accessor :intmod
-    attr_accessor :wis
-    attr_accessor :wismod
-    attr_accessor :cha
-    attr_accessor :chamod
-    attr_accessor :ac
-    attr_accessor :prof
-    attr_accessor :hitpoints
-    attr_accessor :skills
+    attr_accessor :charname, :level, :species, :class_of_char, :background,
+                  :str, :strmod, :dex, :dexmod, :con, :conmod,
+                  :int, :intmod, :wis, :wismod, :cha, :chamod,
+                  :ac, :prof, :hitpoints, :skills
 
     def initialize(charname, level, species, class_of_char, background, str, strmod, dex, dexmod, con, conmod, int, intmod,
-                   wis, wismod, cha, chamod, ac, prof, hitpoints, skills
-    )
+                   wis, wismod, cha, chamod, ac, prof, hitpoints, skills)
       @charname = charname
       @level = level
       @species = species
@@ -116,11 +100,11 @@ module CharacterCreatorKata
       @prof = prof
       @hitpoints = hitpoints
       @skills = skills
-
     end
+
     def context
-      self.instance_variables.map do |attribute|
-        { attribute => self.instance_variable_get(attribute)}
+      instance_variables.map do |attribute|
+        { attribute => instance_variable_get(attribute) }
       end
     end
   end
@@ -133,69 +117,29 @@ module CharacterCreatorKata
     charclass = ""
     while classes.include?(charclass) == false
       charclass = get_input(classes.first).capitalize.chomp
-      puts "please select an option from the list" unless classes.include?(charclass) == true
+      puts "please select an option from the list" unless classes.include?(charclass)
     end
-    return charclass
+    charclass
   end
-
 
   class Ranger
-
-    attr_accessor :damage
-    attr_accessor :chancetohit
-    attr_accessor :armor
-    attr_accessor :weapon
-
-
-
+    attr_accessor :damage, :chancetohit, :armor, :weapon
   end
 
-
   def my_modcalc(stat)
-    if stat < 2
-      -5
-    elsif stat < 4
-      -4
-    elsif stat < 6
-      -3
-    elsif stat < 8
-      -2
-    elsif stat < 10
-      -1
-    elsif stat < 12
-      0
-    elsif stat < 14
-      1
-    elsif stat < 16
-      2
-    elsif stat < 18
-      3
-    elsif stat < 20
-      4
-    elsif stat < 22
-      5
-    elsif stat < 24
-      6
-    elsif stat < 26
-      7
-    elsif stat < 28
-      8
-    else
+    if stat < 0 || stat >= 28
       puts "error: str must be between 0 and 30"
+      return nil
     end
+    (stat - 10) / 2
   end
 
   def proficiency(level)
-    if level < 5
-      2
-    elsif level < 9
-      3
-    elsif level < 13
-      4
-    elsif level < 17
-      5
-    else
-      6
+    if level < 5 then 2
+    elsif level < 9 then 3
+    elsif level < 13 then 4
+    elsif level < 17 then 5
+    else 6
     end
   end
 
@@ -225,145 +169,157 @@ module CharacterCreatorKata
     case character_class
     when "Barbarian"
       [
-          Proficiencies::ANIMAL_HANDLING,
-          Proficiencies::ATHLETICS,
-          Proficiencies::INTIMIDATION,
-          Proficiencies::NATURE,
-          Proficiencies::PERCEPTION,
-          Proficiencies::SURVIVAL
+        Proficiencies::ANIMAL_HANDLING,
+        Proficiencies::ATHLETICS,
+        Proficiencies::INTIMIDATION,
+        Proficiencies::NATURE,
+        Proficiencies::PERCEPTION,
+        Proficiencies::SURVIVAL
       ]
     when "Bard"
       [
-          Proficiencies::ATHLETICS,
-          Proficiencies::ACROBATICS,
-          Proficiencies::SLEIGHT_OF_HAND,
-          Proficiencies::STEALTH,
-          Proficiencies::ARCANA,
-          Proficiencies::HISTORY,
-          Proficiencies::INVESTIGATION,
-          Proficiencies::NATURE,
-          Proficiencies::RELIGION,
-          Proficiencies::RELIGION,
-          Proficiencies::ANIMAL_HANDLING,
-          Proficiencies::INSIGHT,
-          Proficiencies::MEDICINE,
-          Proficiencies::PERCEPTION,
-          Proficiencies::SURVIVAL,
-          Proficiencies::DECEPTION,
-          Proficiencies::INTIMIDATION,
-          Proficiencies::PERFORMANCE,
-          Proficiencies::PERSUASION
+        Proficiencies::ATHLETICS,
+        Proficiencies::ACROBATICS,
+        Proficiencies::SLEIGHT_OF_HAND,
+        Proficiencies::STEALTH,
+        Proficiencies::ARCANA,
+        Proficiencies::HISTORY,
+        Proficiencies::INVESTIGATION,
+        Proficiencies::NATURE,
+        Proficiencies::RELIGION,
+        Proficiencies::RELIGION,
+        Proficiencies::ANIMAL_HANDLING,
+        Proficiencies::INSIGHT,
+        Proficiencies::MEDICINE,
+        Proficiencies::PERCEPTION,
+        Proficiencies::SURVIVAL,
+        Proficiencies::DECEPTION,
+        Proficiencies::INTIMIDATION,
+        Proficiencies::PERFORMANCE,
+        Proficiencies::PERSUASION
       ]
     when "Cleric"
       [
-          Proficiencies::HISTORY,
-          Proficiencies::INSIGHT,
-          Proficiencies::MEDICINE,
-          Proficiencies::PERSUASION,
-          Proficiencies::RELIGION
-         ]
+        Proficiencies::HISTORY,
+        Proficiencies::INSIGHT,
+        Proficiencies::MEDICINE,
+        Proficiencies::PERSUASION,
+        Proficiencies::RELIGION
+      ]
     when "Druid"
       [
-          Proficiencies::ARCANA,
-          Proficiencies::ANIMAL_HANDLING,
-          Proficiencies::INSIGHT,
-          Proficiencies::MEDICINE,
-          Proficiencies::NATURE,
-          Proficiencies::PERCEPTION,
-          Proficiencies::RELIGION,
-          Proficiencies::SURVIVAL
+        Proficiencies::ARCANA,
+        Proficiencies::ANIMAL_HANDLING,
+        Proficiencies::INSIGHT,
+        Proficiencies::MEDICINE,
+        Proficiencies::NATURE,
+        Proficiencies::PERCEPTION,
+        Proficiencies::RELIGION,
+        Proficiencies::SURVIVAL
       ]
     when "Fighter"
       [
-          Proficiencies::ACROBATICS,
-          Proficiencies::ANIMAL_HANDLING,
-          Proficiencies::ATHLETICS,
-          Proficiencies::HISTORY,
-          Proficiencies::INSIGHT,
-          Proficiencies::INTIMIDATION,
-          Proficiencies::PERCEPTION,
-          Proficiencies::PERSUASION,
-          Proficiencies::SURVIVAL
+        Proficiencies::ACROBATICS,
+        Proficiencies::ANIMAL_HANDLING,
+        Proficiencies::ATHLETICS,
+        Proficiencies::HISTORY,
+        Proficiencies::INSIGHT,
+        Proficiencies::INTIMIDATION,
+        Proficiencies::PERCEPTION,
+        Proficiencies::PERSUASION,
+        Proficiencies::SURVIVAL
       ]
     when "Monk"
       [
-          Proficiencies::ACROBATICS,
-          Proficiencies::ATHLETICS,
-          Proficiencies::HISTORY,
-          Proficiencies::INSIGHT,
-          Proficiencies::RELIGION,
-          Proficiencies::STEALTH
+        Proficiencies::ACROBATICS,
+        Proficiencies::ATHLETICS,
+        Proficiencies::HISTORY,
+        Proficiencies::INSIGHT,
+        Proficiencies::RELIGION,
+        Proficiencies::STEALTH
       ]
     when "Paladin"
       [
-          Proficiencies::ATHLETICS,
-          Proficiencies::INSIGHT,
-          Proficiencies::INTIMIDATION,
-          Proficiencies::MEDICINE,
-          Proficiencies::PERSUASION,
-          Proficiencies::RELIGION
+        Proficiencies::ATHLETICS,
+        Proficiencies::INSIGHT,
+        Proficiencies::INTIMIDATION,
+        Proficiencies::MEDICINE,
+        Proficiencies::PERSUASION,
+        Proficiencies::RELIGION
       ]
     when "Ranger"
       [
-          Proficiencies::ANIMAL_HANDLING,
-          Proficiencies::ATHLETICS,
-          Proficiencies::INSIGHT,
-          Proficiencies::INVESTIGATION,
-          Proficiencies::NATURE,
-          Proficiencies::PERCEPTION,
-          Proficiencies::STEALTH,
-          Proficiencies::SURVIVAL
+        Proficiencies::ANIMAL_HANDLING,
+        Proficiencies::ATHLETICS,
+        Proficiencies::INSIGHT,
+        Proficiencies::INVESTIGATION,
+        Proficiencies::NATURE,
+        Proficiencies::PERCEPTION,
+        Proficiencies::STEALTH,
+        Proficiencies::SURVIVAL
       ]
     when "Rogue"
       [
-          Proficiencies::ACROBATICS,
-          Proficiencies::ATHLETICS,
-          Proficiencies::DECEPTION,
-          Proficiencies::INSIGHT,
-          Proficiencies::INTIMIDATION,
-          Proficiencies::INVESTIGATION,
-          Proficiencies::PERCEPTION,
-          Proficiencies::PERSUASION,
-          Proficiencies::SLEIGHT_OF_HAND,
-          Proficiencies::STEALTH
+        Proficiencies::ACROBATICS,
+        Proficiencies::ATHLETICS,
+        Proficiencies::DECEPTION,
+        Proficiencies::INSIGHT,
+        Proficiencies::INTIMIDATION,
+        Proficiencies::INVESTIGATION,
+        Proficiencies::PERCEPTION,
+        Proficiencies::PERSUASION,
+        Proficiencies::SLEIGHT_OF_HAND,
+        Proficiencies::STEALTH
       ]
     when "Sorcerer"
       [
-          Proficiencies::ARCANA,
-          Proficiencies::DECEPTION,
-          Proficiencies::INSIGHT,
-          Proficiencies::INTIMIDATION,
-          Proficiencies::PERSUASION,
-          Proficiencies::RELIGION
+        Proficiencies::ARCANA,
+        Proficiencies::DECEPTION,
+        Proficiencies::INSIGHT,
+        Proficiencies::INTIMIDATION,
+        Proficiencies::PERSUASION,
+        Proficiencies::RELIGION
       ]
     when "Warlock"
       [
-          Proficiencies::ARCANA,
-          Proficiencies::DECEPTION,
-          Proficiencies::HISTORY,
-          Proficiencies::INTIMIDATION,
-          Proficiencies::INVESTIGATION,
-          Proficiencies::NATURE,
-          Proficiencies::RELIGION
+        Proficiencies::ARCANA,
+        Proficiencies::DECEPTION,
+        Proficiencies::HISTORY,
+        Proficiencies::INTIMIDATION,
+        Proficiencies::INVESTIGATION,
+        Proficiencies::NATURE,
+        Proficiencies::RELIGION
       ]
     when "Wizard"
       [
-          Proficiencies::ARCANA,
-          Proficiencies::HISTORY,
-          Proficiencies::INSIGHT,
-          Proficiencies::INVESTIGATION,
-          Proficiencies::MEDICINE,
-          Proficiencies::NATURE,
-          Proficiencies::RELIGION
+        Proficiencies::ARCANA,
+        Proficiencies::HISTORY,
+        Proficiencies::INSIGHT,
+        Proficiencies::INVESTIGATION,
+        Proficiencies::MEDICINE,
+        Proficiencies::NATURE,
+        Proficiencies::RELIGION
       ]
     else
       []
     end
   end
 
+  def pick_proficiency_from_list(prof_array, available, slot_index, ordinal)
+    puts "Which skill would you like to choose as your #{ordinal} proficiency (case sensitive)"
+    while prof_array[slot_index].nil?
+      choice = get_input(prof_array.compact.first).chomp
+      puts choice
+      if choice.nil? || !available.include?(choice)
+        puts "please select one of the offered skills (case sensitive)"
+      else
+        prof_array[slot_index] = choice
+        available.delete_at(available.index(choice))
+      end
+    end
+  end
 
   def profpicker
-
     tempprof = ["athletics", "acrobatics", "sleight_of_hand", "stealth", "arcana", "history", "investigation", "nature", "religion",
                 "animal_handling", "insight", "medicine", "perception", "survival", "deception", "intimidation", "performance",
                 "persuasion"]
@@ -373,240 +329,109 @@ module CharacterCreatorKata
       puts $prof[n]
     end
 
-    puts "Which skill would you like to choose as your first proficiency (case sensitive)"
-    while $prof[19] == nil
-      proficiency1 = get_input($prof.compact.first).chomp
-      puts proficiency1
-      if proficiency1 == nil || tempprof.include?(proficiency1) == false
-        puts "please select one of the offered skills (case sensitive)"
-      elsif tempprof.include?(proficiency1) == true
-        $prof[19] = proficiency1
-        for n in 0...18
-          if tempprof[n] == proficiency1
-            tempprof[n] = nil
-            break n
-          end
-        end
-      end
-    end
+    pick_proficiency_from_list($prof, tempprof, 19, "first")
 
     puts "These are your remaining stats: "
     tempprof.compact!
     puts tempprof
 
-    puts "Which skill would you like to choose as your second proficiency (case sensitive)"
-    while $prof[20] == nil
-      proficiency2 = get_input($prof.compact.first).chomp
-      if proficiency2 == nil || tempprof.include?(proficiency2) == false
-        puts "please select one of the offered skills (case sensitive)"
-      elsif tempprof.include?(proficiency2) == true
-        $prof[20] = proficiency2
-        for n in 0...18
-          if tempprof[n] == proficiency2
-            tempprof[n] = nil
-            break n
-          end
-        end
-      end
-    end
+    pick_proficiency_from_list($prof, tempprof, 20, "second")
 
     puts "These are your remaining stats: "
     tempprof.compact!
     puts tempprof
 
-    puts "Which skill would you like to choose as your second proficiency (case sensitive)"
-    while $prof[21] == nil
-      proficiency3 = get_input($prof.compact.first).chomp
-      if proficiency3 == nil || tempprof.include?(proficiency3) == false
-        puts "please select one of the offered skills (case sensitive)"
-      elsif tempprof.include?(proficiency3) == true
-        $prof[21] = proficiency3
-        for n in 0...18
-          if tempprof[n] == proficiency3
-            tempprof[n] = nil
-            break n
-          end
-        end
-      end
-    end
+    pick_proficiency_from_list($prof, tempprof, 21, "third")
   end
-
 
   def speciespick
     species = ["Dragonborn", "Dwarf", "Elf", "Gnome", "Goliath", "Halfling",
-             "Human", "Orc", "Tiefling"]
+               "Human", "Orc", "Tiefling"]
     puts species
     puts "What species is your character? "
     species_choice = ""
     while species.include?(species_choice) == false
       species_choice = get_input(species.first).split(/ |\_|\-/).map(&:capitalize).join(" ").chomp
-      puts "please select an option from the list" unless species.include?(species_choice) == true
+      puts "please select an option from the list" unless species.include?(species_choice)
     end
-    return species_choice
+    species_choice
   end
 
   def skillpopulator
-    skillhash = {
-        "athletics" => 0,
-        "acrobatics"=> 0,
-        "sleight of hand" => 0,
-        "stealth" => 0,
-        "arcana" => 0,
-        "history" => 0,
-        "investigation" => 0,
-        "nature" => 0,
-        "religion" => 0,
-        "animal handling" => 0,
-        "insight"=> 0,
-        "medicine" => 0,
-        "perception" => 0,
-        "survival" => 0,
-        "deception" => 0,
-        "intimidation" => 0,
-        "performance" => 0,
-        "persuasion" => 0
+    {
+      "athletics" => 0,
+      "acrobatics" => 0,
+      "sleight of hand" => 0,
+      "stealth" => 0,
+      "arcana" => 0,
+      "history" => 0,
+      "investigation" => 0,
+      "nature" => 0,
+      "religion" => 0,
+      "animal handling" => 0,
+      "insight" => 0,
+      "medicine" => 0,
+      "perception" => 0,
+      "survival" => 0,
+      "deception" => 0,
+      "intimidation" => 0,
+      "performance" => 0,
+      "persuasion" => 0
     }
-    return skillhash
   end
 
+  def pick_stat(stats, finalstats, index, stat_name, show_remaining: true)
+    puts "Which number would you like to be your #{stat_name} stat? "
+    while finalstats[index].nil?
+      value = get_input(stats.compact.first).to_i
+      if value.nil? || !stats.include?(value)
+        puts "Please select one of the available numbers"
+      else
+        finalstats[index] = value
+        idx = stats.index(value)
+        stats[idx] = nil
+      end
+    end
+    if show_remaining
+      puts "These are your remaining stats: "
+      stats.compact!
+      puts stats
+    end
+  end
 
   def statpick(stats)
-
     loop do
-    finalstats = []
-    puts "These are your stats: "
-    for n in 0...6
-      puts stats[n]
-    end
+      finalstats = []
 
-    puts "Which number would you like to be your Strength stat? "
+      puts "These are your stats: "
+      stats.each { |s| puts s }
 
-    while finalstats[0] == nil
-      strength = get_input(stats.compact.first).to_i
-      if strength == nil || stats.include?(strength) == false
-        puts "Please select one of the available numbers"
-      elsif stats.include?(strength) == true
-        finalstats[0] = strength
-        for n in 0...6
-          if stats[n] == strength
-            stats[n] = nil
-            break n
-          end
-        end
-      end
-    end
+      pick_stat(stats, finalstats, 0, "Strength")
+      pick_stat(stats, finalstats, 1, "Dexterity")
+      pick_stat(stats, finalstats, 2, "Constitution")
+      pick_stat(stats, finalstats, 3, "Intelligence")
+      pick_stat(stats, finalstats, 4, "Wisdom", show_remaining: false)
 
-    puts "These are your remaining stats: "
-    stats.compact!
-    puts stats
+      finalstats[5] = stats.compact.first
 
-    puts "Which number would you like to be your Dexterity stat? "
-
-    while finalstats[1] == nil
-      dexterity = get_input(stats.compact.first).to_i
-      if dexterity == nil ||stats.include?(dexterity) == false
-        puts "Please select one of the available numbers"
-      elsif stats.include?(dexterity) == true
-        finalstats[1] = dexterity
-        for n in 0...6
-          if stats[n] == dexterity
-            stats[n] = nil
-            break n
-          end
-        end
-      end
-    end
-
-    puts "These are your remaining stats: "
-    stats.compact!
-    puts stats
-
-    puts "Which number would you like to be your Constitution stat? "
-
-    while finalstats[2] == nil
-      constitution = get_input(stats.compact.first).to_i
-      if constitution == nil ||stats.include?(constitution) == false
-        puts "Please select one of the available numbers"
-      elsif stats.include?(constitution) == true
-        finalstats[2] = constitution
-        for n in 0...6
-          if stats[n] == constitution
-            stats[n] = nil
-            break n
-          end
-        end
-      end
-    end
-
-    puts "These are your remaining stats: "
-    stats.compact!
-    puts stats
-
-    puts "Which number would you like to be your Intelligence stat? "
-
-    while finalstats[3] == nil
-      intelligence = get_input(stats.compact.first).to_i
-      if intelligence == nil ||stats.include?(intelligence) == false
-        puts "Please select one of the available numbers"
-      elsif stats.include?(intelligence) == true
-        finalstats[3] = intelligence
-        for n in 0...6
-          if stats[n] == intelligence
-            stats[n] = nil
-            break n
-          end
-        end
-      end
-    end
-
-    puts "These are your remaining stats: "
-    stats.compact!
-    puts stats
-
-    puts "Which number would you like to be your Wisdom stat? "
-
-    while finalstats[4] == nil
-        wisdom = get_input(stats.compact.first).to_i
-      if wisdom == nil ||stats.include?(wisdom) == false
-        puts "Please select one of the available numbers"
-      elsif stats.include?(wisdom) == true
-        finalstats[4] = wisdom
-        for n in 0...6
-          if stats[n] == wisdom
-            stats[n] = nil
-            break n
-          end
-        end
-      end
-    end
-
-    for n in 0...6
-      if stats[n] != nil
-      finalstats[5] = stats[n]
-      end
-    end
-
-    puts "So your stats are  Strength: #{finalstats[0]}, Dexteriy: #{finalstats[1]}, Constitution: #{finalstats[2]},
+      puts "So your stats are  Strength: #{finalstats[0]}, Dexteriy: #{finalstats[1]}, Constitution: #{finalstats[2]},
     Intelligence: #{finalstats[3]}, Wisdom: #{finalstats[4]}, and Charisma: #{finalstats[5]}"
 
-    puts "Are you satisfied with this? (y/n)"
-    finish = ""
-    until finish == "y" || finish == "n"
-    finish = get_input("y").chomp
-      if finish == "n"
-        for n in 0...6
-          stats[n] = finalstats[n]
-          finalstats[n] = nil
+      puts "Are you satisfied with this? (y/n)"
+      finish = ""
+      until finish == "y" || finish == "n"
+        finish = get_input("y").chomp
+        if finish == "n"
+          6.times do |n|
+            stats[n] = finalstats[n]
+            finalstats[n] = nil
+          end
+        elsif finish != "y"
+          puts "Please select y to complete this process or n to start over"
         end
-
-      elsif finish == "y"
-      else
-        puts "Please select y to complete this process or n to start over"
       end
-    end
 
-    return finalstats if finish == "y"
-
+      return finalstats if finish == "y"
     end
   end
 
