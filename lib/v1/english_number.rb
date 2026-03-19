@@ -1,85 +1,48 @@
 module EnglishNumberKata
-  def english_number number
-    if number < 0  # No negative numbers.
-      return 'Please enter a number that isn\'t negative.'
+  ONES = %w[one two three four five six seven eight nine].freeze
+  TENS = %w[ten twenty thirty forty fifty sixty seventy eighty ninety].freeze
+  TEENS = %w[eleven twelve thirteen fourteen fifteen
+             sixteen seventeen eighteen nineteen].freeze
+
+  def english_number(number)
+    return 'Please enter a number that isn\'t negative.' if number < 0
+    return 'zero' if number == 0
+
+    parts = []
+    remainder = number
+
+    remainder = append_hundreds(parts, remainder)
+    remainder = append_tens(parts, remainder)
+    append_ones(parts, remainder)
+
+    parts.join
+  end
+
+  private
+
+  def append_hundreds(parts, remainder)
+    hundreds, remainder = remainder.divmod(100)
+    if hundreds > 0
+      parts << "#{english_number(hundreds)} hundred"
+      parts << ' ' if remainder > 0
     end
-    if number == 0
-      return 'zero'
-    end
+    remainder
+  end
 
-    # No more special cases! No more returns!
-
-    numString = ''  # This is the string we will return.
-
-    onesPlace = ['one',     'two',       'three',    'four',     'five',
-                 'six',     'seven',     'eight',    'nine']
-    tensPlace = ['ten',     'twenty',    'thirty',   'forty',    'fifty',
-                 'sixty',   'seventy',   'eighty',   'ninety']
-    teenagers = ['eleven',  'twelve',    'thirteen', 'fourteen', 'fifteen',
-                 'sixteen', 'seventeen', 'eighteen', 'nineteen']
-
-    # "left" is how much of the number we still have left to write out.
-    # "write" is the part we are writing out right now.
-    # write and left... get it?  :)
-    left  = number
-    write = left/100          # How many hundreds left to write out?
-    left  = left - write*100  # Subtract off those hundreds.
-
-    if write > 0
-      # Now here's a really sly trick:
-      hundreds  = english_number write
-      numString = numString + hundreds + ' hundred'
-      # That's called "recursion". So what did I just do?
-      # I told this method to call itself, but with "write" instead of
-      # "number". Remember that "write" is (at the moment) the number of
-      # hundreds we have to write out. After we add "hundreds" to
-      # "numString", we add the string ' hundred' after it.
-      # So, for example, if we originally called english_number with
-      # 1999 (so "number" = 1999), then at this point "write" would
-      # be 19, and "left" would be 99. The laziest thing to do at this
-      # point is to have english_number write out the 'nineteen' for us,
-      # then we write out ' hundred', and then the rest of
-      # english_number writes out 'ninety-nine'.
-
-      if left > 0
-        # So we don't write 'two hundredfifty-one'...
-        numString = numString + ' '
+  def append_tens(parts, remainder)
+    tens, ones = remainder.divmod(10)
+    if tens > 0
+      if tens == 1 && ones > 0
+        parts << TEENS[ones - 1]
+        return 0
       end
+      parts << TENS[tens - 1]
+      parts << '-' if ones > 0
     end
+    ones
+  end
 
-    write = left/10          # How many tens left to write out?
-    left  = left - write*10  # Subtract off those tens.
-
-    if write > 0
-      if ((write == 1) and (left > 0))
-        # Since we can't write "tenty-two" instead of "twelve",
-        # we have to make a special exception for these.
-        numString = numString + teenagers[left-1]
-        # The "-1" is because teenagers[3] is 'fourteen', not 'thirteen'.
-
-        # Since we took care of the digit in the ones place already,
-        # we have nothing left to write.
-        left = 0
-      else
-        numString = numString + tensPlace[write-1]
-        # The "-1" is because tensPlace[3] is 'forty', not 'thirty'.
-      end
-
-      if left > 0
-        # So we don't write 'sixtyfour'...
-        numString = numString + '-'
-      end
-    end
-
-    write = left  # How many ones left to write out?
-    left  = 0     # Subtract off those ones.
-
-    if write > 0
-      numString = numString + onesPlace[write-1]
-      # The "-1" is because onesPlace[3] is 'four', not 'three'.
-    end
-
-    # Now we just return "numString"...
-    numString
+  def append_ones(parts, remainder)
+    parts << ONES[remainder - 1] if remainder > 0
   end
 end
